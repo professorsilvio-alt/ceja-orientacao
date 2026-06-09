@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEJA Profª Rosa Soares - Novo Sistema de Avaliações</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Informativo interativo para os alunos do CEJA Professora Rosa Soares sobre o novo sistema de 3 avaliações por fascículo. Calcule sua média e veja as regras.">
+  <meta name="keywords" content="CEJA, CEJA Mesquita, Rosa Soares, Avaliações, CECIERJ, Educação de Jovens e Adultos">
+  <meta name="author" content="CEJA Professora Rosa Soares">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- APP CONTAINER -->
+  <div class="app-container">
+    
+    <!-- HEADER -->
+    <header class="main-header">
+      <div class="header-logo-container">
+        <!-- SVG Logo representativo do CEJA -->
+        <svg class="school-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" stroke="#ffd84e" stroke-width="4" fill="#0c1f6e" />
+          <path d="M50 20 L25 40 L50 40 L50 80 L50 40 L75 40 Z" fill="#ffd84e" />
+          <path d="M30 48 L70 48" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+          <path d="M35 58 L65 58" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+          <path d="M40 68 L60 68" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        <div class="header-text">
+          <h1>CEJA Professora Rosa Soares</h1>
+          <span class="location-tag">📍 Mesquita - RJ</span>
+        </div>
+      </div>
+      <div class="header-title-badge">
+        <h2>INFORMATIVO DE AVALIAÇÕES</h2>
+        <p>Novo Sistema: 3 Avaliações por Fascículo</p>
+      </div>
+    </header>
+
+    <!-- HERO / APRESENTAÇÃO -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <h3>Atenção, Alunos!</h3>
+        <p>
+          Para melhorar o seu aprendizado e dar mais flexibilidade aos seus estudos, o sistema de avaliação mudou. 
+          Agora, em vez de apenas 1 avaliação, cada fascículo conta com <strong>3 avaliações (AV1, AV2 e AV3)</strong>.
+        </p>
+        <div class="hero-actions">
+          <a href="#simulator" class="btn btn-primary">🎓 Simular Minha Nota</a>
+          <button id="btnPrint" class="btn btn-secondary">🖨️ Imprimir Guia / Salvar PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO REGRAS E PESOS -->
+    <section class="rules-section" id="rules">
+      <div class="section-header">
+        <h2>Entenda Como Funciona</h2>
+        <p>Cada avaliação tem um peso diferente na sua nota final e locais específicos de realização.</p>
+      </div>
+
+      <div class="cards-grid">
+        
+        <!-- CARD AV1 -->
+        <div class="rule-card" id="card-av1">
+          <div class="card-badge badge-online">REMOTO OU PRESENCIAL</div>
+          <div class="card-weight">10%</div>
+          <div class="card-title">
+            <span class="card-num">AV 1</span>
+            <h3>Avaliação 1</h3>
+          </div>
+          <ul class="card-details">
+            <li><strong>Peso na média:</strong> 10% (Multiplica a nota por 0,1)</li>
+            <li><strong>Onde fazer:</strong> No ambiente online do <strong>CEJA Virtual</strong> ou presencialmente na escola.</li>
+            <li><strong>Dica:</strong> Uma ótima oportunidade para garantir seus primeiros pontos no fascículo de forma tranquila.</li>
+          </ul>
+        </div>
+
+        <!-- CARD AV2 -->
+        <div class="rule-card" id="card-av2">
+          <div class="card-badge badge-online">REMOTO OU PRESENCIAL</div>
+          <div class="card-weight">20%</div>
+          <div class="card-title">
+            <span class="card-num">AV 2</span>
+            <h3>Avaliação 2</h3>
+          </div>
+          <ul class="card-details">
+            <li><strong>Peso na média:</strong> 20% (Multiplica a nota por 0,2)</li>
+            <li><strong>Onde fazer:</strong> No ambiente online do <strong>CEJA Virtual</strong> ou presencialmente na escola.</li>
+            <li><strong>Dica:</strong> Estude os capítulos intermediários do fascículo antes de realizar esta avaliação.</li>
+          </ul>
+        </div>
+
+        <!-- CARD AV3 -->
+        <div class="rule-card mandatory" id="card-av3">
+          <div class="card-badge badge-mandatory">OBRIGATORIAMENTE PRESENCIAL</div>
+          <div class="card-weight highlight">70%</div>
+          <div class="card-title">
+            <span class="card-num">AV 3</span>
+            <h3>Avaliação 3</h3>
+          </div>
+          <ul class="card-details">
+            <li><strong>Peso na média:</strong> 70% (Multiplica a nota por 0,7)</li>
+            <li><strong>Onde fazer:</strong> <strong>Somente presencialmente</strong> na escola.</li>
+            <li><strong>Atenção:</strong> Esta avaliação é <strong>obrigatória</strong>. Se não realizá-la, você não poderá ser aprovado no fascículo.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SEÇÃO SIMULADOR -->
+    <section class="simulator-section" id="simulator">
+      <div class="section-header">
+        <h2>Simulador de Média Final</h2>
+        <p>Arraste os controles abaixo com suas notas estimadas para calcular sua média final automaticamente.</p>
+      </div>
+
+      <div class="simulator-container">
+        
+        <!-- CONTROLES -->
+        <div class="simulator-controls">
+          
+          <!-- Slider AV1 -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="range-av1">Nota da AV1 (Peso 10%)</label>
+              <span class="control-value" id="val-av1">5.0</span>
+            </div>
+            <input type="range" id="range-av1" min="0" max="10" step="0.1" value="5.0" class="slider">
+            <div class="control-footer">
+              <span>Online / Presencial</span>
+              <span>Peso: 0.1</span>
+            </div>
+          </div>
+
+          <!-- Slider AV2 -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="range-av2">Nota da AV2 (Peso 20%)</label>
+              <span class="control-value" id="val-av2">5.0</span>
+            </div>
+            <input type="range" id="range-av2" min="0" max="10" step="0.1" value="5.0" class="slider">
+            <div class="control-footer">
+              <span>Online / Presencial</span>
+              <span>Peso: 0.2</span>
+            </div>
+          </div>
+
+          <!-- Slider AV3 -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="range-av3">Nota da AV3 (Peso 70%)</label>
+              <span class="control-value" id="val-av3">5.0</span>
+            </div>
+            <input type="range" id="range-av3" min="0" max="10" step="0.1" value="5.0" class="slider">
+            <div class="control-footer">
+              <span class="text-mandatory">Obrigatória na Escola 📍</span>
+              <span>Peso: 0.7</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PAINEL RESULTADO -->
+        <div class="simulator-result" id="result-panel">
+          <h3>Média Calculada</h3>
+          
+          <!-- Medidor Circular SVG -->
+          <div class="grade-gauge">
+            <svg class="gauge-svg" viewBox="0 0 100 100">
+              <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+              <circle class="gauge-fill" id="gauge-fill-circle" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="125.6"></circle>
+            </svg>
+            <div class="gauge-text">
+              <span class="gauge-number" id="result-grade">5.0</span>
+              <span class="gauge-label">de 10.0</span>
+            </div>
+          </div>
+
+          <div class="status-badge" id="result-status">Nota Suficiente</div>
+          <p class="status-desc" id="result-desc">
+            Com essas notas, sua média é de <strong>5.0</strong>. Você está aprovado neste fascículo!
+          </p>
+        </div>
+
+      </div>
+
+      <!-- CALCULADORA DE META -->
+      <div class="target-calculator">
+        <div class="target-header">
+          <h3>🎯 Quanto preciso tirar na AV3?</h3>
+          <p>Já fez a AV1 e a AV2? Insira suas notas abaixo para descobrir a nota mínima necessária na AV3 presencial para alcançar a média 5.0.</p>
+        </div>
+        <div class="target-form">
+          <div class="form-group">
+            <label for="input-av1">Nota AV1:</label>
+            <input type="number" id="input-av1" min="0" max="10" step="0.1" placeholder="Ex: 6.5">
+          </div>
+          <div class="form-group">
+            <label for="input-av2">Nota AV2:</label>
+            <input type="number" id="input-av2" min="0" max="10" step="0.1" placeholder="Ex: 7.0">
+          </div>
+          <button id="btn-calc-target" class="btn btn-accent">Calcular Meta da AV3</button>
+        </div>
+        <div class="target-result hidden" id="target-result-box">
+          <div class="target-result-content">
+            <p id="target-text">Você precisa tirar no mínimo <strong>5.0</strong> na AV3.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <div class="section-header">
+        <h2>Dúvidas Frequentes</h2>
+      </div>
+      <div class="faq-accordion">
+        
+        <div class="faq-item">
+          <button class="faq-question">Qual é a média mínima para aprovação no fascículo? <span>▼</span></button>
+          <div class="faq-answer">
+            <p>A média mínima para aprovação em cada fascículo é de <strong>5,0 (cinco)</strong>. Se você alcançar essa média ponderada com a soma das três notas, estará apto para o próximo fascículo.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Posso fazer a AV3 online? <span>▼</span></button>
+          <div class="faq-answer">
+            <p><strong>Não.</strong> A AV3 representa 70% da sua nota e deve ser feita, obrigatoriamente, de forma presencial no CEJA. Ela é uma prova física realizada na própria escola.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">O que acontece se eu não fizer a AV1 ou a AV2? <span>▼</span></button>
+          <div class="faq-answer">
+            <p>Embora o ideal seja fazer todas, a AV1 e a AV2 não são estritamente obrigatórias no sentido de bloqueio. Se você perder uma delas, sua nota nela será zero, o que diminuirá muito sua média. Para passar precisando apenas da AV3, você terá que obter uma nota muito alta.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Como acesso o CEJA Virtual? <span>▼</span></button>
+          <div class="faq-answer">
+            <p>Você pode acessar a plataforma do CEJA Virtual usando seu usuário e senha no link oficial: <a href="https://cejarj.cecierj.edu.br/ava/login/index.php" target="_blank">cejarj.cecierj.edu.br/ava</a>. Novas matrículas levam de 24h a 48h para liberação de acesso.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FOOTER / CONTATO -->
+    <footer class="main-footer">
+      <div class="footer-info">
+        <h3>CEJA Professora Rosa Soares</h3>
+        <p class="address">🏫 Rua Paulo, S/N - 2º Andar (Prédio do CIEP Nelson Ramos), Mesquita - RJ</p>
+        <p class="gratuito-badge">🏫 ESCOLA PÚBLICA 100% GRATUITA</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="https://cejarj.cecierj.edu.br/ava/login/index.php" target="_blank" class="footer-btn btn-virtual">
+          🌐 Acessar CEJA Virtual
+        </a>
+        <a href="https://wa.me/5521981612512" target="_blank" class="footer-btn btn-whatsapp">
+          💬 WhatsApp: (21) 98161-2512
+        </a>
+        <a href="https://instagram.com/ceja_mesquita" target="_blank" class="footer-btn btn-instagram">
+          📸 Instagram: @ceja_mesquita
+        </a>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2026 CEJA Professora Rosa Soares. Desenvolvido para orientação aos estudantes.</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- PRINT-ONLY TEMPLATE -->
+  <div class="print-template">
+    <div class="print-header">
+      <div class="print-logo-row">
+        <!-- SVG para impressão -->
+        <svg class="school-logo-print" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" stroke="#000000" stroke-width="4" fill="none" />
+          <path d="M50 20 L25 40 L50 40 L50 80 L50 40 L75 40 Z" fill="#000000" />
+        </svg>
+        <div class="print-header-text">
+          <h1>CEJA Professora Rosa Soares</h1>
+          <p>Rede de Centros de Educação de Jovens e Adultos – Fundação CECIERJ</p>
+        </div>
+      </div>
+      <div class="print-title">
+        <h2>INFORMATIVO: NOVO SISTEMA DE AVALIAÇÕES</h2>
+        <p>Transição importante: Agora são 3 avaliações por fascículo!</p>
+      </div>
+    </div>
+
+    <div class="print-body">
+      <div class="print-intro">
+        <p>Prezado(a) aluno(a), a partir de agora, cada fascículo de estudo contará com <strong>três avaliações (AV1, AV2 e AV3)</strong>. A nota final necessária para aprovação continua sendo <strong>5,0 (cinco)</strong>.</p>
+      </div>
+
+      <div class="print-table-container">
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th>Avaliação</th>
+              <th>Peso na Média</th>
+              <th>Formato / Local</th>
+              <th>Requisito</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AV1</strong></td>
+              <td>10% (Multiplica por 0,1)</td>
+              <td>Online (Ambiente CEJA Virtual) ou Presencial</td>
+              <td>Opcional (Soma pontos)</td>
+            </tr>
+            <tr>
+              <td><strong>AV2</strong></td>
+              <td>20% (Multiplica por 0,2)</td>
+              <td>Online (Ambiente CEJA Virtual) ou Presencial</td>
+              <td>Opcional (Soma pontos)</td>
+            </tr>
+            <tr class="print-row-mandatory">
+              <td><strong>AV3</strong></td>
+              <td><strong>70% (Multiplica por 0,7)</strong></td>
+              <td><strong>Somente Presencial (na escola)</strong></td>
+              <td><strong>OBRIGATÓRIO</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="print-formula">
+        <h3>Fórmula do Cálculo da Média Final:</h3>
+        <div class="formula-box">
+          Média Final = (Nota AV1 &times; 0,1) + (Nota AV2 &times; 0,2) + (Nota AV3 &times; 0,7)
+        </div>
+        <p><em>Exemplo: Se você tirar 6,0 na AV1, 7,0 na AV2 e 5,0 na AV3: <br>
+        Média = (6,0 &times; 0,1) + (7,0 &times; 0,2) + (5,0 &times; 0,7) = 0,6 + 1,4 + 3,5 = <strong>5,5</strong> (Aprovado!)</em></p>
+      </div>
+
+      <div class="print-contacts">
+        <h3>Canais de Atendimento e Links Rápidos:</h3>
+        <ul>
+          <li><strong>CEJA Virtual (Plataforma de Estudos):</strong> cejarj.cecierj.edu.br/ava</li>
+          <li><strong>WhatsApp de Contato:</strong> (21) 98161-2512</li>
+          <li><strong>Instagram Oficial:</strong> @ceja_mesquita</li>
+          <li><strong>Endereço:</strong> Rua Paulo, S/N - 2º Andar (Prédio do CIEP Nelson Ramos), Mesquita - RJ</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="print-footer">
+      <p>Estude no seu ritmo. Escola pública e 100% gratuita.</p>
+    </div>
+  </div>
+
+  <!-- Javascript -->
+  <script src="script.js"></script>
+</body>
+</html>
