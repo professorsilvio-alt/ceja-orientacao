@@ -187,8 +187,9 @@ a:hover {
 }
 
 .school-logo {
-  width: 60px;
+  width: auto;
   height: 60px;
+  object-fit: contain;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
 }
 
@@ -944,8 +945,9 @@ a:hover {
   }
   
   .school-logo-print {
-    width: 50px;
+    width: auto;
     height: 50px;
+    object-fit: contain;
   }
   
   .print-header-text h1 {
