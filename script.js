@@ -176,4 +176,279 @@ document.addEventListener('DOMContentLoaded', () => {
     window.print();
   });
 
+
+  // ==========================================================================
+  // FEEDBACK FORM LOGIC (SUGESTÕES E RECLAMAÇÕES ANÔNIMAS)
+  // ==========================================================================
+  
+  const feedbackForm = document.getElementById('feedback-form');
+  const feedbackChips = document.querySelectorAll('.feedback-chip');
+  const feedbackTypeInput = document.getElementById('feedback-type');
+  const feedbackTopic = document.getElementById('feedback-topic');
+  const feedbackMessage = document.getElementById('feedback-message');
+  const charCounter = document.getElementById('char-counter');
+  const feedbackSuccess = document.getElementById('feedback-success');
+  const btnNewFeedback = document.getElementById('btn-new-feedback');
+
+  // Handle category chip selection
+  feedbackChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      feedbackChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      feedbackTypeInput.value = chip.getAttribute('data-type');
+    });
+  });
+
+  // Track character count
+  feedbackMessage.addEventListener('input', () => {
+    const length = feedbackMessage.value.length;
+    charCounter.textContent = `${length} / 500`;
+
+    // Visual indicators for character limit
+    charCounter.className = 'char-counter';
+    if (length >= 450) {
+      charCounter.classList.add('limit');
+    } else if (length >= 400) {
+      charCounter.classList.add('warning');
+    }
+  });
+
+  // Handle feedback form submission
+  feedbackForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const type = feedbackTypeInput.value;
+    const topic = feedbackTopic.value;
+    const message = feedbackMessage.value.trim();
+
+    if (message.length < 10) {
+      alert('Sua mensagem é muito curta. Por favor, escreva pelo menos 10 caracteres.');
+      return;
+    }
+
+    // Prepare feedback object
+    const newFeedback = {
+      id: Date.now().toString(),
+      timestamp: new Date().toLocaleString('pt-BR'),
+      type: type,
+      topic: topic,
+      message: message
+    };
+
+    // Load existing feedbacks and append new one
+    const feedbacks = JSON.parse(localStorage.getItem('ceja_feedbacks') || '[]');
+    feedbacks.push(newFeedback);
+    localStorage.setItem('ceja_feedbacks', JSON.stringify(feedbacks));
+
+    // Show success screen and reset form
+    feedbackForm.classList.add('hidden');
+    feedbackSuccess.classList.remove('hidden');
+    
+    // Reset form elements
+    feedbackForm.reset();
+    feedbackChips.forEach(c => c.classList.remove('active'));
+    feedbackChips[0].classList.add('active'); // reset to first chip
+    feedbackTypeInput.value = 'sugestao';
+    charCounter.textContent = '0 / 500';
+    charCounter.className = 'char-counter';
+  });
+
+  // Return from success screen to blank form
+  btnNewFeedback.addEventListener('click', () => {
+    feedbackSuccess.classList.add('hidden');
+    feedbackForm.classList.remove('hidden');
+  });
+
+
+  // ==========================================================================
+  // ADMIN PANEL LOGIC
+  // ==========================================================================
+
+  const btnAdminPanel = document.getElementById('btn-admin-panel');
+  const adminModal = document.getElementById('admin-modal');
+  const btnCloseLogin = document.getElementById('btn-close-login');
+  const btnCloseDashboard = document.getElementById('btn-close-dashboard');
+  const adminModalBackdrop = document.querySelector('.admin-modal-backdrop');
+  
+  const adminLoginScreen = document.getElementById('admin-login-screen');
+  const adminDashboardScreen = document.getElementById('admin-dashboard-screen');
+  const adminLoginForm = document.getElementById('admin-login-form');
+  const adminPasswordInput = document.getElementById('admin-password');
+  const loginErrorMsg = document.getElementById('login-error-msg');
+
+  const adminFilterType = document.getElementById('admin-filter-type');
+  const adminFeedbackTbody = document.getElementById('admin-feedback-tbody');
+  const noFeedbacksMsg = document.getElementById('no-feedbacks-msg');
+  const btnExportCsv = document.getElementById('btn-export-csv');
+  const btnClearAll = document.getElementById('btn-clear-all');
+
+  // Open Admin Modal
+  btnAdminPanel.addEventListener('click', () => {
+    adminModal.classList.remove('hidden');
+    adminLoginScreen.classList.remove('hidden');
+    adminDashboardScreen.classList.add('hidden');
+    loginErrorMsg.classList.add('hidden');
+    adminPasswordInput.value = '';
+    adminPasswordInput.focus();
+  });
+
+  // Close Admin Modal Functions
+  function closeAdminModal() {
+    adminModal.classList.add('hidden');
+  }
+
+  [btnCloseLogin, btnCloseDashboard, adminModalBackdrop].forEach(el => {
+    el.addEventListener('click', closeAdminModal);
+  });
+
+  // Admin Passcode authentication (password: admin123)
+  adminLoginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const password = adminPasswordInput.value;
+
+    if (password === 'admin123') {
+      loginErrorMsg.classList.add('hidden');
+      adminLoginScreen.classList.add('hidden');
+      adminDashboardScreen.classList.remove('hidden');
+      renderAdminFeedbacks();
+    } else {
+      loginErrorMsg.classList.remove('hidden');
+      adminPasswordInput.value = '';
+      adminPasswordInput.focus();
+    }
+  });
+
+  // Render feedbacks in table
+  function renderAdminFeedbacks() {
+    const feedbacks = JSON.parse(localStorage.getItem('ceja_feedbacks') || '[]');
+    const selectedFilter = adminFilterType.value;
+    
+    // Sort chronologically descending (newest first)
+    const filteredFeedbacks = feedbacks
+      .filter(item => selectedFilter === 'todos' || item.type === selectedFilter)
+      .sort((a, b) => b.id.localeCompare(a.id));
+
+    // Clear previous rows
+    adminFeedbackTbody.innerHTML = '';
+
+    if (filteredFeedbacks.length === 0) {
+      noFeedbacksMsg.classList.remove('hidden');
+      document.querySelector('.admin-table').classList.add('hidden');
+    } else {
+      noFeedbacksMsg.classList.add('hidden');
+      document.querySelector('.admin-table').classList.remove('hidden');
+
+      filteredFeedbacks.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        // Map types to label badges
+        const typeLabels = {
+          sugestao: '💡 Sugestão',
+          reclamacao: '⚠️ Reclamação',
+          elogio: '⭐ Elogio',
+          outro: '💬 Outro'
+        };
+        const typeLabel = typeLabels[item.type] || item.type;
+
+        tr.innerHTML = `
+          <td>${item.timestamp}</td>
+          <td><span class="badge-table ${item.type}">${typeLabel}</span></td>
+          <td>${escapeHtml(item.topic)}</td>
+          <td>${escapeHtml(item.message)}</td>
+          <td>
+            <button class="btn-delete-item" data-id="${item.id}" title="Excluir Mensagem">🗑️</button>
+          </td>
+        `;
+        
+        adminFeedbackTbody.appendChild(tr);
+      });
+
+      // Bind delete click event to individual delete buttons
+      const deleteButtons = adminFeedbackTbody.querySelectorAll('.btn-delete-item');
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const idToDelete = this.getAttribute('data-id');
+          deleteFeedbackItem(idToDelete);
+        });
+      });
+    }
+  }
+
+  // Filter feedbacks selection change
+  adminFilterType.addEventListener('change', renderAdminFeedbacks);
+
+  // Helper to sanitize HTML content
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+  }
+
+  // Delete single feedback item
+  function deleteFeedbackItem(id) {
+    if (confirm('Deseja excluir esta mensagem permanentemente?')) {
+      let feedbacks = JSON.parse(localStorage.getItem('ceja_feedbacks') || '[]');
+      feedbacks = feedbacks.filter(item => item.id !== id);
+      localStorage.setItem('ceja_feedbacks', JSON.stringify(feedbacks));
+      renderAdminFeedbacks();
+    }
+  }
+
+  // Clear all feedbacks
+  btnClearAll.addEventListener('click', () => {
+    if (confirm('Atenção: Isso excluirá todas as sugestões e reclamações permanentemente. Deseja continuar?')) {
+      localStorage.removeItem('ceja_feedbacks');
+      renderAdminFeedbacks();
+    }
+  });
+
+  // Export feedbacks to CSV with UTF-8 BOM encoding for correct excel character sets
+  btnExportCsv.addEventListener('click', () => {
+    const feedbacks = JSON.parse(localStorage.getItem('ceja_feedbacks') || '[]');
+    
+    if (feedbacks.length === 0) {
+      alert('Não há dados cadastrados para exportação.');
+      return;
+    }
+
+    const headers = ['Data/Hora', 'Tipo', 'Assunto', 'Mensagem'];
+    const typeLabelMap = {
+      sugestao: 'Sugestão',
+      reclamacao: 'Reclamação',
+      elogio: 'Elogio',
+      outro: 'Outro'
+    };
+
+    let csvContent = '\uFEFF'; // UTF-8 BOM
+    csvContent += headers.join(';') + '\n';
+
+    feedbacks.forEach(item => {
+      const typeLabel = typeLabelMap[item.type] || item.type;
+      // Escape quotes and format row
+      const escapedMsg = item.message.replace(/"/g, '""');
+      const row = [
+        item.timestamp,
+        typeLabel,
+        item.topic,
+        escapedMsg
+      ].map(val => `"${val}"`).join(';');
+      csvContent += row + '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'sugestoes_e_reclamacoes_ceja.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
 });
