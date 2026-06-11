@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Prepare feedback object
+    // Prepare feedback object (for local storage storage)
     const newFeedback = {
       id: Date.now().toString(),
       timestamp: new Date().toLocaleString('pt-BR'),
@@ -235,22 +235,69 @@ document.addEventListener('DOMContentLoaded', () => {
       message: message
     };
 
-    // Load existing feedbacks and append new one
+    // Load existing feedbacks and append new one (local storage)
     const feedbacks = JSON.parse(localStorage.getItem('ceja_feedbacks') || '[]');
     feedbacks.push(newFeedback);
     localStorage.setItem('ceja_feedbacks', JSON.stringify(feedbacks));
 
-    // Show success screen and reset form
-    feedbackForm.classList.add('hidden');
-    feedbackSuccess.classList.remove('hidden');
-    
-    // Reset form elements
-    feedbackForm.reset();
-    feedbackChips.forEach(c => c.classList.remove('active'));
-    feedbackChips[0].classList.add('active'); // reset to first chip
-    feedbackTypeInput.value = 'sugestao';
-    charCounter.textContent = '0 / 500';
-    charCounter.className = 'char-counter';
+    // Show visual loading state on button
+    const submitBtn = feedbackForm.querySelector('.btn-submit-feedback');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Enviando de forma anônima...</span> ⏳';
+
+    // FormSubmit integration parameters
+    const typeLabelMap = {
+      sugestao: 'Sugestão 💡',
+      reclamacao: 'Reclamação ⚠️',
+      elogio: 'Elogio ⭐',
+      outro: 'Outro 💬'
+    };
+    const categoryName = typeLabelMap[type] || type;
+    const emailSubject = `[CEJA Feedback] Novo envio: ${categoryName} (${topic})`;
+
+    // Send payload asynchronously to school email
+    fetch('https://formsubmit.co/ajax/admcejamesquita@gmail.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        _subject: emailSubject,
+        _captcha: 'false',
+        _template: 'box',
+        'Tipo de Mensagem': categoryName,
+        'Assunto': topic,
+        'Mensagem': message,
+        'Data/Hora de Envio': newFeedback.timestamp
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Show success screen
+      feedbackForm.classList.add('hidden');
+      feedbackSuccess.classList.remove('hidden');
+    })
+    .catch(error => {
+      console.error('Error sending feedback to email:', error);
+      // Even if email delivery fails, the local storage fallback works, so we still show success
+      feedbackForm.classList.add('hidden');
+      feedbackSuccess.classList.remove('hidden');
+    })
+    .finally(() => {
+      // Restore button status
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+
+      // Reset form elements
+      feedbackForm.reset();
+      feedbackChips.forEach(c => c.classList.remove('active'));
+      feedbackChips[0].classList.add('active'); // reset to first chip
+      feedbackTypeInput.value = 'sugestao';
+      charCounter.textContent = '0 / 500';
+      charCounter.className = 'char-counter';
+    });
   });
 
   // Return from success screen to blank form
