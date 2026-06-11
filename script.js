@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = feedbackForm.querySelector('.btn-submit-feedback');
     const originalBtnText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span>Enviando de forma anônima...</span> ⏳';
+    submitBtn.innerHTML = '<span>Redirecionando para ativação...</span> ⏳';
 
     // FormSubmit integration parameters
     const typeLabelMap = {
@@ -256,48 +256,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryName = typeLabelMap[type] || type;
     const emailSubject = `[CEJA Feedback] Novo envio: ${categoryName} (${topic})`;
 
-    // Send payload asynchronously to school email
-    fetch('https://formsubmit.co/ajax/admcejamesquita@gmail.com', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        _subject: emailSubject,
-        _captcha: 'false',
-        _template: 'box',
-        'Tipo de Mensagem': categoryName,
-        'Assunto': topic,
-        'Mensagem': message,
-        'Data/Hora de Envio': newFeedback.timestamp
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      // Show success screen
-      feedbackForm.classList.add('hidden');
-      feedbackSuccess.classList.remove('hidden');
-    })
-    .catch(error => {
-      console.error('Error sending feedback to email:', error);
-      // Even if email delivery fails, the local storage fallback works, so we still show success
-      feedbackForm.classList.add('hidden');
-      feedbackSuccess.classList.remove('hidden');
-    })
-    .finally(() => {
-      // Restore button status
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalBtnText;
+    // Configure form parameters dynamically for standard submission
+    feedbackForm.action = 'https://formsubmit.co/admcejamesquita@gmail.com';
+    feedbackForm.method = 'POST';
 
-      // Reset form elements
-      feedbackForm.reset();
-      feedbackChips.forEach(c => c.classList.remove('active'));
-      feedbackChips[0].classList.add('active'); // reset to first chip
-      feedbackTypeInput.value = 'sugestao';
-      charCounter.textContent = '0 / 500';
-      charCounter.className = 'char-counter';
-    });
+    // Helper to create hidden inputs
+    const addHiddenInput = (name, value) => {
+      let input = feedbackForm.querySelector(`input[name="${name}"]`);
+      if (!input) {
+        input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        feedbackForm.appendChild(input);
+      }
+      input.value = value;
+    };
+
+    // FormSubmit settings
+    addHiddenInput('_subject', emailSubject);
+    addHiddenInput('_captcha', 'false');
+    addHiddenInput('_template', 'box');
+    addHiddenInput('Tipo de Mensagem', categoryName);
+
+    // Set name attribute on select and textarea so their values are sent in standard POST
+    feedbackTopic.name = 'Assunto';
+    feedbackMessage.name = 'Mensagem';
+
+    // Submit form normally (redirecting the page)
+    feedbackForm.submit();
   });
 
   // Return from success screen to blank form
