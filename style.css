@@ -1156,6 +1156,13 @@ a:hover {
   gap: 20px;
 }
 
+.feedback-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
 .feedback-form label {
   font-family: var(--font-family-heading);
   font-size: 14px;
