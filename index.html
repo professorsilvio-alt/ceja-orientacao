@@ -4,13 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CEJA Profª Rosa Soares - Novo Sistema de Avaliações</title>
-
-  <!-- SEO Meta Tags -->
+  <title>CEJA Profª Rosa Soares — Autoatendimento</title>
   <meta name="description"
-    content="Informativo interativo para os alunos do CEJA Professora Rosa Soares sobre o novo sistema de 3 avaliações por fascículo. Calcule sua média e veja as regras.">
-  <meta name="keywords" content="CEJA, CEJA Mesquita, Rosa Soares, Avaliações, CECIERJ, Educação de Jovens e Adultos">
-  <meta name="author" content="CEJA Professora Rosa Soares">
+    content="Totem de autoatendimento do CEJA Professora Rosa Soares, Mesquita-RJ. Consulte horários, avaliações, matrícula e muito mais.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,510 +15,492 @@
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap"
     rel="stylesheet">
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="style.css?v=2.0">
 </head>
 
 <body>
 
-  <!-- APP CONTAINER -->
-  <div class="app-container">
+  <!-- ============================================================
+       KIOSK WRAPPER
+  ============================================================ -->
+  <div id="kiosk-wrapper">
 
-    <!-- HEADER -->
-    <header class="main-header">
-      <div class="header-logo-container">
-        <img class="school-logo" src="logo.png" alt="Logo CEJA Professora Rosa Soares">
-        <div class="header-text">
-          <h1>CEJA Professora Rosa Soares</h1>
-          <span class="location-tag">📍 Mesquita - RJ</span>
+    <!-- ── TOP BAR ── -->
+    <header id="kiosk-header">
+      <div class="kiosk-header-left">
+        <img src="logo.png" alt="Logo CEJA" class="kiosk-logo" id="kiosk-logo-btn" title="Voltar ao Início">
+        <div class="kiosk-header-info">
+          <span class="kiosk-school-name">CEJA Profª Rosa Soares</span>
+          <span class="kiosk-location">📍 Mesquita – RJ</span>
         </div>
       </div>
-      <div class="header-title-badge">
-        <h2>INFORMATIVO DE AVALIAÇÕES</h2>
-        <p>Novo Sistema: 3 Avaliações por Fascículo</p>
+      <div class="kiosk-header-center">
+        <div id="kiosk-breadcrumb" class="kiosk-breadcrumb">🏠 Início</div>
+      </div>
+      <div class="kiosk-header-right">
+        <div class="kiosk-clock-container">
+          <div id="kiosk-time" class="kiosk-time">00:00</div>
+          <div id="kiosk-date" class="kiosk-date">Carregando...</div>
+        </div>
       </div>
     </header>
 
-    <!-- HERO / APRESENTAÇÃO -->
-    <section class="hero-section">
-      <div class="hero-content">
-        <h3>Atenção, Alunos!</h3>
-        <p>
-          Para melhorar o seu aprendizado e dar mais flexibilidade aos seus estudos, o sistema de avaliação mudou.
-          Agora, em vez de apenas 1 avaliação, cada fascículo conta com <strong>3 avaliações (AV1, AV2 e AV3)</strong>.
-        </p>
-        <div class="hero-actions">
-          <a href="#simulator" class="btn btn-primary">🎓 Simular Minha Nota</a>
-          <button id="btnPrint" class="btn btn-secondary">🖨️ Imprimir Guia / Salvar PDF</button>
+    <!-- ── SCREEN CONTAINER ── -->
+    <main id="screen-container">
+
+      <!-- ════════════════════════════════════════════════════
+           TELA 1 — HOME
+      ════════════════════════════════════════════════════ -->
+      <div class="screen active" id="screen-home">
+
+        <!-- ── BETH MASCOT WELCOME ── -->
+        <div class="beth-welcome">
+          <div class="beth-bubble-wrap">
+            <div class="beth-speech">
+              <p>👋 Olá! Sou a <strong>Beth</strong>, sua guia aqui no CEJA!</p>
+              <p>Toque em uma das opções abaixo e eu te ajudo 😊</p>
+            </div>
+            <div class="beth-speech-tail"></div>
+          </div>
+          <img src="character.png" alt="Beth – Mascote CEJA" class="beth-mascot-home" id="beth-home-img">
+        </div>
+
+        <div class="home-welcome">
+          <h1>Bem-vindo ao Autoatendimento</h1>
+          <p>Toque em uma das opções abaixo para começar</p>
+        </div>
+        <div class="home-menu-grid">
+
+          <button class="menu-card" data-screen="screen-avaliacoes" id="btn-menu-avaliacoes">
+            <div class="menu-card-icon">📋</div>
+            <div class="menu-card-label">Avaliações</div>
+            <div class="menu-card-sub">Regras AV1, AV2 e AV3</div>
+          </button>
+
+          <button class="menu-card" data-screen="screen-simulador" id="btn-menu-simulador">
+            <div class="menu-card-icon">🎯</div>
+            <div class="menu-card-label">Simulador de Notas</div>
+            <div class="menu-card-sub">Calcule sua média</div>
+          </button>
+
+          <button class="menu-card" data-screen="screen-horarios" id="btn-menu-horarios">
+            <div class="menu-card-icon">🗓️</div>
+            <div class="menu-card-label">Horário Semanal da Escola</div>
+            <div class="menu-card-desc">Veja os horários de atendimento por dia da semana</div>
+          </button>
+
+          <button class="menu-card" data-screen="screen-matricula" id="btn-menu-matricula">
+            <div class="menu-card-icon">📝</div>
+            <div class="menu-card-label">Matrícula</div>
+            <div class="menu-card-sub">Documentos e informações</div>
+          </button>
+
+          <button class="menu-card" data-screen="screen-disciplinas" id="btn-menu-disciplinas">
+            <div class="menu-card-icon">📚</div>
+            <div class="menu-card-label">Disciplinas</div>
+            <div class="menu-card-sub">Fascículos por área</div>
+          </button>
+
+          <button class="menu-card" data-screen="screen-faleconosco" id="btn-menu-faleconosco">
+            <div class="menu-card-icon">💬</div>
+            <div class="menu-card-label">Fale Conosco</div>
+            <div class="menu-card-sub">Sugestões, elogios e reclamações</div>
+          </button>
+
+        </div>
+
+        <!-- Rodapé Home -->
+        <div class="home-footer">
+          <a href="https://cejarj.cecierj.edu.br/ava/login/index.php" target="_blank" class="home-quick-link">🌐 CEJA Virtual</a>
+          <a href="https://wa.me/5521981612512" target="_blank" class="home-quick-link home-quick-link--whatsapp">💬 WhatsApp</a>
+          <a href="https://instagram.com/ceja_mesquita" target="_blank" class="home-quick-link home-quick-link--insta">📸 Instagram</a>
+          <button id="btn-admin-panel" class="home-quick-link home-quick-link--admin">⚙️ Admin</button>
+          <button id="btn-fullscreen" class="home-quick-link" style="background: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.2);">🔲 Tela Cheia</button>
+        </div>
+
+        <!-- Logo CECIERJ no rodapé da Home -->
+        <div style="text-align: center; margin-top: 50px;">
+          <img src="logo-cecierj.png" alt="Fundação CECIERJ" style="height: 140px; object-fit: contain; opacity: 1;">
         </div>
       </div>
-    </section>
 
-    <!-- STORYTELLING MASCOTE -->
-    <section class="storytelling-section" id="storytelling">
-      <div class="storytelling-container">
-        <div class="story-mascot-col">
-          <img class="story-mascot-img" src="character.png?v=1.1" alt="Mascote Professora Rosa Soares">
-          <div class="mascot-badge">Profª Rosa Soares</div>
+      <!-- ════════════════════════════════════════════════════
+           TELA 2 — AVALIAÇÕES
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-avaliacoes">
+        <div class="screen-header">
+          <h2>📋 Sistema de Avaliações</h2>
+          <p>Conheça as regras das 3 avaliações de cada fascículo</p>
         </div>
-        <div class="story-bubbles-col">
-          <div class="story-title">
-            <span>🗣️ Bate-papo com a Profª Rosa Soares</span>
-            <h2>Como as novas avaliações facilitam sua vida?</h2>
+
+        <!-- Hero Avaliações -->
+        <div class="av-hero">
+          <img src="character.png" alt="Beth – Mascote CEJA" class="av-mascot">
+          <div class="av-hero-bubbles">
+            <div class="bubble">
+              <strong>Olá, estudante! 👋</strong> Agora cada fascículo tem <strong>3 avaliações (AV1, AV2 e
+                AV3)</strong>. A média mínima para aprovação é <strong>5,0</strong>.
+            </div>
+            <div class="bubble bubble--highlight">
+              <strong>AV1 (10%)</strong> e <strong>AV2 (20%)</strong> podem ser feitas <em>online no CEJA Virtual</em>
+              ou presencialmente na escola.
+              A <strong>AV3 (70%)</strong> é <em>obrigatoriamente presencial</em> — não perca! 📍
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards AV1 / AV2 / AV3 -->
+        <div class="av-cards">
+
+          <div class="av-card av-card--online" id="card-av1">
+            <div class="av-card-badge">REMOTO OU PRESENCIAL</div>
+            <div class="av-card-weight">10%</div>
+            <div class="av-card-title"><span class="av-tag">AV 1</span>
+              <h3>Avaliação 1</h3>
+            </div>
+            <ul class="av-card-list">
+              <li><strong>Peso na média:</strong> 10% — multiplica a nota por 0,1</li>
+              <li><strong>Onde fazer:</strong> Online no CEJA Virtual ou presencial na escola</li>
+              <li><strong>Dica:</strong> Garanta seus primeiros pontos de forma tranquila!</li>
+            </ul>
           </div>
 
-          <div class="speech-bubble-wrapper">
-            <div class="speech-bubble">
-              <p>
-                <strong>Olá, estudante!</strong> Eu sou a sua professora e mascote virtual. 🏫 Sabia que mudamos o
-                sistema de notas para deixar seus estudos muito mais tranquilos e sem aquela pressão de uma prova única?
-              </p>
+          <div class="av-card av-card--online" id="card-av2">
+            <div class="av-card-badge">REMOTO OU PRESENCIAL</div>
+            <div class="av-card-weight">20%</div>
+            <div class="av-card-title"><span class="av-tag">AV 2</span>
+              <h3>Avaliação 2</h3>
+            </div>
+            <ul class="av-card-list">
+              <li><strong>Peso na média:</strong> 20% — multiplica a nota por 0,2</li>
+              <li><strong>Onde fazer:</strong> Online no CEJA Virtual ou presencial na escola</li>
+              <li><strong>Dica:</strong> Estude os capítulos intermediários antes de realizar.</li>
+            </ul>
+          </div>
+
+          <div class="av-card av-card--mandatory" id="card-av3">
+            <div class="av-card-badge av-card-badge--mandatory">⚠️ OBRIGATORIAMENTE PRESENCIAL</div>
+            <div class="av-card-weight av-card-weight--mandatory">70%</div>
+            <div class="av-card-title"><span class="av-tag av-tag--mandatory">AV 3</span>
+              <h3>Avaliação 3</h3>
+            </div>
+            <ul class="av-card-list">
+              <li><strong>Peso na média:</strong> 70% — multiplica a nota por 0,7</li>
+              <li><strong>Onde fazer:</strong> <strong>Somente presencial na escola</strong></li>
+              <li><strong>Atenção:</strong> Sem a AV3 você não pode ser aprovado no fascículo!</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Fórmula -->
+        <div class="av-formula">
+          <h3>🧮 Fórmula da Média Final</h3>
+          <div class="av-formula-box">
+            Média = (AV1 × 0,1) + (AV2 × 0,2) + (AV3 × 0,7)
+          </div>
+          <p>Exemplo: AV1 = 6,0 | AV2 = 7,0 | AV3 = 5,0 → Média = 0,6 + 1,4 + 3,5 = <strong>5,5 ✅ Aprovado!</strong></p>
+        </div>
+
+        <!-- FAQ dentro da tela de avaliações -->
+        <div class="screen-faq">
+          <h3>❓ Dúvidas Frequentes</h3>
+          <div class="faq-accordion">
+
+            <div class="faq-item">
+              <button class="faq-question">Qual é a média mínima para aprovação? <span>▼</span></button>
+              <div class="faq-answer">
+                <p>A média mínima é <strong>5,0 (cinco)</strong>. Se você alcançar essa média ponderada com a soma das
+                  três notas, estará apto para o próximo fascículo.</p>
+              </div>
             </div>
 
-            <div class="speech-bubble">
-              <p>
-                Antigamente, você estudava o fascículo inteiro e sua aprovação dependia de <strong>uma única
-                  avaliação</strong> no final. Se você ficasse nervoso no dia, o rendimento caía e era muito
-                frustrante... 😰
-              </p>
+            <div class="faq-item">
+              <button class="faq-question">Posso fazer a AV3 online? <span>▼</span></button>
+              <div class="faq-answer">
+                <p><strong>Não.</strong> A AV3 representa 70% da sua nota e deve ser feita obrigatoriamente de forma
+                  presencial no CEJA. Ela é uma prova física realizada na própria escola.</p>
+              </div>
             </div>
 
-            <div class="speech-bubble highlight-bubble">
-              <p>
-                <strong>Agora é diferente!</strong> Dividimos o caminho em 3 etapas menores:
-                <br>• Estude o início do fascículo e faça a <strong>AV1 (peso 10%)</strong> de forma online (no CEJA
-                Virtual) ou presencial na escola.
-                <br>• Continue os estudos e faça a <strong>AV2 (peso 20%)</strong> também de forma online ou presencial.
-                <br>• Por fim, faça a <strong>AV3 (peso 70%)</strong> obrigatoriamente de forma presencial aqui na
-                escola.
-              </p>
+            <div class="faq-item">
+              <button class="faq-question">O que acontece se eu não fizer a AV1 ou a AV2? <span>▼</span></button>
+              <div class="faq-answer">
+                <p>A nota dessas avaliações será zero, o que reduz sua média. Caso perca ambas, precisará de uma nota
+                  muito alta na AV3 para alcançar 5,0.</p>
+              </div>
             </div>
 
-            <div class="speech-bubble success-bubble">
-              <p>
-                💡 <strong>Veja a grande vantagem:</strong> como a AV1 e a AV2 podem ser feitas online ou na escola,
-                você escolhe o formato mais prático e já chega para a prova obrigatória (AV3) com pontos acumulados! Se
-                a soma der <strong>5.0 ou mais</strong>, você passou! 🎯
-              </p>
+            <div class="faq-item">
+              <button class="faq-question">Como acesso o CEJA Virtual? <span>▼</span></button>
+              <div class="faq-answer">
+                <p>Acesse <strong>cejarj.cecierj.edu.br/ava</strong> com seu usuário e senha. Novas matrículas levam de
+                  24h a 48h para liberação de acesso.</p>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- SEÇÃO REGRAS E PESOS -->
-    <section class="rules-section" id="rules">
-      <div class="section-header">
-        <h2>Entenda Como Funciona</h2>
-        <p>Cada avaliação tem um peso diferente na sua nota final e locais específicos de realização.</p>
-      </div>
-
-      <div class="cards-grid">
-
-        <!-- CARD AV1 -->
-        <div class="rule-card" id="card-av1">
-          <div class="card-badge badge-online">REMOTO OU PRESENCIAL</div>
-          <div class="card-weight">10%</div>
-          <div class="card-title">
-            <span class="card-num">AV 1</span>
-            <h3>Avaliação 1</h3>
-          </div>
-          <ul class="card-details">
-            <li><strong>Peso na média:</strong> 10% (Multiplica a nota por 0,1)</li>
-            <li><strong>Onde fazer:</strong> No ambiente online do <strong>CEJA Virtual</strong> ou presencialmente na
-              escola.</li>
-            <li><strong>Dica:</strong> Uma ótima oportunidade para garantir seus primeiros pontos no fascículo de forma
-              tranquila.</li>
-          </ul>
+      <!-- ════════════════════════════════════════════════════
+           TELA 3 — SIMULADOR DE NOTAS
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-simulador">
+        <div class="screen-header">
+          <h2>🎯 Simulador de Notas</h2>
+          <p>Arraste os controles para calcular sua média final</p>
         </div>
 
-        <!-- CARD AV2 -->
-        <div class="rule-card" id="card-av2">
-          <div class="card-badge badge-online">REMOTO OU PRESENCIAL</div>
-          <div class="card-weight">20%</div>
-          <div class="card-title">
-            <span class="card-num">AV 2</span>
-            <h3>Avaliação 2</h3>
+        <div class="sim-layout" id="simulator">
+          <!-- Sliders -->
+          <div class="sim-controls">
+            <div class="sim-control-group">
+              <div class="sim-control-header">
+                <label for="range-av1">Nota da AV1 <small>(Peso 10%)</small></label>
+                <span class="sim-val" id="val-av1">5.0</span>
+              </div>
+              <input type="range" id="range-av1" min="0" max="10" step="0.1" value="5.0" class="slider">
+              <div class="sim-control-footer"><span>Online / Presencial</span><span>Peso: 0.1</span></div>
+            </div>
+
+            <div class="sim-control-group">
+              <div class="sim-control-header">
+                <label for="range-av2">Nota da AV2 <small>(Peso 20%)</small></label>
+                <span class="sim-val" id="val-av2">5.0</span>
+              </div>
+              <input type="range" id="range-av2" min="0" max="10" step="0.1" value="5.0" class="slider">
+              <div class="sim-control-footer"><span>Online / Presencial</span><span>Peso: 0.2</span></div>
+            </div>
+
+            <div class="sim-control-group">
+              <div class="sim-control-header">
+                <label for="range-av3">Nota da AV3 <small>(Peso 70%)</small></label>
+                <span class="sim-val" id="val-av3">5.0</span>
+              </div>
+              <input type="range" id="range-av3" min="0" max="10" step="0.1" value="5.0" class="slider">
+              <div class="sim-control-footer"><span class="sim-mandatory">📍 Obrigatória na Escola</span><span>Peso:
+                  0.7</span></div>
+            </div>
           </div>
-          <ul class="card-details">
-            <li><strong>Peso na média:</strong> 20% (Multiplica a nota por 0,2)</li>
-            <li><strong>Onde fazer:</strong> No ambiente online do <strong>CEJA Virtual</strong> ou presencialmente na
-              escola.</li>
-            <li><strong>Dica:</strong> Estude os capítulos intermediários do fascículo antes de realizar esta avaliação.
-            </li>
-          </ul>
+
+          <!-- Resultado -->
+          <div class="sim-result" id="result-panel">
+            <h3>Média Calculada</h3>
+            <div class="grade-gauge">
+              <svg class="gauge-svg" viewBox="0 0 100 100">
+                <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                <circle class="gauge-fill" id="gauge-fill-circle" cx="50" cy="50" r="40" stroke-dasharray="251.2"
+                  stroke-dashoffset="125.6"></circle>
+              </svg>
+              <div class="gauge-text">
+                <span class="gauge-number" id="result-grade">5.0</span>
+                <span class="gauge-label">de 10.0</span>
+              </div>
+            </div>
+            <div class="sim-status-badge" id="result-status">Nota Suficiente</div>
+            <p class="sim-status-desc" id="result-desc">Com essas notas, sua média é de <strong>5.0</strong>.</p>
+          </div>
         </div>
 
-        <!-- CARD AV3 -->
-        <div class="rule-card mandatory" id="card-av3">
-          <div class="card-badge badge-mandatory">OBRIGATORIAMENTE PRESENCIAL</div>
-          <div class="card-weight highlight">70%</div>
-          <div class="card-title">
-            <span class="card-num">AV 3</span>
-            <h3>Avaliação 3</h3>
-          </div>
-          <ul class="card-details">
-            <li><strong>Peso na média:</strong> 70% (Multiplica a nota por 0,7)</li>
-            <li><strong>Onde fazer:</strong> <strong>Somente presencialmente</strong> na escola.</li>
-            <li><strong>Atenção:</strong> Esta avaliação é <strong>obrigatória</strong>. Se não realizá-la, você não
-              poderá ser aprovado no fascículo.</li>
-          </ul>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SEÇÃO SIMULADOR -->
-    <section class="simulator-section" id="simulator">
-      <div class="section-header">
-        <h2>Simulador de Média Final</h2>
-        <p>Arraste os controles abaixo com suas notas estimadas para calcular sua média final automaticamente.</p>
-      </div>
-
-      <div class="simulator-container">
-
-        <!-- CONTROLES -->
-        <div class="simulator-controls">
-
-          <!-- Slider AV1 -->
-          <div class="control-group">
-            <div class="control-header">
-              <label for="range-av1">Nota da AV1 (Peso 10%)</label>
-              <span class="control-value" id="val-av1">5.0</span>
-            </div>
-            <input type="range" id="range-av1" min="0" max="10" step="0.1" value="5.0" class="slider">
-            <div class="control-footer">
-              <span>Online / Presencial</span>
-              <span>Peso: 0.1</span>
-            </div>
-          </div>
-
-          <!-- Slider AV2 -->
-          <div class="control-group">
-            <div class="control-header">
-              <label for="range-av2">Nota da AV2 (Peso 20%)</label>
-              <span class="control-value" id="val-av2">5.0</span>
-            </div>
-            <input type="range" id="range-av2" min="0" max="10" step="0.1" value="5.0" class="slider">
-            <div class="control-footer">
-              <span>Online / Presencial</span>
-              <span>Peso: 0.2</span>
-            </div>
-          </div>
-
-          <!-- Slider AV3 -->
-          <div class="control-group">
-            <div class="control-header">
-              <label for="range-av3">Nota da AV3 (Peso 70%)</label>
-              <span class="control-value" id="val-av3">5.0</span>
-            </div>
-            <input type="range" id="range-av3" min="0" max="10" step="0.1" value="5.0" class="slider">
-            <div class="control-footer">
-              <span class="text-mandatory">Obrigatória na Escola 📍</span>
-              <span>Peso: 0.7</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- PAINEL RESULTADO -->
-        <div class="simulator-result" id="result-panel">
-          <h3>Média Calculada</h3>
-
-          <!-- Medidor Circular SVG -->
-          <div class="grade-gauge">
-            <svg class="gauge-svg" viewBox="0 0 100 100">
-              <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
-              <circle class="gauge-fill" id="gauge-fill-circle" cx="50" cy="50" r="40" stroke-dasharray="251.2"
-                stroke-dashoffset="125.6"></circle>
-            </svg>
-            <div class="gauge-text">
-              <span class="gauge-number" id="result-grade">5.0</span>
-              <span class="gauge-label">de 10.0</span>
-            </div>
-          </div>
-
-          <div class="status-badge" id="result-status">Nota Suficiente</div>
-          <p class="status-desc" id="result-desc">
-            Com essas notas, sua média é de <strong>5.0</strong>. Você está aprovado neste fascículo!
-          </p>
-        </div>
-
-      </div>
-
-      <!-- CALCULADORA DE META -->
-      <div class="target-calculator">
-        <div class="target-header">
+        <!-- Calculadora de Meta -->
+        <div class="target-calc">
           <h3>🎯 Quanto preciso tirar na AV3?</h3>
-          <p>Já fez a AV1 e a AV2? Insira suas notas abaixo para descobrir a nota mínima necessária na AV3 presencial
-            para alcançar a média 5.0.</p>
-        </div>
-        <div class="target-form">
-          <div class="form-group">
-            <label for="input-av1">Nota AV1:</label>
-            <input type="number" id="input-av1" min="0" max="10" step="0.1" placeholder="Ex: 6.5">
+          <p>Insira as notas que já obteve na AV1 e AV2 para descobrir a nota mínima na AV3 presencial.</p>
+          <div class="target-form">
+            <div class="target-input-group">
+              <label for="input-av1">Nota AV1</label>
+              <input type="number" id="input-av1" min="0" max="10" step="0.1" placeholder="0 – 10">
+            </div>
+            <div class="target-input-group">
+              <label for="input-av2">Nota AV2</label>
+              <input type="number" id="input-av2" min="0" max="10" step="0.1" placeholder="0 – 10">
+            </div>
+            <button id="btn-calc-target" class="btn-kiosk btn-kiosk--accent">Calcular Meta</button>
           </div>
-          <div class="form-group">
-            <label for="input-av2">Nota AV2:</label>
-            <input type="number" id="input-av2" min="0" max="10" step="0.1" placeholder="Ex: 7.0">
-          </div>
-          <button id="btn-calc-target" class="btn btn-accent">Calcular Meta da AV3</button>
-        </div>
-        <div class="target-result hidden" id="target-result-box">
-          <div class="target-result-content">
+          <div class="target-result hidden" id="target-result-box">
             <p id="target-text">Você precisa tirar no mínimo <strong>5.0</strong> na AV3.</p>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- FAQ -->
-    <section class="faq-section">
-      <div class="section-header">
-        <h2>Dúvidas Frequentes</h2>
-      </div>
-      <div class="faq-accordion">
-
-        <div class="faq-item">
-          <button class="faq-question">Qual é a média mínima para aprovação no fascículo? <span>▼</span></button>
-          <div class="faq-answer">
-            <p>A média mínima para aprovação em cada fascículo é de <strong>5,0 (cinco)</strong>. Se você alcançar essa
-              média ponderada com a soma das três notas, estará apto para o próximo fascículo.</p>
-          </div>
+      <!-- ════════════════════════════════════════════════════
+           TELA 4 - HORÁRIO SEMANAL DA ESCOLA
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-horarios">
+        <div class="screen-header">
+          <h2>🗓️ Horário Semanal da Escola</h2>
+          <p>Consulte as disciplinas e professores disponíveis em cada dia da semana.</p>
         </div>
-
-        <div class="faq-item">
-          <button class="faq-question">Posso fazer a AV3 online? <span>▼</span></button>
-          <div class="faq-answer">
-            <p><strong>Não.</strong> A AV3 representa 70% da sua nota e deve ser feita, obrigatoriamente, de forma
-              presencial no CEJA. Ela é uma prova física realizada na própria escola.</p>
-          </div>
+        <div class="horarios-filters" style="display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 5px;">
+          <button class="btn-filter active" data-filter="dia">Por Dia</button>
+          <button class="btn-filter" data-filter="professor">Por Professor</button>
+          <button class="btn-filter" data-filter="disciplina">Por Disciplina</button>
         </div>
-
-        <div class="faq-item">
-          <button class="faq-question">O que acontece se eu não fizer a AV1 ou a AV2? <span>▼</span></button>
-          <div class="faq-answer">
-            <p>Embora o ideal seja fazer todas, a AV1 e a AV2 não são estritamente obrigatórias no sentido de bloqueio.
-              Se você perder uma delas, sua nota nela será zero, o que diminuirá muito sua média. Para passar precisando
-              apenas da AV3, você terá que obter uma nota muito alta.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">Como acesso o CEJA Virtual? <span>▼</span></button>
-          <div class="faq-answer">
-            <p>Você pode acessar a plataforma do CEJA Virtual usando seu usuário e senha no link oficial: <a
-                href="https://cejarj.cecierj.edu.br/ava/login/index.php" target="_blank">cejarj.cecierj.edu.br/ava</a>.
-              Novas matrículas levam de 24h a 48h para liberação de acesso.</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SEÇÃO SUGESTÕES E RECLAMAÇÕES (ANÔNIMO) -->
-    <section class="feedback-section" id="feedback">
-      <div class="section-header">
-        <h2>Sugestões e Reclamações</h2>
-        <p>Sua voz importa! Deixe suas críticas, elogios e/ou sugestões de forma anônima.</p>
+        <!-- Renderizado dinamicamente via JS a partir de dados_escola.js -->
+        <div id="horarios-container" class="horarios-container"></div>
       </div>
 
-      <div class="feedback-container">
-        <!-- FORMULÁRIO DE FEEDBACK -->
-        <form id="feedback-form" class="feedback-form">
-          <div class="form-group-type">
-            <label>Tipo de Mensagem:</label>
-            <div class="feedback-chips">
-              <button type="button" class="feedback-chip active" data-type="sugestao">💡 Sugestão</button>
-              <button type="button" class="feedback-chip" data-type="reclamacao">⚠️ Reclamação</button>
-              <button type="button" class="feedback-chip" data-type="elogio">⭐ Elogio</button>
-              <button type="button" class="feedback-chip" data-type="outro">💬 Outro</button>
-            </div>
-            <input type="hidden" id="feedback-type" value="sugestao">
-          </div>
+      <!-- ════════════════════════════════════════════════════
+           TELA 5 — MATRÍCULA / REMATRÍCULA
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-matricula">
+        <div class="screen-header">
+          <h2>📝 Matrícula</h2>
+          <p>Tudo que você precisa saber para se matricular</p>
+        </div>
+        <!-- Renderizado dinamicamente via JS a partir de dados_escola.js -->
+        <div id="matricula-container" class="matricula-container"></div>
+      </div>
 
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="feedback-topic">Assunto Principal:</label>
-              <select id="feedback-topic" required>
-                <option value="" disabled selected>Selecione um assunto...</option>
-                <option value="Avaliações e Notas">Avaliações e Notas</option>
-                <option value="CEJA Virtual (Plataforma Online)">CEJA Virtual (Plataforma Online)</option>
-                <option value="Atendimento e Secretaria">Atendimento e Secretaria</option>
-                <option value="Aulas e Professores">Aulas e Professores</option>
-                <option value="Infraestrutura da Escola">Infraestrutura da Escola</option>
-                <option value="Outro Assunto">Outro Assunto</option>
-              </select>
-            </div>
-          </div>
+      <!-- ════════════════════════════════════════════════════
+           TELA 6 — DISCIPLINAS
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-disciplinas">
+        <div class="screen-header">
+          <h2>📚 Disciplinas</h2>
+          <p>Explore as matérias disponíveis por área do conhecimento</p>
+        </div>
+        <!-- Renderizado dinamicamente via JS a partir de dados_escola.js -->
+        <div id="disciplinas-container" class="disciplinas-container"></div>
+      </div>
 
-          <div class="form-group">
-            <label for="feedback-message">Sua Mensagem:</label>
-            <textarea id="feedback-message" rows="5" maxlength="500"
-              placeholder="Escreva sua sugestão ou reclamação. Lembre-se, não é necessário se identificar!"
-              required></textarea>
-            <div class="textarea-footer">
-              <span class="security-badge">🔒 Envio anônimo. Não registramos dados pessoais.</span>
-              <span class="char-counter" id="char-counter">0 / 500</span>
-            </div>
-          </div>
+      <!-- ════════════════════════════════════════════════════
+           TELA 7 — FALE CONOSCO
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-faleconosco">
+        <div class="screen-header">
+          <h2>💬 Fale Conosco</h2>
+          <p>Deixe sua mensagem de forma anônima ou entre em contato diretamente</p>
+        </div>
 
-          <button type="submit" class="btn btn-primary btn-submit-feedback">
-            <span>Enviar Mensagem Anônima</span> 🚀
-          </button>
-        </form>
-
-        <!-- TELA DE SUCESSO -->
-        <div id="feedback-success" class="feedback-success hidden">
-          <div class="success-icon-wrapper">
-            <div class="success-checkmark">
-              <div class="check-icon">
-                <span class="icon-line line-tip"></span>
-                <span class="icon-line line-long"></span>
-                <div class="icon-circle"></div>
-                <div class="icon-fix"></div>
+        <div class="fale-layout">
+          <!-- Contato Direto -->
+          <div class="fale-contact-panel">
+            <h3>📞 Contato Direto</h3>
+            <a href="https://wa.me/5521981612512" target="_blank" class="fale-contact-btn fale-contact-btn--wpp">
+              <span class="fale-contact-icon">💬</span>
+              <div>
+                <strong>WhatsApp</strong>
+                <span>(21) 98161-2512</span>
               </div>
+            </a>
+            <a href="https://instagram.com/ceja_mesquita" target="_blank"
+              class="fale-contact-btn fale-contact-btn--insta">
+              <span class="fale-contact-icon">📸</span>
+              <div>
+                <strong>Instagram</strong>
+                <span>@ceja_mesquita</span>
+              </div>
+            </a>
+            <a href="https://cejarj.cecierj.edu.br/ava/login/index.php" target="_blank"
+              class="fale-contact-btn fale-contact-btn--virtual">
+              <span class="fale-contact-icon">🌐</span>
+              <div>
+                <strong>CEJA Virtual</strong>
+                <span>cejarj.cecierj.edu.br/ava</span>
+              </div>
+            </a>
+            <div class="fale-address">
+              <p>🏫 <strong>Endereço</strong></p>
+              <p>Rua Paulo, S/N — 2º Andar<br>(Prédio do CIEP Nelson Ramos)<br>Mesquita – RJ</p>
             </div>
           </div>
-          <h3>Mensagem Enviada!</h3>
-          <p>Obrigado por sua contribuição. Sua mensagem foi registrada de forma anônima e nos ajudará a melhorar o
-            CEJA.</p>
-          <button type="button" id="btn-new-feedback" class="btn btn-secondary">Enviar Nova Mensagem</button>
+
+          <!-- Formulário Anônimo -->
+          <div class="fale-form-panel">
+            <h3>🔒 Mensagem Anônima</h3>
+            <p class="fale-anon-desc">Sua identidade não é registrada. Fale com liberdade!</p>
+
+            <form id="feedback-form" class="feedback-form">
+              <div class="feedback-chips-row">
+                <button type="button" class="feedback-chip active" data-type="sugestao">💡 Sugestão</button>
+                <button type="button" class="feedback-chip" data-type="reclamacao">⚠️ Reclamação</button>
+                <button type="button" class="feedback-chip" data-type="elogio">⭐ Elogio</button>
+                <button type="button" class="feedback-chip" data-type="outro">💬 Outro</button>
+              </div>
+              <input type="hidden" id="feedback-type" value="sugestao">
+
+              <div class="form-group">
+                <label for="feedback-topic">Assunto:</label>
+                <select id="feedback-topic" required>
+                  <option value="" disabled selected>Selecione um assunto...</option>
+                  <option value="Avaliações e Notas">Avaliações e Notas</option>
+                  <option value="CEJA Virtual (Plataforma Online)">CEJA Virtual</option>
+                  <option value="Atendimento e Secretaria">Atendimento e Secretaria</option>
+                  <option value="Aulas e Professores">Aulas e Professores</option>
+                  <option value="Infraestrutura da Escola">Infraestrutura da Escola</option>
+                  <option value="Outro Assunto">Outro Assunto</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="feedback-message">Sua Mensagem:</label>
+                <textarea id="feedback-message" rows="4" maxlength="500" placeholder="Escreva aqui..."
+                  required></textarea>
+                <div class="textarea-footer">
+                  <span class="security-badge">🔒 Envio anônimo</span>
+                  <span class="char-counter" id="char-counter">0 / 500</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-kiosk btn-kiosk--primary btn-submit-feedback">
+                Enviar Mensagem Anônima 🚀
+              </button>
+            </form>
+
+            <!-- Tela de Sucesso -->
+            <div id="feedback-success" class="feedback-success hidden">
+              <div class="success-checkmark">
+                <div class="check-icon">
+                  <span class="icon-line line-tip"></span>
+                  <span class="icon-line line-long"></span>
+                  <div class="icon-circle"></div>
+                  <div class="icon-fix"></div>
+                </div>
+              </div>
+              <h3>Mensagem Enviada! 🎉</h3>
+              <p>Obrigado por sua contribuição. Sua mensagem foi registrada de forma anônima.</p>
+              <button type="button" id="btn-new-feedback" class="btn-kiosk btn-kiosk--secondary">Enviar Nova
+                Mensagem</button>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- FOOTER / CONTATO -->
-    <footer class="main-footer">
-      <div class="footer-info">
-        <h3>CEJA Professora Rosa Soares</h3>
-        <p class="address">🏫 Rua Paulo, S/N - 2º Andar (Prédio do CIEP Nelson Ramos), Mesquita - RJ</p>
-        <p class="gratuito-badge">🏫 ESCOLA PÚBLICA </p>
-      </div>
+    </main>
 
-      <div class="footer-links">
-        <a href="https://cejarj.cecierj.edu.br/ava/login/index.php" target="_blank" class="footer-btn btn-virtual">
-          🌐 Acessar CEJA Virtual
-        </a>
-        <a href="https://wa.me/5521981612512" target="_blank" class="footer-btn btn-whatsapp">
-          💬 WhatsApp: (21) 98161-2512
-        </a>
-        <a href="https://instagram.com/ceja_mesquita" target="_blank" class="footer-btn btn-instagram">
-          📸 Instagram: @ceja_mesquita
-        </a>
-      </div>
+    <!-- ── BACK BUTTON (fixed, visible on all non-home screens) ── -->
+    <button id="kiosk-back-btn" class="kiosk-back-btn hidden" aria-label="Voltar ao menu principal">
+      ← Voltar ao Menu
+    </button>
 
-      <div class="footer-bottom">
-        <p>&copy; 2026 CEJA Professora Rosa Soares. Desenvolvido para orientação aos estudantes.</p>
-        <button id="btn-admin-panel" class="btn-admin-link">⚙️ Área Administrativa</button>
-      </div>
-    </footer>
-
-  </div>
-
-  <!-- PRINT-ONLY TEMPLATE -->
-  <div class="print-template">
-    <div class="print-header">
-      <div class="print-logo-row">
-        <!-- Imagem do Logo para impressão -->
-        <img class="school-logo-print" src="logo.png" alt="Logo CEJA Professora Rosa Soares">
-        <div class="print-header-text">
-          <h1>CEJA Professora Rosa Soares</h1>
-          <p>Rede de Centros de Educação de Jovens e Adultos – Fundação CECIERJ</p>
-        </div>
-        <!-- QR Code para o simulador online -->
-        <div class="print-qrcode-container">
-          <img class="print-qrcode"
-            src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://professorsilvio-alt.github.io/ceja-orientacao/"
-            alt="QR Code">
-          <span class="qrcode-caption">Simulador Online</span>
-        </div>
-      </div>
-      <div class="print-title">
-        <h2>INFORMATIVO: NOVO SISTEMA DE AVALIAÇÕES</h2>
-        <p>Transição importante: Agora são 3 avaliações por fascículo!</p>
+    <!-- ── INACTIVITY WARNING OVERLAY ── -->
+    <div id="inactivity-overlay" class="inactivity-overlay hidden">
+      <div class="inactivity-box">
+        <div class="inactivity-icon">⏱️</div>
+        <h2>Você ainda está aqui?</h2>
+        <p>Voltando ao menu principal em <strong id="inactivity-countdown">10</strong> segundos...</p>
+        <button id="inactivity-stay-btn" class="btn-kiosk btn-kiosk--primary">Continuar Navegando</button>
       </div>
     </div>
 
-    <div class="print-body">
-      <div class="print-intro">
-        <p>Prezado(a) aluno(a), a partir de agora, cada fascículo de estudo contará com <strong>três avaliações (AV1,
-            AV2 e AV3)</strong>. A nota final necessária para aprovação continua sendo <strong>5,0 (cinco)</strong>.</p>
-      </div>
+  </div><!-- /#kiosk-wrapper -->
 
-      <div class="print-table-container">
-        <table class="print-table">
-          <thead>
-            <tr>
-              <th>Avaliação</th>
-              <th>Peso na Média</th>
-              <th>Formato / Local</th>
-              <th>Requisito</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>AV1</strong></td>
-              <td>10% (Multiplica por 0,1)</td>
-              <td>Online (Ambiente CEJA Virtual) ou Presencial</td>
-              <td>Opcional (Soma pontos)</td>
-            </tr>
-            <tr>
-              <td><strong>AV2</strong></td>
-              <td>20% (Multiplica por 0,2)</td>
-              <td>Online (Ambiente CEJA Virtual) ou Presencial</td>
-              <td>Opcional (Soma pontos)</td>
-            </tr>
-            <tr class="print-row-mandatory">
-              <td><strong>AV3</strong></td>
-              <td><strong>70% (Multiplica por 0,7)</strong></td>
-              <td><strong>Somente Presencial (na escola)</strong></td>
-              <td><strong>OBRIGATÓRIO</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <div class="print-formula">
-        <h3>Fórmula do Cálculo da Média Final:</h3>
-        <div class="formula-box">
-          Média Final = (Nota AV1 &times; 0,1) + (Nota AV2 &times; 0,2) + (Nota AV3 &times; 0,7)
-        </div>
-        <p><em>Exemplo: Se você tirar 6,0 na AV1, 7,0 na AV2 e 5,0 na AV3: <br>
-            Média = (6,0 &times; 0,1) + (7,0 &times; 0,2) + (5,0 &times; 0,7) = 0,6 + 1,4 + 3,5 = <strong>5,5</strong>
-            (Aprovado!)</em></p>
-      </div>
-
-      <div class="print-contacts">
-        <h3>Canais de Atendimento e Links Rápidos:</h3>
-        <ul>
-          <li><strong>CEJA Virtual (Plataforma de Estudos):</strong> cejarj.cecierj.edu.br/ava</li>
-          <li><strong>WhatsApp de Contato:</strong> (21) 98161-2512</li>
-          <li><strong>Instagram Oficial:</strong> @ceja_mesquita</li>
-          <li><strong>Endereço:</strong> Rua Paulo, S/N - 2º Andar (Prédio do CIEP Nelson Ramos), Mesquita - RJ</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="print-footer">
-      <p>Estude no seu ritmo. Escola pública e 100% gratuita.</p>
-    </div>
-  </div>
-
-  <!-- MODAL ADMINISTRATIVO PARA SUGESTÕES/RECLAMAÇÕES -->
+  <!-- ── MODAL ADMINISTRATIVO ── -->
   <div id="admin-modal" class="admin-modal hidden">
     <div class="admin-modal-backdrop"></div>
     <div class="admin-modal-container">
 
-      <!-- TELA 1: LOGIN -->
+      <!-- LOGIN -->
       <div id="admin-login-screen" class="admin-modal-content">
         <div class="modal-header">
-          <h2>Acesso Restrito</h2>
+          <h2>⚙️ Acesso Restrito</h2>
           <button type="button" class="btn-close-modal" id="btn-close-login">&times;</button>
         </div>
         <div class="modal-body">
-          <p>Esta área é reservada para a equipe escolar visualizar as sugestões e reclamações enviadas pelos alunos.
-          </p>
+          <p>Área reservada para a equipe escolar visualizar os feedbacks dos alunos.</p>
           <form id="admin-login-form">
             <div class="form-group-admin">
               <label for="admin-password">Senha de Acesso:</label>
@@ -530,17 +508,17 @@
                 autocomplete="current-password">
             </div>
             <div id="login-error-msg" class="error-msg hidden">⚠️ Senha incorreta. Tente novamente.</div>
-            <button type="submit" class="btn btn-primary w-100">Entrar no Painel 🔑</button>
+            <button type="submit" class="btn-kiosk btn-kiosk--primary w-100">Entrar no Painel 🔑</button>
           </form>
         </div>
       </div>
 
-      <!-- TELA 2: VISUALIZAÇÃO DE FEEDBACKS -->
+      <!-- DASHBOARD -->
       <div id="admin-dashboard-screen" class="admin-modal-content dashboard-content hidden">
         <div class="modal-header">
           <div>
-            <h2>Sugestões e Reclamações</h2>
-            <p class="modal-subtitle">Visualizando envios anônimos dos estudantes</p>
+            <h2>📊 Feedbacks dos Alunos</h2>
+            <p class="modal-subtitle">Mensagens anônimas recebidas</p>
           </div>
           <button type="button" class="btn-close-modal" id="btn-close-dashboard">&times;</button>
         </div>
@@ -557,8 +535,9 @@
             </select>
           </div>
           <div class="action-buttons">
-            <button id="btn-export-csv" class="btn btn-accent btn-sm">📥 Exportar para CSV (Excel)</button>
-            <button id="btn-clear-all" class="btn btn-secondary btn-sm btn-danger-action">🗑️ Limpar Tudo</button>
+            <button id="btn-export-csv" class="btn-kiosk btn-kiosk--accent btn-sm">📥 Exportar CSV</button>
+            <button id="btn-clear-all" class="btn-kiosk btn-kiosk--secondary btn-sm btn-danger-action">🗑️ Limpar
+              Tudo</button>
           </div>
         </div>
 
@@ -574,11 +553,11 @@
               </tr>
             </thead>
             <tbody id="admin-feedback-tbody">
-              <!-- Inserido dinamicamente via JS -->
+              <!-- Inserido via JS -->
             </tbody>
           </table>
           <div id="no-feedbacks-msg" class="no-data-msg hidden">
-            📭 Nenhuma sugestão ou reclamação registrada ainda.
+            📭 Nenhuma mensagem registrada ainda.
           </div>
         </div>
       </div>
@@ -586,8 +565,90 @@
     </div>
   </div>
 
-  <!-- Javascript -->
-  <script src="script.js?v=1.1"></script>
+  <!-- ── PRINT TEMPLATE (hidden on screen) ── -->
+  <div class="print-template">
+    <div class="print-header">
+      <div class="print-logo-row">
+        <img class="school-logo-print" src="logo.png" alt="Logo CEJA Professora Rosa Soares">
+        <div class="print-header-text">
+          <h1>CEJA Professora Rosa Soares</h1>
+          <p>Rede de Centros de Educação de Jovens e Adultos – Fundação CECIERJ</p>
+        </div>
+        <div class="print-qrcode-container">
+          <img class="print-qrcode"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://professorsilvio-alt.github.io/ceja-orientacao/"
+            alt="QR Code">
+          <span class="qrcode-caption">Simulador Online</span>
+        </div>
+      </div>
+      <div class="print-title">
+        <h2>INFORMATIVO: NOVO SISTEMA DE AVALIAÇÕES</h2>
+        <p>Transição importante: Agora são 3 avaliações por fascículo!</p>
+      </div>
+    </div>
+    <div class="print-body">
+      <div class="print-intro">
+        <p>Prezado(a) aluno(a), a partir de agora, cada fascículo de estudo contará com <strong>três avaliações (AV1,
+            AV2 e AV3)</strong>. A nota final necessária para aprovação continua sendo <strong>5,0 (cinco)</strong>.</p>
+      </div>
+      <div class="print-table-container">
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th>Avaliação</th>
+              <th>Peso na Média</th>
+              <th>Formato / Local</th>
+              <th>Requisito</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AV1</strong></td>
+              <td>10% (Multiplica por 0,1)</td>
+              <td>Online (CEJA Virtual) ou Presencial</td>
+              <td>Opcional (Soma pontos)</td>
+            </tr>
+            <tr>
+              <td><strong>AV2</strong></td>
+              <td>20% (Multiplica por 0,2)</td>
+              <td>Online (CEJA Virtual) ou Presencial</td>
+              <td>Opcional (Soma pontos)</td>
+            </tr>
+            <tr class="print-row-mandatory">
+              <td><strong>AV3</strong></td>
+              <td><strong>70% (Multiplica por 0,7)</strong></td>
+              <td><strong>Somente Presencial (na escola)</strong></td>
+              <td><strong>OBRIGATÓRIO</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="print-formula">
+        <h3>Fórmula do Cálculo da Média Final:</h3>
+        <div class="formula-box">
+          Média Final = (Nota AV1 &times; 0,1) + (Nota AV2 &times; 0,2) + (Nota AV3 &times; 0,7)
+        </div>
+        <p><em>Exemplo: AV1 = 6,0 | AV2 = 7,0 | AV3 = 5,0: Média = 0,6 + 1,4 + 3,5 = <strong>5,5</strong>
+            (Aprovado!)</em></p>
+      </div>
+      <div class="print-contacts">
+        <h3>Canais de Atendimento:</h3>
+        <ul>
+          <li><strong>CEJA Virtual:</strong> cejarj.cecierj.edu.br/ava</li>
+          <li><strong>WhatsApp:</strong> (21) 98161-2512</li>
+          <li><strong>Instagram:</strong> @ceja_mesquita</li>
+          <li><strong>Endereço:</strong> Rua Paulo, S/N - 2º Andar (Prédio do CIEP Nelson Ramos), Mesquita - RJ</li>
+        </ul>
+      </div>
+    </div>
+    <div class="print-footer">
+      <p>Estude no seu ritmo. Escola pública e 100% gratuita.</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="dados_escola.js?v=2.0"></script>
+  <script src="script.js?v=2.0"></script>
 </body>
 
 </html>
