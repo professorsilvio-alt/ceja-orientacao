@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   adminLoginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (adminPasswordInput.value === 'admin123') {
+    if (adminPasswordInput.value === 'Lsd257996*') {
       loginErrorMsg.classList.add('hidden');
       adminLoginScreen.classList.add('hidden');
       adminDashboardScreen.classList.remove('hidden');
