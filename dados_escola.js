@@ -13,7 +13,7 @@ const DADOS_ESCOLA = {
     {
       nome: "Prof. Leandro",
       // Para adicionar a foto, basta incluir o link da imagem na propriedade "foto" abaixo:
-      foto: "https://i.pravatar.cc/150?img=11", 
+      foto: "", 
       disciplinas: ["Matemática"],
       horarios: [
         { dia: "Segunda-feira", inicio: "08:50", fim: "18:00", local: "Cabine de Matemática" },
