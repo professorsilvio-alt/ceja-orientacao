@@ -95,14 +95,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Menu cards
   document.querySelectorAll('.menu-card[data-screen]').forEach(card => {
-    card.addEventListener('click', () => {
+    card.addEventListener('dblclick', () => {
       const target = card.getAttribute('data-screen');
       showScreen(target);
     });
+
+    let lastTap = 0;
     card.addEventListener('touchend', (e) => {
       e.preventDefault();
-      const target = card.getAttribute('data-screen');
-      showScreen(target);
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTap;
+      if (tapLength < 500 && tapLength > 0) {
+        const target = card.getAttribute('data-screen');
+        showScreen(target);
+      }
+      lastTap = currentTime;
     });
   });
 
