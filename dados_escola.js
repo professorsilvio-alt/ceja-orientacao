@@ -49,7 +49,7 @@ const DADOS_ESCOLA = {
     },
     {
       nome: "Profª Sandra",
-      disciplinas: ["Português", "Literatura"],
+      disciplinas: ["Português"],
       horarios: [
         { dia: "Terça-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Linguagens" },
         { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Linguagens" }
@@ -57,7 +57,7 @@ const DADOS_ESCOLA = {
     },
     {
       nome: "Profª Luciana Cavalcante",
-      disciplinas: ["Português", "Literatura"],
+      disciplinas: ["Português"],
       horarios: [
         { dia: "Terça-feira", inicio: "12:10", fim: "20:30", local: "Cabine de Linguagens" },
         { dia: "Quinta-feira", inicio: "18:50", fim: "20:30", local: "Cabine de Linguagens" }
@@ -65,7 +65,7 @@ const DADOS_ESCOLA = {
     },
     {
       nome: "Profª Daniela",
-      disciplinas: ["Português", "Literatura"],
+      disciplinas: ["Português"],
       horarios: [
         { dia: "Quarta-feira", inicio: "13:50", fim: "18:50", local: "Cabine de Linguagens" },
         { dia: "Quinta-feira", inicio: "13:50", fim: "20:30", local: "Cabine de Linguagens" },
