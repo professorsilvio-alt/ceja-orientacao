@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CEJA AUTOATENDIMENTO â€” TOTEM/QUIOSQUE
+   CEJA AUTOATENDIMENTO — TOTEM/QUIOSQUE
    style.css v2.0
    ========================================================================== */
 
@@ -7,7 +7,7 @@
    1. DESIGN TOKENS
    ========================================================================== */
 :root {
-  /* Brand â€” tema original (azul marinho + amarelo + laranja) */
+  /* Brand — tema original (azul marinho + amarelo + laranja) */
   --primary:        #0c1f6e;
   --primary-light:  #1a3aad;
   --primary-dark:   #071242;
@@ -24,7 +24,7 @@
   --danger-light:   #fbe9e7;
   --warn:           #d84315;
 
-  /* Neutrals â€” tema CLARO original */
+  /* Neutrals — tema CLARO original */
   --bg:             #f0f4fc;
   --bg-card:        #ffffff;
   --bg-card2:       #f7f9ff;
@@ -260,10 +260,10 @@ input, select, textarea {
 }
 
 /* ==========================================================================
-   6. BETH MASCOTE â€” HOME WELCOME
+   6. BETH MASCOTE — HOME WELCOME
    ========================================================================== */
 
-/* Container row: balÃ£o Ã  esquerda + Beth Ã  direita */
+/* Container row: balão à esquerda + Beth à direita */
 .beth-welcome {
   display: flex;
   align-items: flex-end;
@@ -274,7 +274,7 @@ input, select, textarea {
   animation: beth-enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* BalÃ£o de fala + rabo */
+/* Balão de fala + rabo */
 .beth-bubble-wrap {
   position: relative;
   flex: 0 1 auto;
@@ -300,7 +300,7 @@ input, select, textarea {
 
 .beth-speech strong { color: var(--primary); }
 
-/* Rabinho do balÃ£o apontando para a Beth */
+/* Rabinho do balão apontando para a Beth */
 .beth-speech-tail {
   display: block;
   position: absolute;
@@ -313,7 +313,7 @@ input, select, textarea {
   border-left: 14px solid #ffffff;
 }
 
-/* Imagem da mascote â€” flutua continuamente */
+/* Imagem da mascote — flutua continuamente */
 .beth-mascot-home {
   width: 135px;
   height: auto;
@@ -579,7 +579,7 @@ input, select, textarea {
 .btn-kiosk.btn-sm { padding: 8px 16px; font-size: 12px; }
 
 /* ==========================================================================
-   10. AVALIAÃ‡Ã•ES SCREEN
+   10. AVALIAÇÕES SCREEN
    ========================================================================== */
 .av-hero {
   display: grid;
@@ -711,7 +711,7 @@ input, select, textarea {
 }
 
 .av-card-list li { padding-left: 12px; position: relative; }
-.av-card-list li::before { content: 'â€¢'; position: absolute; left: 0; color: var(--primary-light); }
+.av-card-list li::before { content: '•'; position: absolute; left: 0; color: var(--primary-light); }
 .av-card--mandatory .av-card-list li::before { color: var(--accent); }
 
 /* Formula */
@@ -1053,7 +1053,7 @@ input, select, textarea {
 .target-result.target-result-pending { background: rgba(211,47,47,0.10); border-color: rgba(211,47,47,0.25); }
 
 /* ==========================================================================
-   13. HORÃRIO DOS PROFESSORES
+   13. HORÁRIO DOS PROFESSORES
    ========================================================================== */
 .horarios-container {
   display: flex;
@@ -1275,7 +1275,7 @@ input, select, textarea {
 }
 
 /* ==========================================================================
-   14. MATRÃCULA SCREEN
+   14. MATRÍCULA SCREEN
    ========================================================================== */
 .matricula-container {
   display: grid;
@@ -1328,7 +1328,7 @@ input, select, textarea {
 }
 
 .matricula-doc-list li::before {
-  content: 'âœ…';
+  content: '✅';
   flex-shrink: 0;
   font-size: 14px;
 }
@@ -2043,7 +2043,7 @@ input, select, textarea {
    20. RESPONSIVE DESIGN (Tablets, Mobile e Monitores Verticais)
    ========================================================================== */
 
-/* Telas MÃ©dias (Monitores Verticais e Tablets atÃ© 1024px) */
+/* Telas Médias (Monitores Verticais e Tablets até 1024px) */
 @media (max-width: 1024px) {
   .home-menu-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .av-cards { grid-template-columns: repeat(2, 1fr); }
@@ -2055,7 +2055,7 @@ input, select, textarea {
   .agenda-weekly-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* Telas Pequenas (Celulares atÃ© 768px) */
+/* Telas Pequenas (Celulares até 768px) */
 @media (max-width: 768px) {
   .home-menu-grid { grid-template-columns: 1fr; }
   .av-cards { grid-template-columns: 1fr; }
@@ -2107,7 +2107,7 @@ input, select, textarea {
   .kiosk-back-btn:active { transform: translateY(0); }
 }
 
-/* Telas Muito Pequenas (Celulares atÃ© 480px) */
+/* Telas Muito Pequenas (Celulares até 480px) */
 @media (max-width: 480px) {
   .menu-card { padding: 20px 16px; min-height: 140px; }
   .menu-card-icon { font-size: 36px; }
