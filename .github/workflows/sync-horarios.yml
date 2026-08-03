@@ -1,0 +1,276 @@
+name: Sync Horários dos Professores
+
+on:
+  # Executa todo dia às 09:00 UTC = 06:00 horário de Brasília
+  schedule:
+    - cron: '0 9 * * 1-5'   # Seg a Sex às 06:00 (BRT)
+
+  # Permite rodar manualmente pelo painel do GitHub
+  workflow_dispatch:
+
+jobs:
+  sync-horarios:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write   # necessário para fazer commit
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Baixar e processar horários da planilha
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request
+          import csv
+          import json
+          import re
+          import io
+          import hashlib
+          import sys
+
+          SPREADSHEET_ID = '1a2XewE5KNuadI8zUbi15r5n06roJb-wa'
+
+          ABAS = [
+            { 'dia': 'Segunda-feira', 'gid': '765921185'  },
+            { 'dia': 'Terça-feira',   'gid': '222847853'  },
+            { 'dia': 'Quarta-feira',  'gid': '349244144'  },
+            { 'dia': 'Quinta-feira',  'gid': '642475882'  },
+            { 'dia': 'Sexta-feira',   'gid': '1997803226' },
+          ]
+
+          COLUNAS = [
+            { 'disciplina': 'Matemática',         'local': 'Cabine de Matemática' },
+            { 'disciplina': 'Português',           'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Inglês',              'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Espanhol',            'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Educação Artística',  'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Educação Física',     'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Ciências/Biologia',   'local': 'Cabine de Ciências da Natureza' },
+            { 'disciplina': 'Física',              'local': 'Cabine de Ciências da Natureza' },
+            { 'disciplina': 'Química',             'local': 'Cabine de Ciências da Natureza' },
+            { 'disciplina': 'História',            'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'Geografia',           'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'Sociologia',          'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'Filosofia',           'local': 'Cabine de Ciências Humanas' },
+          ]
+
+          # Mapeamento nome curto (planilha) → nome completo (sistema)
+          NOMES_MAP = {
+            'Leandro':            'Prof. Leandro',
+            'Jordan':             'Prof. Jordan',
+            'Arlindo':            'Prof. Arlindo',
+            'Vitor':              'Prof. Vitor',
+            'Sandra':             'Profª Sandra',
+            'Luciana Cavalcante': 'Profª Luciana Cavalcante',
+            'Luciana':            'Profª Luciana',
+            'Daniela':            'Profª Daniela',
+            'Rafael Souza':       'Prof. Rafael Souza',
+            'Wanderley':          'Prof. Wanderley',
+            'Thalles':            'Prof. Thalles',
+            'Eliane':             'Profª Eliane',
+            'Elaine':             'Profª Eliane',
+            'Viviane':            'Profª Viviane',
+            'Marcela':            'Profª Marcela',
+            'Alessandra':         'Profª Alessandra',
+            'Delma':              'Profª Delma',
+            'Elázaro':            'Prof. Elázaro',
+            'Elazaro':            'Prof. Elázaro',
+            'Leonardo':           'Prof. Leonardo',
+            'Xunei':              'Prof. Xunei',
+            'Mário':              'Prof. Mário',
+            'Mario':              'Prof. Mário',
+            'Carlos Laurindo':    'Prof. Carlos Laurindo',
+            'Fabiane':            'Profª Fabiane',
+            'Vitor Vasconcelos':  'Prof. Vitor Vasconcelos',
+            'David':              'Prof. David',
+            'José Carlos':        'Prof. José Carlos',
+            'Jose Carlos':        'Prof. José Carlos',
+            'Rafael Maia':        'Prof. Rafael Maia',
+            'Fernando':           'Prof. Fernando',
+            'Rafael':             'Prof. Rafael',
+          }
+
+          def fetch_csv(gid):
+              url = f'https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={gid}'
+              req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  return resp.read().decode('utf-8')
+
+          def normalize_name(raw):
+              # Remove sufixo numérico ex: "LUCIANA 1"
+              name = re.sub(r'\s+\d+$', '', raw).strip()
+              # Capitaliza
+              cap = ' '.join(
+                  w if w.lower() in ('de','da','do','dos','das','e') else w.capitalize()
+                  for w in name.split()
+              )
+              return NOMES_MAP.get(cap, f'Prof. {cap}')
+
+          def parse_aba(csv_text, dia):
+              reader = csv.reader(io.StringIO(csv_text))
+              rows = list(reader)
+              
+              # Encontra linha de cabeçalho (contém "HORÁRIOS" ou "HORARIOS")
+              header_idx = -1
+              for i, row in enumerate(rows):
+                  if row and re.match(r'HOR[AÁ]RIOS', row[0].strip(), re.IGNORECASE):
+                      header_idx = i
+                      break
+              
+              if header_idx == -1:
+                  print(f'  [{dia}] AVISO: cabeçalho HORÁRIOS não encontrado')
+                  return []
+              
+              entradas = []
+              for row in rows[header_idx + 1:]:
+                  if not row:
+                      continue
+                  horario_cell = row[0].strip()
+                  m = re.match(r'(\d{2}:\d{2})\s*/\s*(\d{2}:\d{2})', horario_cell)
+                  if not m:
+                      continue
+                  inicio, fim = m.group(1), m.group(2)
+                  
+                  for c in range(1, 14):
+                      if c >= len(row):
+                          continue
+                      cell = row[c].strip().replace('\n', ' / ')
+                      if not cell or cell == 'FECHADA':
+                          continue
+                      for nome_raw in cell.split('/'):
+                          nome_raw = nome_raw.strip()
+                          if nome_raw and nome_raw != 'FECHADA':
+                              entradas.append({
+                                  'inicio': inicio,
+                                  'fim': fim,
+                                  'col': c - 1,
+                                  'nome': normalize_name(nome_raw),
+                              })
+              return entradas
+
+          def build_horarios(todos_dados):
+              # Agrupa por (nome, dia, col)
+              mapa = {}
+              for item in todos_dados:
+                  dia = item['dia']
+                  for e in item['entradas']:
+                      col = e['col']
+                      if col >= len(COLUNAS):
+                          continue
+                      chave = (e['nome'], dia, col)
+                      if chave not in mapa:
+                          mapa[chave] = {
+                              'nome': e['nome'],
+                              'dia': dia,
+                              'disciplina': COLUNAS[col]['disciplina'],
+                              'local': COLUNAS[col]['local'],
+                              'slots': [],
+                          }
+                      mapa[chave]['slots'].append((e['inicio'], e['fim']))
+              
+              # Agrupa por professor
+              prof_map = {}
+              for item in mapa.values():
+                  nome = item['nome']
+                  if nome not in prof_map:
+                      prof_map[nome] = {'nome': nome, 'foto': '', 'disciplinas': set(), 'horarios': []}
+                  prof = prof_map[nome]
+                  prof['disciplinas'].add(item['disciplina'])
+                  sorted_slots = sorted(item['slots'])
+                  inicio = sorted_slots[0][0]
+                  fim    = sorted_slots[-1][1]
+                  entry = {'dia': item['dia'], 'inicio': inicio, 'fim': fim, 'local': item['local']}
+                  if entry not in prof['horarios']:
+                      prof['horarios'].append(entry)
+              
+              ORDEM_DIAS = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira']
+              resultado = []
+              for nome in sorted(prof_map.keys()):
+                  p = prof_map[nome]
+                  p['horarios'].sort(key=lambda h: (ORDEM_DIAS.index(h['dia']) if h['dia'] in ORDEM_DIAS else 9, h['inicio']))
+                  resultado.append({
+                      'nome': p['nome'],
+                      'foto': p['foto'],
+                      'disciplinas': sorted(p['disciplinas']),
+                      'horarios': p['horarios'],
+                  })
+              return resultado
+
+          def gerar_bloco_js(horarios):
+              linhas = ['[']
+              for i, p in enumerate(horarios):
+                  virgula_prof = ',' if i < len(horarios) - 1 else ''
+                  linhas.append('    {')
+                  linhas.append(f'      nome: {json.dumps(p["nome"], ensure_ascii=False)},')
+                  linhas.append(f'      foto: "",')
+                  discs = ', '.join(json.dumps(d, ensure_ascii=False) for d in p['disciplinas'])
+                  linhas.append(f'      disciplinas: [{discs}],')
+                  linhas.append('      horarios: [')
+                  for j, h in enumerate(p['horarios']):
+                      virgula_h = ',' if j < len(p['horarios']) - 1 else ''
+                      linhas.append(f'        {{ dia: {json.dumps(h["dia"], ensure_ascii=False)}, inicio: "{h["inicio"]}", fim: "{h["fim"]}", local: {json.dumps(h["local"], ensure_ascii=False)} }}{virgula_h}')
+                  linhas.append('      ]')
+                  linhas.append(f'    }}{virgula_prof}')
+              linhas.append('  ]')
+              return '\n'.join(linhas)
+
+          # ── EXECUÇÃO ──────────────────────────────────────────────────────────
+          print('\n=== CEJA - Sync de Horários ===\n')
+
+          todos_dados = []
+          for aba in ABAS:
+              print(f'  Buscando {aba["dia"]}...', end=' ', flush=True)
+              csv_text = fetch_csv(aba['gid'])
+              entradas = parse_aba(csv_text, aba['dia'])
+              todos_dados.append({'dia': aba['dia'], 'entradas': entradas})
+              print(f'OK ({len(entradas)} entradas)')
+
+          print(f'\n  Consolidando horários...')
+          novo_horario = build_horarios(todos_dados)
+          print(f'  {len(novo_horario)} professores encontrados.\n')
+
+          # Lê dados_escola.js
+          with open('dados_escola.js', 'r', encoding='utf-8') as f:
+              conteudo = f.read()
+
+          novo_bloco = gerar_bloco_js(novo_horario)
+          hash_novo = hashlib.sha256(novo_bloco.encode()).hexdigest()
+
+          # Extrai bloco atual para comparar
+          match = re.search(r'horarioProfessores:\s*(\[[\s\S]*?\])(?=\s*,)', conteudo)
+          hash_atual = hashlib.sha256(match.group(1).encode()).hexdigest() if match else ''
+
+          if hash_atual == hash_novo:
+              print('  ✅ Sem alterações. dados_escola.js já está atualizado.')
+              sys.exit(0)
+
+          print('  ⚠️  Alterações detectadas! Atualizando dados_escola.js...')
+          novo_conteudo = re.sub(
+              r'horarioProfessores:\s*\[[\s\S]*?\](?=\s*,)',
+              f'horarioProfessores: {novo_bloco}',
+              conteudo
+          )
+
+          with open('dados_escola.js', 'w', encoding='utf-8') as f:
+              f.write(novo_conteudo)
+
+          print('  ✅ dados_escola.js atualizado!\n')
+          print('  Professores sincronizados:')
+          for p in novo_horario:
+              print(f'    • {p["nome"]} | {", ".join(p["disciplinas"])} | {len(p["horarios"])} dia(s)')
+
+          # Sinaliza que houve mudança
+          with open('/tmp/houve_mudanca', 'w') as f:
+              f.write('sim')
+          PYEOF
+
+      - name: Commit e Push (somente se houve mudança)
+        if: hashFiles('/tmp/houve_mudanca') != ''
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dados_escola.js
+          git diff --cached --quiet || git commit -m "🕐 Sync horários automático - $(date '+%d/%m/%Y %H:%M')"
+          git push
