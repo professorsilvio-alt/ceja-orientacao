@@ -194,21 +194,30 @@ jobs:
           novo_bloco = gerar_bloco_js(novo)
           hash_novo  = hashlib.sha256(novo_bloco.encode()).hexdigest()
 
-          match = re.search(r'horarioProfessores:\s*(\[[\s\S]*?\])(?=\s*,)', conteudo)
-          hash_atual = hashlib.sha256(match.group(1).encode()).hexdigest() if match else ''
+          MARKER_START = '// <<HORARIOS_SYNC_START>>'
+          MARKER_END   = '// <<HORARIOS_SYNC_END>>'
+
+          if MARKER_START not in conteudo or MARKER_END not in conteudo:
+            print('ERRO: Marcadores HORARIOS_SYNC nao encontrados em dados_escola.js!')
+            sys.exit(1)
+
+          # Extrai o bloco atual entre os marcadores para comparacao de hash
+          start_pos = conteudo.index(MARKER_START) + len(MARKER_START)
+          end_pos   = conteudo.index(MARKER_END)
+          bloco_atual = conteudo[start_pos:end_pos].strip()
+          hash_atual  = hashlib.sha256(bloco_atual.encode()).hexdigest()
 
           if hash_atual == hash_novo:
             print('Sem alterações detectadas.')
-            # Sinaliza SEM mudança para o step seguinte
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write('houve_mudanca=false\n')
             sys.exit(0)
 
           print('Alterações detectadas! Atualizando dados_escola.js...')
-          novo_conteudo = re.sub(
-            r'horarioProfessores:\s*\[[\s\S]*?\](?=\s*,)',
-            f'horarioProfessores: {novo_bloco}',
-            conteudo
+          novo_conteudo = (
+            conteudo[:conteudo.index(MARKER_START) + len(MARKER_START)]
+            + '\n  horarioProfessores: ' + novo_bloco + ',\n  '
+            + conteudo[conteudo.index(MARKER_END):]
           )
           with open('dados_escola.js', 'w', encoding='utf-8') as f:
             f.write(novo_conteudo)
