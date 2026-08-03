@@ -1,7 +1,7 @@
-name: Sync Horários dos Professores
+name: Sync HorÃ¡rios dos Professores
 
 on:
-  # Executa todo dia útil às 09:00 UTC = 06:00 horário de Brasília
+  # Executa todo dia Ãºtil Ã s 09:00 UTC = 06:00 horÃ¡rio de BrasÃ­lia
   schedule:
     - cron: '0 9 * * 1-5'
 
@@ -16,10 +16,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout do repositório
+      - name: Checkout do repositÃ³rio
         uses: actions/checkout@v4
 
-      - name: Baixar e processar horários da planilha
+      - name: Baixar e processar horÃ¡rios da planilha
         id: sync
         run: |
           python3 << 'PYEOF'
@@ -29,26 +29,26 @@ jobs:
 
           ABAS = [
             { 'dia': 'Segunda-feira', 'gid': '765921185'  },
-            { 'dia': 'Terça-feira',   'gid': '222847853'  },
+            { 'dia': 'TerÃ§a-feira',   'gid': '222847853'  },
             { 'dia': 'Quarta-feira',  'gid': '349244144'  },
             { 'dia': 'Quinta-feira',  'gid': '642475882'  },
             { 'dia': 'Sexta-feira',   'gid': '1997803226' },
           ]
 
           COLUNAS = [
-            { 'disciplina': 'Matemática',         'local': 'Cabine de Matemática' },
-            { 'disciplina': 'Português',           'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Inglês',              'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'MatemÃ¡tica',         'local': 'Cabine de MatemÃ¡tica' },
+            { 'disciplina': 'PortuguÃªs',           'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'InglÃªs',              'local': 'Cabine de Linguagens' },
             { 'disciplina': 'Espanhol',            'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Educação Artística',  'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Educação Física',     'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Ciências/Biologia',   'local': 'Cabine de Ciências da Natureza' },
-            { 'disciplina': 'Física',              'local': 'Cabine de Ciências da Natureza' },
-            { 'disciplina': 'Química',             'local': 'Cabine de Ciências da Natureza' },
-            { 'disciplina': 'História',            'local': 'Cabine de Ciências Humanas' },
-            { 'disciplina': 'Geografia',           'local': 'Cabine de Ciências Humanas' },
-            { 'disciplina': 'Sociologia',          'local': 'Cabine de Ciências Humanas' },
-            { 'disciplina': 'Filosofia',           'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'EducaÃ§Ã£o ArtÃ­stica',  'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'EducaÃ§Ã£o FÃ­sica',     'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'CiÃªncias/Biologia',   'local': 'Cabine de CiÃªncias da Natureza' },
+            { 'disciplina': 'FÃ­sica',              'local': 'Cabine de CiÃªncias da Natureza' },
+            { 'disciplina': 'QuÃ­mica',             'local': 'Cabine de CiÃªncias da Natureza' },
+            { 'disciplina': 'HistÃ³ria',            'local': 'Cabine de CiÃªncias Humanas' },
+            { 'disciplina': 'Geografia',           'local': 'Cabine de CiÃªncias Humanas' },
+            { 'disciplina': 'Sociologia',          'local': 'Cabine de CiÃªncias Humanas' },
+            { 'disciplina': 'Filosofia',           'local': 'Cabine de CiÃªncias Humanas' },
           ]
 
           NOMES_MAP = {
@@ -56,31 +56,31 @@ jobs:
             'Jordan':             'Prof. Jordan',
             'Arlindo':            'Prof. Arlindo',
             'Vitor':              'Prof. Vitor',
-            'Sandra':             'Profª Sandra',
-            'Luciana Cavalcante': 'Profª Luciana Cavalcante',
-            'Luciana':            'Profª Luciana',
-            'Daniela':            'Profª Daniela',
+            'Sandra':             'ProfÂª Sandra',
+            'Luciana Cavalcante': 'ProfÂª Luciana Cavalcante',
+            'Luciana':            'ProfÂª Luciana',
+            'Daniela':            'ProfÂª Daniela',
             'Rafael Souza':       'Prof. Rafael Souza',
             'Wanderley':          'Prof. Wanderley',
             'Thalles':            'Prof. Thalles',
-            'Eliane':             'Profª Eliane',
-            'Elaine':             'Profª Eliane',
-            'Viviane':            'Profª Viviane',
-            'Marcela':            'Profª Marcela',
-            'Alessandra':         'Profª Alessandra',
-            'Delma':              'Profª Delma',
-            'Elázaro':            'Prof. Elázaro',
-            'Elazaro':            'Prof. Elázaro',
+            'Eliane':             'ProfÂª Eliane',
+            'Elaine':             'ProfÂª Eliane',
+            'Viviane':            'ProfÂª Viviane',
+            'Marcela':            'ProfÂª Marcela',
+            'Alessandra':         'ProfÂª Alessandra',
+            'Delma':              'ProfÂª Delma',
+            'ElÃ¡zaro':            'Prof. ElÃ¡zaro',
+            'Elazaro':            'Prof. ElÃ¡zaro',
             'Leonardo':           'Prof. Leonardo',
             'Xunei':              'Prof. Xunei',
-            'Mário':              'Prof. Mário',
-            'Mario':              'Prof. Mário',
+            'MÃ¡rio':              'Prof. MÃ¡rio',
+            'Mario':              'Prof. MÃ¡rio',
             'Carlos Laurindo':    'Prof. Carlos Laurindo',
-            'Fabiane':            'Profª Fabiane',
+            'Fabiane':            'ProfÂª Fabiane',
             'Vitor Vasconcelos':  'Prof. Vitor Vasconcelos',
             'David':              'Prof. David',
-            'José Carlos':        'Prof. José Carlos',
-            'Jose Carlos':        'Prof. José Carlos',
+            'JosÃ© Carlos':        'Prof. JosÃ© Carlos',
+            'Jose Carlos':        'Prof. JosÃ© Carlos',
             'Rafael Maia':        'Prof. Rafael Maia',
             'Fernando':           'Prof. Fernando',
           }
@@ -103,11 +103,11 @@ jobs:
             reader = csv.reader(io.StringIO(csv_text))
             rows = list(reader)
             header_idx = next(
-              (i for i, r in enumerate(rows) if r and re.match(r'HOR[AÁ]RIOS', r[0].strip(), re.I)),
+              (i for i, r in enumerate(rows) if r and re.match(r'HOR[AÃ]RIOS', r[0].strip(), re.I)),
               -1
             )
             if header_idx == -1:
-              print(f'  [{dia}] Cabeçalho não encontrado')
+              print(f'  [{dia}] CabeÃ§alho nÃ£o encontrado')
               return []
             entradas = []
             for row in rows[header_idx + 1:]:
@@ -148,7 +148,7 @@ jobs:
               entry = {'dia': item['dia'], 'inicio': ss[0][0], 'fim': ss[-1][1], 'local': item['local']}
               if entry not in p['horarios']:
                 p['horarios'].append(entry)
-            ORDEM = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira']
+            ORDEM = ['Segunda-feira','TerÃ§a-feira','Quarta-feira','Quinta-feira','Sexta-feira']
             result = []
             for nome in sorted(prof_map):
               p = prof_map[nome]
@@ -174,8 +174,8 @@ jobs:
             lines.append('  ]')
             return '\n'.join(lines)
 
-          # ── EXECUÇÃO ──────────────────────────────────────────────────────────
-          print('=== CEJA - Sync de Horários ===')
+          # â”€â”€ EXECUÃ‡ÃƒO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          print('=== CEJA - Sync de HorÃ¡rios ===')
           todos_dados = []
           for aba in ABAS:
             print(f'  {aba["dia"]}...', end=' ', flush=True)
@@ -194,8 +194,8 @@ jobs:
           novo_bloco = gerar_bloco_js(novo)
           hash_novo  = hashlib.sha256(novo_bloco.encode()).hexdigest()
 
-          MARKER_START = '// <<HORARIOS_SYNC_START>>'
-          MARKER_END   = '// <<HORARIOS_SYNC_END>>'
+          MARKER_START = '// HORARIOS_SYNC_START'
+          MARKER_END   = '// HORARIOS_SYNC_END'
 
           if MARKER_START not in conteudo or MARKER_END not in conteudo:
             print('ERRO: Marcadores HORARIOS_SYNC nao encontrados em dados_escola.js!')
@@ -208,12 +208,12 @@ jobs:
           hash_atual  = hashlib.sha256(bloco_atual.encode()).hexdigest()
 
           if hash_atual == hash_novo:
-            print('Sem alterações detectadas.')
+            print('Sem alteraÃ§Ãµes detectadas.')
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write('houve_mudanca=false\n')
             sys.exit(0)
 
-          print('Alterações detectadas! Atualizando dados_escola.js...')
+          print('AlteraÃ§Ãµes detectadas! Atualizando dados_escola.js...')
           novo_conteudo = (
             conteudo[:conteudo.index(MARKER_START) + len(MARKER_START)]
             + '\n  horarioProfessores: ' + novo_bloco + ',\n  '
@@ -224,18 +224,18 @@ jobs:
 
           print('dados_escola.js atualizado!')
           for p in novo:
-            print(f'  • {p["nome"]} | {", ".join(p["disciplinas"])}')
+            print(f'  â€¢ {p["nome"]} | {", ".join(p["disciplinas"])}')
 
-          # Sinaliza COM mudança para o step seguinte
+          # Sinaliza COM mudanÃ§a para o step seguinte
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             f.write('houve_mudanca=true\n')
           PYEOF
 
-      - name: Commit e Push (somente se houve mudança)
+      - name: Commit e Push (somente se houve mudanÃ§a)
         if: steps.sync.outputs.houve_mudanca == 'true'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add dados_escola.js
-          git commit -m "🕐 Sync horários automático - $(date '+%d/%m/%Y %H:%M')"
+          git commit -m "ðŸ• Sync horÃ¡rios automÃ¡tico - $(date '+%d/%m/%Y %H:%M')"
           git push
