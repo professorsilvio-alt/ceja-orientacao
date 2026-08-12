@@ -41,25 +41,25 @@ $NOMES_MAP = @{
     'Jordan'             = 'Prof. Jordan'
     'Arlindo'            = 'Prof. Arlindo'
     'Vitor'              = 'Prof. Vitor'
-    'Sandra'             = 'Profa Sandra'
-    'Luciana Cavalcante' = 'Profa Luciana Cavalcante'
-    'Luciana'            = 'Profa Luciana'
-    'Daniela'            = 'Profa Daniela'
+    'Sandra'             = 'Prof.ª Sandra'
+    'Luciana Cavalcante' = 'Prof.ª Luciana Cavalcante'
+    'Luciana'            = 'Prof.ª Luciana'
+    'Daniela'            = 'Prof.ª Daniela'
     'Rafael Souza'       = 'Prof. Rafael Souza'
     'Wanderley'          = 'Prof. Wanderley'
     'Thalles'            = 'Prof. Thalles'
-    'Eliane'             = 'Profa Eliane'
-    'Elaine'             = 'Profa Elaine'
-    'Viviane'            = 'Profa Viviane'
-    'Marcela'            = 'Profa Marcela'
-    'Alessandra'         = 'Profa Alessandra'
-    'Delma'              = 'Profa Delma'
+    'Eliane'             = 'Prof.ª Eliane'
+    'Elaine'             = 'Prof.ª Elaine'
+    'Viviane'            = 'Prof.ª Viviane'
+    'Marcela'            = 'Prof.ª Marcela'
+    'Alessandra'         = 'Prof.ª Alessandra'
+    'Delma'              = 'Prof.ª Delma'
     'Elazaro'            = 'Prof. Elazaro'
     'Leonardo'           = 'Prof. Leonardo'
     'Xunei'              = 'Prof. Xunei'
     'Mario'              = 'Prof. Mario'
     'Carlos Laurindo'    = 'Prof. Carlos Laurindo'
-    'Fabiane'            = 'Profa Fabiane'
+    'Fabiane'            = 'Prof.ª Fabiane'
     'Vitor Vasconcelos'  = 'Prof. Vitor Vasconcelos'
     'David'              = 'Prof. David'
     'Jose Carlos'        = 'Prof. Jose Carlos'
@@ -384,11 +384,13 @@ $novoBloco = ConvertTo-HorarioJS $novoHorario
 $hashNovo = Get-TextHash $novoBloco
 
 # Extrai bloco atual para comparar
-$regexBloco = 'horarioProfessores:\s*\[[\s\S]*?\](?=\s*,)'
+$regexBloco = '(?s)// HORARIOS_SYNC_START.*// HORARIOS_SYNC_END'
 $matchAtual = [regex]::Match($conteudoAtual, $regexBloco)
 $hashAtual  = if ($matchAtual.Success) { Get-TextHash $matchAtual.Value } else { '' }
 
-if ($hashAtual -ne '' -and $hashAtual -eq (Get-TextHash "horarioProfessores: $novoBloco")) {
+$novoBlocoCompleto = "// HORARIOS_SYNC_START`n  horarioProfessores: $novoBloco,`n  // HORARIOS_SYNC_END"
+
+if ($hashAtual -ne '' -and $hashAtual -eq (Get-TextHash $novoBlocoCompleto)) {
     Write-Host "   Sem alteracoes - dados_escola.js ja esta atualizado." -ForegroundColor Green
     Write-Host ""
     exit 0
@@ -396,11 +398,16 @@ if ($hashAtual -ne '' -and $hashAtual -eq (Get-TextHash "horarioProfessores: $no
 
 Write-Host "   Alteracoes detectadas! Atualizando..." -ForegroundColor Yellow
 
-$novoConteudo = [regex]::Replace(
-    $conteudoAtual,
-    $regexBloco,
-    "horarioProfessores: $novoBloco"
-)
+if ($matchAtual.Success) {
+    $novoConteudo = [regex]::Replace(
+        $conteudoAtual,
+        $regexBloco,
+        $novoBlocoCompleto
+    )
+} else {
+    Write-Host "   ERRO: Marcadores // HORARIOS_SYNC_START e // HORARIOS_SYNC_END nao encontrados em dados_escola.js!" -ForegroundColor Red
+    exit 1
+}
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($DadosEscolaPath, $novoConteudo, $utf8NoBom)

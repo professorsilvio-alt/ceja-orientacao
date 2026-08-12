@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
     } else if (currentHorariosFilter === 'professor') {
-      const cleanName = (name) => name.replace(/^(Prof[ºª]?\.\s*|Prof[ºª]\s*)/, '').trim();
+      const cleanName = (name) => name.replace(/^(Prof(?:[ºª]\.?|\.[ºª]?|\.)?\s*)/i, '').trim();
       const sortedProfs = [...profs].sort((a, b) => cleanName(a.nome).localeCompare(cleanName(b.nome)));
       
       sortedProfs.forEach((prof, idx) => {
