@@ -1,4 +1,4 @@
-/**
+﻿/**
  * dados_escola.js
  * Arquivo de configuracao do CEJA Professora Rosa Soares
  * Edite este arquivo para atualizar os dados exibidos no totem.
@@ -173,9 +173,9 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Alessandra",
+      nome: "ProfÂª Alessandra",
       foto: "",
-      disciplinas: ["CiÃªncias/Biologia", "QuÃ­mica"],
+      disciplinas: ["QuÃ­mica", "CiÃªncias/Biologia"],
       horarios: [
         { dia: "Segunda-feira", inicio: "12:10", fim: "16:20", local: "Cabine de CiÃªncias da Natureza" },
         { dia: "Segunda-feira", inicio: "16:20", fim: "20:30", local: "Cabine de CiÃªncias da Natureza" },
@@ -184,7 +184,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Daniela",
+      nome: "ProfÂª Daniela",
       foto: "",
       disciplinas: ["PortuguÃªs"],
       horarios: [
@@ -194,7 +194,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Delma",
+      nome: "ProfÂª Delma",
       foto: "",
       disciplinas: ["CiÃªncias/Biologia"],
       horarios: [
@@ -204,7 +204,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Elaine",
+      nome: "ProfÂª Elaine",
       foto: "",
       disciplinas: ["PortuguÃªs"],
       horarios: [
@@ -212,7 +212,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Eliane",
+      nome: "ProfÂª Eliane",
       foto: "",
       disciplinas: ["EducaÃ§Ã£o FÃ­sica"],
       horarios: [
@@ -221,7 +221,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Fabiane",
+      nome: "ProfÂª Fabiane",
       foto: "",
       disciplinas: ["HistÃ³ria"],
       horarios: [
@@ -230,7 +230,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Luciana",
+      nome: "ProfÂª Luciana",
       foto: "",
       disciplinas: ["PortuguÃªs", "InglÃªs"],
       horarios: [
@@ -240,7 +240,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Luciana Cavalcante",
+      nome: "ProfÂª Luciana Cavalcante",
       foto: "",
       disciplinas: ["PortuguÃªs"],
       horarios: [
@@ -248,7 +248,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Marcela",
+      nome: "ProfÂª Marcela",
       foto: "",
       disciplinas: ["QuÃ­mica"],
       horarios: [
@@ -256,7 +256,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Sandra",
+      nome: "ProfÂª Sandra",
       foto: "",
       disciplinas: ["PortuguÃªs"],
       horarios: [
@@ -267,7 +267,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.Âª Viviane",
+      nome: "ProfÂª Viviane",
       foto: "",
       disciplinas: ["QuÃ­mica"],
       horarios: [

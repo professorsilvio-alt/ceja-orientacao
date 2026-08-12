@@ -56,19 +56,19 @@ jobs:
             'Jordan':             'Prof. Jordan',
             'Arlindo':            'Prof. Arlindo',
             'Vitor':              'Prof. Vitor',
-            'Sandra':             'Prof.ª Sandra',
-            'Luciana Cavalcante': 'Prof.ª Luciana Cavalcante',
-            'Luciana':            'Prof.ª Luciana',
-            'Daniela':            'Prof.ª Daniela',
+            'Sandra':             'Profª Sandra',
+            'Luciana Cavalcante': 'Profª Luciana Cavalcante',
+            'Luciana':            'Profª Luciana',
+            'Daniela':            'Profª Daniela',
             'Rafael Souza':       'Prof. Rafael Souza',
             'Wanderley':          'Prof. Wanderley',
             'Thalles':            'Prof. Thalles',
-            'Eliane':             'Prof.ª Eliane',
-            'Elaine':             'Prof.ª Elaine',
-            'Viviane':            'Prof.ª Viviane',
-            'Marcela':            'Prof.ª Marcela',
-            'Alessandra':         'Prof.ª Alessandra',
-            'Delma':              'Prof.ª Delma',
+            'Eliane':             'Profª Eliane',
+            'Elaine':             'Profª Elaine',
+            'Viviane':            'Profª Viviane',
+            'Marcela':            'Profª Marcela',
+            'Alessandra':         'Profª Alessandra',
+            'Delma':              'Profª Delma',
             'ElÃ¡zaro':            'Prof. ElÃ¡zaro',
             'Elazaro':            'Prof. ElÃ¡zaro',
             'Leonardo':           'Prof. Leonardo',
@@ -76,7 +76,7 @@ jobs:
             'MÃ¡rio':              'Prof. MÃ¡rio',
             'Mario':              'Prof. MÃ¡rio',
             'Carlos Laurindo':    'Prof. Carlos Laurindo',
-            'Fabiane':            'Prof.ª Fabiane',
+            'Fabiane':            'Profª Fabiane',
             'Vitor Vasconcelos':  'Prof. Vitor Vasconcelos',
             'David':              'Prof. David',
             'JosÃ© Carlos':        'Prof. JosÃ© Carlos',
@@ -188,7 +188,7 @@ jobs:
           novo = build_horarios(todos_dados)
           print(f'  {len(novo)} professores\n')
 
-          with open('dados_escola.js', 'r', encoding='utf-8') as f:
+          with open('dados_escola.js', 'r', encoding='utf-8-sig') as f:
             conteudo = f.read()
 
           novo_bloco = gerar_bloco_js(novo)
@@ -219,7 +219,7 @@ jobs:
             + '\n  horarioProfessores: ' + novo_bloco + ',\n  '
             + conteudo[conteudo.index(MARKER_END):]
           )
-          with open('dados_escola.js', 'w', encoding='utf-8') as f:
+          with open('dados_escola.js', 'w', encoding='utf-8-sig') as f:
             f.write(novo_conteudo)
 
           print('dados_escola.js atualizado!')

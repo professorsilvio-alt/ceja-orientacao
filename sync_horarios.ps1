@@ -41,25 +41,25 @@ $NOMES_MAP = @{
     'Jordan'             = 'Prof. Jordan'
     'Arlindo'            = 'Prof. Arlindo'
     'Vitor'              = 'Prof. Vitor'
-    'Sandra'             = 'Prof.ª Sandra'
-    'Luciana Cavalcante' = 'Prof.ª Luciana Cavalcante'
-    'Luciana'            = 'Prof.ª Luciana'
-    'Daniela'            = 'Prof.ª Daniela'
+    'Sandra'             = 'Profª Sandra'
+    'Luciana Cavalcante' = 'Profª Luciana Cavalcante'
+    'Luciana'            = 'Profª Luciana'
+    'Daniela'            = 'Profª Daniela'
     'Rafael Souza'       = 'Prof. Rafael Souza'
     'Wanderley'          = 'Prof. Wanderley'
     'Thalles'            = 'Prof. Thalles'
-    'Eliane'             = 'Prof.ª Eliane'
-    'Elaine'             = 'Prof.ª Elaine'
-    'Viviane'            = 'Prof.ª Viviane'
-    'Marcela'            = 'Prof.ª Marcela'
-    'Alessandra'         = 'Prof.ª Alessandra'
-    'Delma'              = 'Prof.ª Delma'
+    'Eliane'             = 'Profª Eliane'
+    'Elaine'             = 'Profª Elaine'
+    'Viviane'            = 'Profª Viviane'
+    'Marcela'            = 'Profª Marcela'
+    'Alessandra'         = 'Profª Alessandra'
+    'Delma'              = 'Profª Delma'
     'Elazaro'            = 'Prof. Elazaro'
     'Leonardo'           = 'Prof. Leonardo'
     'Xunei'              = 'Prof. Xunei'
     'Mario'              = 'Prof. Mario'
     'Carlos Laurindo'    = 'Prof. Carlos Laurindo'
-    'Fabiane'            = 'Prof.ª Fabiane'
+    'Fabiane'            = 'Profª Fabiane'
     'Vitor Vasconcelos'  = 'Prof. Vitor Vasconcelos'
     'David'              = 'Prof. David'
     'Jose Carlos'        = 'Prof. Jose Carlos'
@@ -409,7 +409,7 @@ if ($matchAtual.Success) {
     exit 1
 }
 
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$utf8NoBom = New-Object System.Text.UTF8Encoding($true)
 [System.IO.File]::WriteAllText($DadosEscolaPath, $novoConteudo, $utf8NoBom)
 Write-Host "   dados_escola.js atualizado com sucesso!" -ForegroundColor Green
 
