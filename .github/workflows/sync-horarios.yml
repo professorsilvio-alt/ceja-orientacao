@@ -1,7 +1,7 @@
-name: Sync HorÃ¡rios dos Professores
+﻿﻿name: Sync Horários dos Professores
 
 on:
-  # Executa todo dia Ãºtil Ã s 09:00 UTC = 06:00 horÃ¡rio de BrasÃ­lia
+  # Executa todo dia útil às 09:00 UTC = 06:00 horário de Brasília
   schedule:
     - cron: '0 9 * * 1-5'
 
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout do repositÃ³rio
         uses: actions/checkout@v4
 
-      - name: Baixar e processar horÃ¡rios da planilha
+      - name: Baixar e processar horários da planilha
         id: sync
         run: |
           python3 << 'PYEOF'
@@ -29,23 +29,23 @@ jobs:
 
           ABAS = [
             { 'dia': 'Segunda-feira', 'gid': '765921185'  },
-            { 'dia': 'TerÃ§a-feira',   'gid': '222847853'  },
+            { 'dia': 'Terça-feira',   'gid': '222847853'  },
             { 'dia': 'Quarta-feira',  'gid': '349244144'  },
             { 'dia': 'Quinta-feira',  'gid': '642475882'  },
             { 'dia': 'Sexta-feira',   'gid': '1997803226' },
           ]
 
           COLUNAS = [
-            { 'disciplina': 'MatemÃ¡tica',         'local': 'Cabine de MatemÃ¡tica' },
-            { 'disciplina': 'PortuguÃªs',           'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'InglÃªs',              'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Matemática',         'local': 'Cabine de Matemática' },
+            { 'disciplina': 'Português',           'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Inglês',              'local': 'Cabine de Linguagens' },
             { 'disciplina': 'Espanhol',            'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'EducaÃ§Ã£o ArtÃ­stica',  'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'EducaÃ§Ã£o FÃ­sica',     'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'CiÃªncias/Biologia',   'local': 'Cabine de CiÃªncias da Natureza' },
-            { 'disciplina': 'FÃ­sica',              'local': 'Cabine de CiÃªncias da Natureza' },
-            { 'disciplina': 'QuÃ­mica',             'local': 'Cabine de CiÃªncias da Natureza' },
-            { 'disciplina': 'HistÃ³ria',            'local': 'Cabine de CiÃªncias Humanas' },
+            { 'disciplina': 'Educação Artística',  'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Educação Física',     'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Ciências/Biologia',   'local': 'Cabine de CiÃªncias da Natureza' },
+            { 'disciplina': 'Física',              'local': 'Cabine de CiÃªncias da Natureza' },
+            { 'disciplina': 'Química',             'local': 'Cabine de CiÃªncias da Natureza' },
+            { 'disciplina': 'História',            'local': 'Cabine de CiÃªncias Humanas' },
             { 'disciplina': 'Geografia',           'local': 'Cabine de CiÃªncias Humanas' },
             { 'disciplina': 'Sociologia',          'local': 'Cabine de CiÃªncias Humanas' },
             { 'disciplina': 'Filosofia',           'local': 'Cabine de CiÃªncias Humanas' },
@@ -69,18 +69,18 @@ jobs:
             'Marcela':            'Profª Marcela',
             'Alessandra':         'Profª Alessandra',
             'Delma':              'Profª Delma',
-            'ElÃ¡zaro':            'Prof. ElÃ¡zaro',
-            'Elazaro':            'Prof. ElÃ¡zaro',
+            'Elázaro':            'Prof. Elázaro',
+            'Elazaro':            'Prof. Elázaro',
             'Leonardo':           'Prof. Leonardo',
             'Xunei':              'Prof. Xunei',
-            'MÃ¡rio':              'Prof. MÃ¡rio',
-            'Mario':              'Prof. MÃ¡rio',
+            'Mário':              'Prof. Mário',
+            'Mario':              'Prof. Mário',
             'Carlos Laurindo':    'Prof. Carlos Laurindo',
             'Fabiane':            'Profª Fabiane',
             'Vitor Vasconcelos':  'Prof. Vitor Vasconcelos',
             'David':              'Prof. David',
-            'JosÃ© Carlos':        'Prof. JosÃ© Carlos',
-            'Jose Carlos':        'Prof. JosÃ© Carlos',
+            'José Carlos':        'Prof. José Carlos',
+            'Jose Carlos':        'Prof. José Carlos',
             'Rafael Maia':        'Prof. Rafael Maia',
             'Fernando':           'Prof. Fernando',
           }
@@ -103,11 +103,11 @@ jobs:
             reader = csv.reader(io.StringIO(csv_text))
             rows = list(reader)
             header_idx = next(
-              (i for i, r in enumerate(rows) if r and re.match(r'HOR[AÃ]RIOS', r[0].strip(), re.I)),
+              (i for i, r in enumerate(rows) if r and re.match(r'HOR[AÁ]RIOS', r[0].strip(), re.I)),
               -1
             )
             if header_idx == -1:
-              print(f'  [{dia}] CabeÃ§alho nÃ£o encontrado')
+              print(f'  [{dia}] Cabeçalho não encontrado')
               return []
             entradas = []
             for row in rows[header_idx + 1:]:
@@ -148,7 +148,7 @@ jobs:
               entry = {'dia': item['dia'], 'inicio': ss[0][0], 'fim': ss[-1][1], 'local': item['local']}
               if entry not in p['horarios']:
                 p['horarios'].append(entry)
-            ORDEM = ['Segunda-feira','TerÃ§a-feira','Quarta-feira','Quinta-feira','Sexta-feira']
+            ORDEM = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira']
             result = []
             for nome in sorted(prof_map):
               p = prof_map[nome]
@@ -175,7 +175,7 @@ jobs:
             return '\n'.join(lines)
 
           # â”€â”€ EXECUÃ‡ÃƒO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          print('=== CEJA - Sync de HorÃ¡rios ===')
+          print('=== CEJA - Sync de Horários ===')
           todos_dados = []
           for aba in ABAS:
             print(f'  {aba["dia"]}...', end=' ', flush=True)
@@ -213,7 +213,7 @@ jobs:
               f.write('houve_mudanca=false\n')
             sys.exit(0)
 
-          print('AlteraÃ§Ãµes detectadas! Atualizando dados_escola.js...')
+          print('Alterações detectadas! Atualizando dados_escola.js...')
           novo_conteudo = (
             conteudo[:conteudo.index(MARKER_START) + len(MARKER_START)]
             + '\n  horarioProfessores: ' + novo_bloco + ',\n  '
@@ -226,16 +226,16 @@ jobs:
           for p in novo:
             print(f'  â€¢ {p["nome"]} | {", ".join(p["disciplinas"])}')
 
-          # Sinaliza COM mudanÃ§a para o step seguinte
+          # Sinaliza COM mudança para o step seguinte
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             f.write('houve_mudanca=true\n')
           PYEOF
 
-      - name: Commit e Push (somente se houve mudanÃ§a)
+      - name: Commit e Push (somente se houve mudança)
         if: steps.sync.outputs.houve_mudanca == 'true'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add dados_escola.js
-          git commit -m "ðŸ• Sync horÃ¡rios automÃ¡tico - $(date '+%d/%m/%Y %H:%M')"
+          git commit -m "ðŸ•[Sync] horários automático - $(date '+%d/%m/%Y %H:%M')"
           git push
