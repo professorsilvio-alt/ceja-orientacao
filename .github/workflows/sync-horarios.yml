@@ -1,4 +1,4 @@
-﻿﻿name: Sync Horários dos Professores
+﻿name: Sync Horários dos Professores
 
 on:
   # Executa todo dia útil às 09:00 UTC = 06:00 horário de Brasília
