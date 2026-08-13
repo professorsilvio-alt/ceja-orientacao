@@ -25,8 +25,8 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["História"],
       horarios: [
-        { dia: "Terça-feira", inicio: "12:10", fim: "17:10", local: "Cabine de Ciências Humanas" },
-        { dia: "Quinta-feira", inicio: "12:10", fim: "17:10", local: "Cabine de Ciências Humanas" }
+        { dia: "Terça-feira", inicio: "12:10", fim: "17:10", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Quinta-feira", inicio: "12:10", fim: "17:10", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
@@ -34,17 +34,17 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Geografia"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências Humanas" }
+        { dia: "Segunda-feira", inicio: "15:30", fim: "20:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
-      nome: "Prof. Elazaro",
+      nome: "Prof. Elázaro",
       foto: "",
       disciplinas: ["Ciências/Biologia"],
       horarios: [
-        { dia: "Quinta-feira", inicio: "08:50", fim: "12:10", local: "Cabine de Ciências da Natureza" },
-        { dia: "Sexta-feira", inicio: "08:50", fim: "15:30", local: "Cabine de Ciências da Natureza" }
+        { dia: "Quinta-feira", inicio: "08:50", fim: "12:10", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Sexta-feira", inicio: "08:50", fim: "15:30", local: "Cabine de CiÃªncias da Natureza" }
       ]
     },
     {
@@ -52,8 +52,8 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Filosofia", "Sociologia"],
       horarios: [
-        { dia: "Quarta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Ciências Humanas" },
-        { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências Humanas" }
+        { dia: "Quarta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
@@ -68,11 +68,11 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof. Jose Carlos",
+      nome: "Prof. José Carlos",
       foto: "",
       disciplinas: ["Geografia"],
       horarios: [
-        { dia: "Sexta-feira", inicio: "08:50", fim: "17:10", local: "Cabine de Ciências Humanas" }
+        { dia: "Sexta-feira", inicio: "08:50", fim: "17:10", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
@@ -90,18 +90,18 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Física"],
       horarios: [
-        { dia: "Terça-feira", inicio: "08:50", fim: "14:40", local: "Cabine de Ciências da Natureza" },
-        { dia: "Quarta-feira", inicio: "08:50", fim: "14:40", local: "Cabine de Ciências da Natureza" },
-        { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências da Natureza" }
+        { dia: "Terça-feira", inicio: "08:50", fim: "14:40", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Quarta-feira", inicio: "08:50", fim: "14:40", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de CiÃªncias da Natureza" }
       ]
     },
     {
-      nome: "Prof. Mario",
+      nome: "Prof. Mário",
       foto: "",
       disciplinas: ["História"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "13:50", fim: "20:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "13:50", fim: "17:10", local: "Cabine de Ciências Humanas" }
+        { dia: "Segunda-feira", inicio: "13:50", fim: "20:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Sexta-feira", inicio: "13:50", fim: "17:10", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
@@ -109,12 +109,12 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Filosofia", "Sociologia"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "13:00", fim: "13:50", local: "Cabine de Ciências Humanas" },
-        { dia: "Segunda-feira", inicio: "13:50", fim: "15:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Terça-feira", inicio: "13:00", fim: "20:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Quarta-feira", inicio: "13:00", fim: "16:20", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "13:00", fim: "15:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "15:30", fim: "16:20", local: "Cabine de Ciências Humanas" }
+        { dia: "Segunda-feira", inicio: "13:00", fim: "13:50", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Segunda-feira", inicio: "13:50", fim: "15:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Terça-feira", inicio: "13:00", fim: "20:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Quarta-feira", inicio: "13:00", fim: "16:20", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Sexta-feira", inicio: "13:00", fim: "15:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Sexta-feira", inicio: "15:30", fim: "16:20", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
@@ -149,9 +149,9 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Geografia"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "13:00", fim: "15:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Terça-feira", inicio: "13:50", fim: "20:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Quinta-feira", inicio: "13:00", fim: "20:30", local: "Cabine de Ciências Humanas" }
+        { dia: "Segunda-feira", inicio: "13:00", fim: "15:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Terça-feira", inicio: "13:50", fim: "20:30", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Quinta-feira", inicio: "13:00", fim: "20:30", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
@@ -168,23 +168,23 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Física"],
       horarios: [
-        { dia: "Terça-feira", inicio: "14:40", fim: "19:40", local: "Cabine de Ciências da Natureza" },
-        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências da Natureza" }
+        { dia: "Terça-feira", inicio: "14:40", fim: "19:40", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de CiÃªncias da Natureza" }
       ]
     },
     {
-      nome: "Prof.ª Alessandra",
+      nome: "Profª Alessandra",
       foto: "",
       disciplinas: ["Ciências/Biologia", "Química"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "12:10", fim: "16:20", local: "Cabine de Ciências da Natureza" },
-        { dia: "Segunda-feira", inicio: "16:20", fim: "20:30", local: "Cabine de Ciências da Natureza" },
-        { dia: "Terça-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Ciências da Natureza" },
-        { dia: "Quinta-feira", inicio: "13:00", fim: "17:10", local: "Cabine de Ciências da Natureza" }
+        { dia: "Segunda-feira", inicio: "12:10", fim: "16:20", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Segunda-feira", inicio: "16:20", fim: "20:30", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Terça-feira", inicio: "08:50", fim: "13:00", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Quinta-feira", inicio: "13:00", fim: "17:10", local: "Cabine de CiÃªncias da Natureza" }
       ]
     },
     {
-      nome: "Prof.ª Daniela",
+      nome: "Profª Daniela",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -194,17 +194,17 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Delma",
+      nome: "Profª Delma",
       foto: "",
       disciplinas: ["Ciências/Biologia"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "08:50", fim: "12:10", local: "Cabine de Ciências da Natureza" },
-        { dia: "Terça-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências da Natureza" },
-        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências da Natureza" }
+        { dia: "Segunda-feira", inicio: "08:50", fim: "12:10", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Terça-feira", inicio: "15:30", fim: "20:30", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de CiÃªncias da Natureza" }
       ]
     },
     {
-      nome: "Prof.ª Elaine",
+      nome: "Profª Elaine",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -212,7 +212,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Eliane",
+      nome: "Profª Eliane",
       foto: "",
       disciplinas: ["Educação Física"],
       horarios: [
@@ -221,16 +221,16 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Fabiane",
+      nome: "Profª Fabiane",
       foto: "",
       disciplinas: ["História"],
       horarios: [
-        { dia: "Quarta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Ciências Humanas" }
+        { dia: "Quarta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de CiÃªncias Humanas" },
+        { dia: "Sexta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de CiÃªncias Humanas" }
       ]
     },
     {
-      nome: "Prof.ª Luciana",
+      nome: "Profª Luciana",
       foto: "",
       disciplinas: ["Inglês", "Português"],
       horarios: [
@@ -240,7 +240,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Luciana Cavalcante",
+      nome: "Profª Luciana Cavalcante",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -248,15 +248,15 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Marcela",
+      nome: "Profª Marcela",
       foto: "",
       disciplinas: ["Química"],
       horarios: [
-        { dia: "Quarta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências da Natureza" }
+        { dia: "Quarta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de CiÃªncias da Natureza" }
       ]
     },
     {
-      nome: "Prof.ª Sandra",
+      nome: "Profª Sandra",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -267,14 +267,14 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Viviane",
+      nome: "Profª Viviane",
       foto: "",
       disciplinas: ["Química"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências da Natureza" },
-        { dia: "Terça-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências da Natureza" },
-        { dia: "Quinta-feira", inicio: "08:50", fim: "12:10", local: "Cabine de Ciências da Natureza" },
-        { dia: "Sexta-feira", inicio: "08:50", fim: "12:10", local: "Cabine de Ciências da Natureza" }
+        { dia: "Segunda-feira", inicio: "08:50", fim: "13:50", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Terça-feira", inicio: "08:50", fim: "13:50", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Quinta-feira", inicio: "08:50", fim: "12:10", local: "Cabine de CiÃªncias da Natureza" },
+        { dia: "Sexta-feira", inicio: "08:50", fim: "12:10", local: "Cabine de CiÃªncias da Natureza" }
       ]
     }
   ],
