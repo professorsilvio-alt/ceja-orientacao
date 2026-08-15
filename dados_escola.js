@@ -232,7 +232,7 @@ const DADOS_ESCOLA = {
     {
       nome: "Profª Luciana",
       foto: "",
-      disciplinas: ["Português", "Inglês"],
+      disciplinas: ["Inglês", "Português"],
       horarios: [
         { dia: "Segunda-feira", inicio: "14:40", fim: "20:30", local: "Cabine de Linguagens" },
         { dia: "Quinta-feira", inicio: "14:40", fim: "18:50", local: "Cabine de Linguagens" },
