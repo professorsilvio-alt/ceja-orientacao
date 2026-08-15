@@ -1,4 +1,4 @@
-﻿name: Sync Horários dos Professores
+name: Sync Horários dos Professores
 
 on:
   # Executa todo dia útil às 09:00 UTC = 06:00 horário de Brasília
@@ -16,14 +16,14 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout do repositÃ³rio
+      - name: Checkout do repositório
         uses: actions/checkout@v4
 
       - name: Baixar e processar horários da planilha
         id: sync
         run: |
-          python3 << 'PYEOF'
-          import urllib.request, csv, json, re, io, hashlib, sys, os
+          python3 - << 'PYEOF'
+          import urllib.request, csv, json, re, io, sys, os
 
           SPREADSHEET_ID = '1a2XewE5KNuadI8zUbi15r5n06roJb-wa'
 
@@ -37,18 +37,18 @@ jobs:
 
           COLUNAS = [
             { 'disciplina': 'Matemática',         'local': 'Cabine de Matemática' },
-            { 'disciplina': 'Português',           'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Inglês',              'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Espanhol',            'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Educação Artística',  'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Educação Física',     'local': 'Cabine de Linguagens' },
-            { 'disciplina': 'Ciências/Biologia',   'local': 'Cabine de CiÃªncias da Natureza' },
-            { 'disciplina': 'Física',              'local': 'Cabine de CiÃªncias da Natureza' },
-            { 'disciplina': 'Química',             'local': 'Cabine de CiÃªncias da Natureza' },
-            { 'disciplina': 'História',            'local': 'Cabine de CiÃªncias Humanas' },
-            { 'disciplina': 'Geografia',           'local': 'Cabine de CiÃªncias Humanas' },
-            { 'disciplina': 'Sociologia',          'local': 'Cabine de CiÃªncias Humanas' },
-            { 'disciplina': 'Filosofia',           'local': 'Cabine de CiÃªncias Humanas' },
+            { 'disciplina': 'Português',          'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Inglês',             'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Espanhol',           'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Educação Artística', 'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Educação Física',    'local': 'Cabine de Linguagens' },
+            { 'disciplina': 'Ciências/Biologia',  'local': 'Cabine de Ciências da Natureza' },
+            { 'disciplina': 'Física',             'local': 'Cabine de Ciências da Natureza' },
+            { 'disciplina': 'Química',            'local': 'Cabine de Ciências da Natureza' },
+            { 'disciplina': 'História',           'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'Geografia',          'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'Sociologia',         'local': 'Cabine de Ciências Humanas' },
+            { 'disciplina': 'Filosofia',          'local': 'Cabine de Ciências Humanas' },
           ]
 
           NOMES_MAP = {
@@ -83,6 +83,7 @@ jobs:
             'Jose Carlos':        'Prof. José Carlos',
             'Rafael Maia':        'Prof. Rafael Maia',
             'Fernando':           'Prof. Fernando',
+            'Rafael':             'Prof. Rafael',
           }
 
           def fetch_csv(gid):
@@ -174,7 +175,7 @@ jobs:
             lines.append('  ]')
             return '\n'.join(lines)
 
-          # â”€â”€ EXECUÃ‡ÃƒO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          # ── EXECUÇÃO ────────────────────────────────────────────────────────
           print('=== CEJA - Sync de Horários ===')
           todos_dados = []
           for aba in ABAS:
@@ -184,50 +185,44 @@ jobs:
             todos_dados.append({'dia': aba['dia'], 'entradas': entradas})
             print(f'OK ({len(entradas)} entradas)')
 
-          print(f'\n  Consolidando...')
+          print('\n  Consolidando...')
           novo = build_horarios(todos_dados)
           print(f'  {len(novo)} professores\n')
 
-          with open('dados_escola.js', 'r', encoding='utf-8-sig') as f:
+          with open('dados_escola.js', 'r', encoding='utf-8') as f:
             conteudo = f.read()
 
           novo_bloco = gerar_bloco_js(novo)
-          hash_novo  = hashlib.sha256(novo_bloco.encode()).hexdigest()
 
           MARKER_START = '// HORARIOS_SYNC_START'
           MARKER_END   = '// HORARIOS_SYNC_END'
 
           if MARKER_START not in conteudo or MARKER_END not in conteudo:
-            print('ERRO: Marcadores HORARIOS_SYNC nao encontrados em dados_escola.js!')
+            print('ERRO: Marcadores HORARIOS_SYNC não encontrados em dados_escola.js!')
             sys.exit(1)
 
-          # Extrai o bloco atual entre os marcadores para comparacao de hash
-          start_pos = conteudo.index(MARKER_START) + len(MARKER_START)
-          end_pos   = conteudo.index(MARKER_END)
-          bloco_atual = conteudo[start_pos:end_pos].strip()
-          hash_atual  = hashlib.sha256(bloco_atual.encode()).hexdigest()
-
-          if hash_atual == hash_novo:
-            print('Sem alteraÃ§Ãµes detectadas.')
-            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write('houve_mudanca=false\n')
-            sys.exit(0)
-
-          print('Alterações detectadas! Atualizando dados_escola.js...')
           novo_conteudo = (
             conteudo[:conteudo.index(MARKER_START) + len(MARKER_START)]
             + '\n  horarioProfessores: ' + novo_bloco + ',\n  '
             + conteudo[conteudo.index(MARKER_END):]
           )
-          with open('dados_escola.js', 'w', encoding='utf-8-sig') as f:
+
+          if novo_conteudo == conteudo:
+            print('Sem alterações detectadas. dados_escola.js já está atualizado.')
+            with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f:
+              f.write('houve_mudanca=false\n')
+            sys.exit(0)
+
+          print('Alterações detectadas! Atualizando dados_escola.js...')
+          with open('dados_escola.js', 'w', encoding='utf-8') as f:
             f.write(novo_conteudo)
 
-          print('dados_escola.js atualizado!')
+          print('dados_escola.js atualizado com sucesso!')
           for p in novo:
-            print(f'  â€¢ {p["nome"]} | {", ".join(p["disciplinas"])}')
+            print(f'  • {p["nome"]} | {", ".join(p["disciplinas"])}')
 
           # Sinaliza COM mudança para o step seguinte
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f:
             f.write('houve_mudanca=true\n')
           PYEOF
 
@@ -237,5 +232,9 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add dados_escola.js
-          git commit -m "ðŸ•[Sync] horários automático - $(date '+%d/%m/%Y %H:%M')"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "🕒 [Sync] horários automático - $(date '+%d/%m/%Y %H:%M')"
+            git push
+          else
+            echo "Nenhuma alteração detectada no git staging."
+          fi
