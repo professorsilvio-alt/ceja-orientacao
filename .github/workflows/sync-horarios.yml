@@ -34,7 +34,6 @@ jobs:
             { 'dia': 'Quinta-feira',  'gid': '642475882'  },
             { 'dia': 'Sexta-feira',   'gid': '1997803226' },
           ]
-
           COLUNAS = [
             { 'disciplina': 'Matemática',         'local': 'Cabine de Matemática' },
             { 'disciplina': 'Português',          'local': 'Cabine de Linguagens' },
@@ -56,19 +55,19 @@ jobs:
             'Jordan':             'Prof. Jordan',
             'Arlindo':            'Prof. Arlindo',
             'Vitor':              'Prof. Vitor',
-            'Sandra':             'Profª Sandra',
-            'Luciana Cavalcante': 'Profª Luciana Cavalcante',
-            'Luciana':            'Profª Luciana',
-            'Daniela':            'Profª Daniela',
+            'Sandra':             'Prof.ª Sandra',
+            'Luciana Cavalcante': 'Prof.ª Luciana Cavalcante',
+            'Luciana':            'Prof.ª Luciana',
+            'Daniela':            'Prof.ª Daniela',
             'Rafael Souza':       'Prof. Rafael Souza',
             'Wanderley':          'Prof. Wanderley',
             'Thalles':            'Prof. Thalles',
-            'Eliane':             'Profª Eliane',
-            'Elaine':             'Profª Elaine',
-            'Viviane':            'Profª Viviane',
-            'Marcela':            'Profª Marcela',
-            'Alessandra':         'Profª Alessandra',
-            'Delma':              'Profª Delma',
+            'Eliane':             'Prof.ª Eliane',
+            'Elaine':             'Prof.ª Elaine',
+            'Viviane':            'Prof.ª Viviane',
+            'Marcela':            'Prof.ª Marcela',
+            'Alessandra':         'Prof.ª Alessandra',
+            'Delma':              'Prof.ª Delma',
             'Elázaro':            'Prof. Elázaro',
             'Elazaro':            'Prof. Elázaro',
             'Leonardo':           'Prof. Leonardo',
@@ -76,7 +75,7 @@ jobs:
             'Mário':              'Prof. Mário',
             'Mario':              'Prof. Mário',
             'Carlos Laurindo':    'Prof. Carlos Laurindo',
-            'Fabiane':            'Profª Fabiane',
+            'Fabiane':            'Prof.ª Fabiane',
             'Vitor Vasconcelos':  'Prof. Vitor Vasconcelos',
             'David':              'Prof. David',
             'José Carlos':        'Prof. José Carlos',
@@ -146,9 +145,23 @@ jobs:
               p = prof_map[nome]
               p['disciplinas'].add(item['disciplina'])
               ss = sorted(item['slots'])
-              entry = {'dia': item['dia'], 'inicio': ss[0][0], 'fim': ss[-1][1], 'local': item['local']}
-              if entry not in p['horarios']:
-                p['horarios'].append(entry)
+              groups = []
+              if ss:
+                current_group = [ss[0]]
+                for i in range(1, len(ss)):
+                  prev = current_group[-1]
+                  curr = ss[i]
+                  if curr[0] == prev[1]:
+                    current_group.append(curr)
+                  else:
+                    groups.append(current_group)
+                    current_group = [curr]
+                groups.append(current_group)
+                
+              for g in groups:
+                entry = {'dia': item['dia'], 'inicio': g[0][0], 'fim': g[-1][1], 'local': item['local']}
+                if entry not in p['horarios']:
+                  p['horarios'].append(entry)
             ORDEM = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira']
             result = []
             for nome in sorted(prof_map):

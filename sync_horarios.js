@@ -237,17 +237,35 @@ function construirHorarioProfessores(todosDados) {
     const prof = professorMap.get(item.nome);
     prof.disciplinas.add(item.disciplina);
 
-    // Consolida slots: pega início do primeiro e fim do último
+    // Consolida slots: agrupa apenas slots contíguos (onde o início do próximo é igual ao fim do anterior)
     const sorted = item.slots.sort((a, b) => a.inicio.localeCompare(b.inicio));
-    const inicio = sorted[0].inicio;
-    const fim = sorted[sorted.length - 1].fim;
+    const groups = [];
+    if (sorted.length > 0) {
+      let currentGroup = [sorted[0]];
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = currentGroup[currentGroup.length - 1];
+        const curr = sorted[i];
+        if (curr.inicio === prev.fim) {
+          currentGroup.push(curr);
+        } else {
+          groups.push(currentGroup);
+          currentGroup = [curr];
+        }
+      }
+      groups.push(currentGroup);
+    }
 
-    // Evita duplicatas exatas
-    const jaExiste = prof.horarios.some(
-      h => h.dia === item.dia && h.inicio === inicio && h.fim === fim && h.local === item.local
-    );
-    if (!jaExiste) {
-      prof.horarios.push({ dia: item.dia, inicio, fim, local: item.local });
+    for (const group of groups) {
+      const inicio = group[0].inicio;
+      const fim = group[group.length - 1].fim;
+      
+      // Evita duplicatas exatas
+      const jaExiste = prof.horarios.some(
+        h => h.dia === item.dia && h.inicio === inicio && h.fim === fim && h.local === item.local
+      );
+      if (!jaExiste) {
+        prof.horarios.push({ dia: item.dia, inicio, fim, local: item.local });
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-﻿# sync_horarios.ps1
+# sync_horarios.ps1
 # Sincroniza os horarios dos professores do CEJA a partir da planilha Google Sheets.
 # Funciona com PowerShell puro - sem dependencias externas.
 #
@@ -12,27 +12,27 @@ param(
 $SPREADSHEET_ID = '1a2XewE5KNuadI8zUbi15r5n06roJb-wa'
 
 $ABAS = @(
-    @{ Dia = 'Segunda-feira'; GID = '765921185'  }
-    @{ Dia = 'Terça-feira';   GID = '222847853'  }
-    @{ Dia = 'Quarta-feira';  GID = '349244144'  }
-    @{ Dia = 'Quinta-feira';  GID = '642475882'  }
-    @{ Dia = 'Sexta-feira';   GID = '1997803226' }
+    @{ Dia = 'Segunda-feira'; GID = '765921185' }
+    @{ Dia = 'Terça-feira'; GID = '222847853' }
+    @{ Dia = 'Quarta-feira'; GID = '349244144' }
+    @{ Dia = 'Quinta-feira'; GID = '642475882' }
+    @{ Dia = 'Sexta-feira'; GID = '1997803226' }
 )
 
 $COLUNAS = @(
-    @{ Disciplina = 'Matemática';         Local = 'Cabine de Matemática' }
-    @{ Disciplina = 'Português';          Local = 'Cabine de Linguagens' }
-    @{ Disciplina = 'Inglês';             Local = 'Cabine de Linguagens' }
-    @{ Disciplina = 'Espanhol';           Local = 'Cabine de Linguagens' }
+    @{ Disciplina = 'Matemática'; Local = 'Cabine de Matemática' }
+    @{ Disciplina = 'Português'; Local = 'Cabine de Linguagens' }
+    @{ Disciplina = 'Inglês'; Local = 'Cabine de Linguagens' }
+    @{ Disciplina = 'Espanhol'; Local = 'Cabine de Linguagens' }
     @{ Disciplina = 'Educação Artística'; Local = 'Cabine de Linguagens' }
-    @{ Disciplina = 'Educação Física';    Local = 'Cabine de Linguagens' }
-    @{ Disciplina = 'Ciências/Biologia';  Local = 'Cabine de Ciências da Natureza' }
-    @{ Disciplina = 'Física';             Local = 'Cabine de Ciências da Natureza' }
-    @{ Disciplina = 'Química';            Local = 'Cabine de Ciências da Natureza' }
-    @{ Disciplina = 'História';           Local = 'Cabine de Ciências Humanas' }
-    @{ Disciplina = 'Geografia';          Local = 'Cabine de Ciências Humanas' }
-    @{ Disciplina = 'Sociologia';         Local = 'Cabine de Ciências Humanas' }
-    @{ Disciplina = 'Filosofia';          Local = 'Cabine de Ciências Humanas' }
+    @{ Disciplina = 'Educação Física'; Local = 'Cabine de Linguagens' }
+    @{ Disciplina = 'Ciências/Biologia'; Local = 'Cabine de Ciências da Natureza' }
+    @{ Disciplina = 'Física'; Local = 'Cabine de Ciências da Natureza' }
+    @{ Disciplina = 'Química'; Local = 'Cabine de Ciências da Natureza' }
+    @{ Disciplina = 'História'; Local = 'Cabine de Ciências Humanas' }
+    @{ Disciplina = 'Geografia'; Local = 'Cabine de Ciências Humanas' }
+    @{ Disciplina = 'Sociologia'; Local = 'Cabine de Ciências Humanas' }
+    @{ Disciplina = 'Filosofia'; Local = 'Cabine de Ciências Humanas' }
 )
 
 # Mapeamento de nomes curtos da planilha -> nomes no sistema
@@ -95,16 +95,19 @@ function Parse-CSVLine([string]$line) {
     for ($i = 0; $i -lt $line.Length; $i++) {
         $ch = $line[$i]
         if ($ch -eq '"') {
-            if ($inQuotes -and ($i + 1) -lt $line.Length -and $line[$i+1] -eq '"') {
+            if ($inQuotes -and ($i + 1) -lt $line.Length -and $line[$i + 1] -eq '"') {
                 [void]$current.Append('"')
                 $i++
-            } else {
+            }
+            else {
                 $inQuotes = -not $inQuotes
             }
-        } elseif ($ch -eq ',' -and -not $inQuotes) {
+        }
+        elseif ($ch -eq ',' -and -not $inQuotes) {
             [void]$result.Add($current.ToString())
             [void]$current.Clear()
-        } else {
+        }
+        else {
             [void]$current.Append($ch)
         }
     }
@@ -133,9 +136,9 @@ function Normalize-Nome([string]$raw) {
     
     # Capitaliza
     $cap = ($semAcento.ToLower() -split '\s+' | ForEach-Object {
-        if ($_ -in @('de','da','do','dos','das','e')) { $_ }
-        elseif ($_.Length -gt 0) { $_.Substring(0,1).ToUpper() + $_.Substring(1) }
-    }) -join ' '
+            if ($_ -in @('de', 'da', 'do', 'dos', 'das', 'e')) { $_ }
+            elseif ($_.Length -gt 0) { $_.Substring(0, 1).ToUpper() + $_.Substring(1) }
+        }) -join ' '
     
     if ($NOMES_MAP.ContainsKey($cap)) {
         return $NOMES_MAP[$cap]
@@ -194,7 +197,7 @@ function Parse-AbaCSV([string]$csvText, [string]$dia) {
         # Linha de horario: "08:50/ 09:40"
         if ($horarioCell -notmatch '(\d{2}:\d{2})\s*/\s*(\d{2}:\d{2})') { continue }
         $inicio = $Matches[1]
-        $fim    = $Matches[2]
+        $fim = $Matches[2]
         
         for ($c = 1; $c -le 13 -and $c -lt $cols.Count; $c++) {
             $cell = ($cols[$c] -replace '"', '' -replace "`n", ' / ').Trim()
@@ -204,11 +207,11 @@ function Parse-AbaCSV([string]$csvText, [string]$dia) {
             foreach ($nome in $nomes) {
                 if (-not $nome) { continue }
                 [void]$entradas.Add([PSCustomObject]@{
-                    HorarioInicio = $inicio
-                    HorarioFim    = $fim
-                    ColIndex      = ($c - 1)
-                    NomeProfessor = (Normalize-Nome $nome)
-                })
+                        HorarioInicio = $inicio
+                        HorarioFim    = $fim
+                        ColIndex      = ($c - 1)
+                        NomeProfessor = (Normalize-Nome $nome)
+                    })
             }
         }
     }
@@ -237,9 +240,9 @@ function Build-HorarioProfessores($todosDados) {
                 }
             }
             [void]$mapa[$chave].Slots.Add([PSCustomObject]@{
-                Inicio = $entrada.HorarioInicio
-                Fim    = $entrada.HorarioFim
-            })
+                    Inicio = $entrada.HorarioInicio
+                    Fim    = $entrada.HorarioFim
+                })
         }
     }
     
@@ -261,38 +264,59 @@ function Build-HorarioProfessores($todosDados) {
         [void]$prof.Disciplinas.Add($item.Disciplina)
         
         $sorted = @($item.Slots | Sort-Object Inicio)
-        $inicio = $sorted[0].Inicio
-        $fim    = $sorted[-1].Fim
         
-        $jaExiste = $prof.Horarios | Where-Object {
-            $_.Dia -eq $item.Dia -and $_.Inicio -eq $inicio -and $_.Local -eq $item.Local
+        $groups = [System.Collections.ArrayList]@()
+        if ($sorted.Count -gt 0) {
+            $currentGroup = [System.Collections.ArrayList]@()
+            [void]$currentGroup.Add($sorted[0])
+            for ($i = 1; $i -lt $sorted.Count; $i++) {
+                $prev = $currentGroup[$currentGroup.Count - 1]
+                $curr = $sorted[$i]
+                if ($curr.Inicio -eq $prev.Fim) {
+                    [void]$currentGroup.Add($curr)
+                } else {
+                    [void]$groups.Add($currentGroup)
+                    $currentGroup = [System.Collections.ArrayList]@()
+                    [void]$currentGroup.Add($curr)
+                }
+            }
+            [void]$groups.Add($currentGroup)
         }
-        if (-not $jaExiste) {
-            [void]$prof.Horarios.Add([PSCustomObject]@{
-                Dia    = $item.Dia
-                Inicio = $inicio
-                Fim    = $fim
-                Local  = $item.Local
-            })
+
+        foreach ($group in $groups) {
+            $inicio = $group[0].Inicio
+            $fim = $group[-1].Fim
+            
+            $jaExiste = $prof.Horarios | Where-Object {
+                $_.Dia -eq $item.Dia -and $_.Inicio -eq $inicio -and $_.Fim -eq $fim -and $_.Local -eq $item.Local
+            }
+            if (-not $jaExiste) {
+                [void]$prof.Horarios.Add([PSCustomObject]@{
+                        Dia    = $item.Dia
+                        Inicio = $inicio
+                        Fim    = $fim
+                        Local  = $item.Local
+                    })
+            }
         }
     }
     
-    $ORDEM_DIAS = @('Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira')
+    $ORDEM_DIAS = @('Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira')
     
     $resultado = [System.Collections.ArrayList]@()
     foreach ($nome in ($profMap.Keys | Sort-Object)) {
         $prof = $profMap[$nome]
         $horariosOrdenados = @($prof.Horarios | Sort-Object {
-            $idx = $ORDEM_DIAS.IndexOf($_.Dia)
-            if ($idx -lt 0) { $idx = 99 }
-            "$($idx.ToString('00'))_$($_.Inicio)"
-        })
+                $idx = $ORDEM_DIAS.IndexOf($_.Dia)
+                if ($idx -lt 0) { $idx = 99 }
+                "$($idx.ToString('00'))_$($_.Inicio)"
+            })
         [void]$resultado.Add([PSCustomObject]@{
-            Nome        = $prof.Nome
-            Foto        = ''
-            Disciplinas = @($prof.Disciplinas)
-            Horarios    = $horariosOrdenados
-        })
+                Nome        = $prof.Nome
+                Foto        = ''
+                Disciplinas = @($prof.Disciplinas)
+                Horarios    = $horariosOrdenados
+            })
     }
     
     return @($resultado)
@@ -359,7 +383,8 @@ foreach ($aba in $ABAS) {
         $entradas = @(Parse-AbaCSV $csv $aba.Dia)
         [void]$todosDados.Add([PSCustomObject]@{ Dia = $aba.Dia; Entradas = $entradas })
         Write-Host " OK ($($entradas.Count) entradas)" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Host " ERRO: $_" -ForegroundColor Red
         exit 1
     }
@@ -389,7 +414,7 @@ $hashNovo = Get-TextHash $novoBloco
 # Extrai bloco atual para comparar
 $regexBloco = '(?s)// HORARIOS_SYNC_START.*// HORARIOS_SYNC_END'
 $matchAtual = [regex]::Match($conteudoAtual, $regexBloco)
-$hashAtual  = if ($matchAtual.Success) { Get-TextHash $matchAtual.Value } else { '' }
+$hashAtual = if ($matchAtual.Success) { Get-TextHash $matchAtual.Value } else { '' }
 
 $novoBlocoCompleto = "// HORARIOS_SYNC_START`n  horarioProfessores: $novoBloco,`n  // HORARIOS_SYNC_END"
 
@@ -407,7 +432,8 @@ if ($matchAtual.Success) {
         $regexBloco,
         $novoBlocoCompleto
     )
-} else {
+}
+else {
     Write-Host "   ERRO: Marcadores // HORARIOS_SYNC_START e // HORARIOS_SYNC_END nao encontrados em dados_escola.js!" -ForegroundColor Red
     exit 1
 }
@@ -421,7 +447,7 @@ Write-Host ""
 Write-Host "4) Professores sincronizados:" -ForegroundColor Yellow
 foreach ($prof in $novoHorario) {
     $discStr = ($prof.Disciplinas -join ', ')
-    $nDias   = @($prof.Horarios).Count
+    $nDias = @($prof.Horarios).Count
     Write-Host "   * $($prof.Nome) | $discStr | $nDias dia(s)"
 }
 
@@ -431,7 +457,7 @@ Write-Host ""
 
 # Grava log
 $logPath = Join-Path $PSScriptRoot "sync_horarios.log"
-$logMsg  = "[$dataHora] Sync OK. $($novoHorario.Count) professores. Alteracoes: $($hashAtual -ne (Get-TextHash "horarioProfessores: $novoBloco") )"
+$logMsg = "[$dataHora] Sync OK. $($novoHorario.Count) professores. Alteracoes: $($hashAtual -ne (Get-TextHash "horarioProfessores: $novoBloco") )"
 Add-Content -Path $logPath -Value $logMsg -Encoding UTF8
 Write-Host "Log salvo em: $logPath" -ForegroundColor Gray
 Write-Host ""
