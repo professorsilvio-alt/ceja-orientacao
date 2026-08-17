@@ -53,7 +53,7 @@ const DADOS_ESCOLA = {
       disciplinas: ["Filosofia", "Sociologia"],
       horarios: [
         { dia: "Quarta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Ciências Humanas" },
-        { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências Humanas" }
+        { dia: "Quinta-feira", inicio: "08:50", fim: "20:30", local: "Cabine de Ciências Humanas" }
       ]
     },
     {
@@ -262,7 +262,7 @@ const DADOS_ESCOLA = {
       horarios: [
         { dia: "Segunda-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Linguagens" },
         { dia: "Terça-feira", inicio: "08:50", fim: "12:10", local: "Cabine de Linguagens" },
-        { dia: "Quarta-feira", inicio: "09:40", fim: "13:50", local: "Cabine de Linguagens" },
+        { dia: "Quarta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Linguagens" },
         { dia: "Quinta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Linguagens" }
       ]
     },
