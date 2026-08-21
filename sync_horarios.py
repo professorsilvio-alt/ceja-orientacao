@@ -1,0 +1,208 @@
+import urllib.request, csv, json, re, io, sys, os
+
+SPREADSHEET_ID = '1a2XewE5KNuadI8zUbi15r5n06roJb-wa'
+
+ABAS = [
+  { 'dia': 'Segunda-feira', 'gid': '765921185'  },
+  { 'dia': 'Terça-feira',   'gid': '222847853'  },
+  { 'dia': 'Quarta-feira',  'gid': '349244144'  },
+  { 'dia': 'Quinta-feira',  'gid': '642475882'  },
+  { 'dia': 'Sexta-feira',   'gid': '1997803226' },
+]
+COLUNAS = [
+  { 'disciplina': 'Matemática',         'local': 'Cabine de Matemática' },
+  { 'disciplina': 'Português',          'local': 'Cabine de Linguagens' },
+  { 'disciplina': 'Inglês',             'local': 'Cabine de Linguagens' },
+  { 'disciplina': 'Espanhol',           'local': 'Cabine de Linguagens' },
+  { 'disciplina': 'Educação Artística', 'local': 'Cabine de Linguagens' },
+  { 'disciplina': 'Educação Física',    'local': 'Cabine de Linguagens' },
+  { 'disciplina': 'Ciências/Biologia',  'local': 'Cabine de Ciências da Natureza' },
+  { 'disciplina': 'Física',             'local': 'Cabine de Ciências da Natureza' },
+  { 'disciplina': 'Química',            'local': 'Cabine de Ciências da Natureza' },
+  { 'disciplina': 'História',           'local': 'Cabine de Ciências Humanas' },
+  { 'disciplina': 'Geografia',          'local': 'Cabine de Ciências Humanas' },
+  { 'disciplina': 'Sociologia',         'local': 'Cabine de Ciências Humanas' },
+  { 'disciplina': 'Filosofia',          'local': 'Cabine de Ciências Humanas' },
+]
+
+NOMES_MAP = {
+  'Leandro':            'Prof. Leandro',
+  'Jordan':             'Prof. Jordan',
+  'Arlindo':            'Prof. Arlindo',
+  'Vitor':              'Prof. Vitor',
+  'Sandra':             'Profª Sandra',
+  'Luciana Cavalcante': 'Profª Luciana Cavalcante',
+  'Luciana':            'Profª Luciana',
+  'Daniela':            'Profª Daniela',
+  'Rafael Souza':       'Prof. Rafael Souza',
+  'Wanderley':          'Prof. Wanderley',
+  'Thalles':            'Prof. Thalles',
+  'Eliane':             'Profª Eliane',
+  'Elaine':             'Profª Elaine',
+  'Viviane':            'Profª Viviane',
+  'Marcela':            'Profª Marcela',
+  'Alessandra':         'Profª Alessandra',
+  'Delma':              'Profª Delma',
+  'Elázaro':            'Prof. Elázaro',
+  'Elazaro':            'Prof. Elázaro',
+  'Leonardo':           'Prof. Leonardo',
+  'Xunei':              'Prof. Xunei',
+  'Mário':              'Prof. Mário',
+  'Mario':              'Prof. Mário',
+  'Carlos Laurindo':    'Prof. Carlos Laurindo',
+  'Fabiane':            'Profª Fabiane',
+  'Vitor Vasconcelos':  'Prof. Vitor Vasconcelos',
+  'David':              'Prof. David',
+  'José Carlos':        'Prof. José Carlos',
+  'Jose Carlos':        'Prof. José Carlos',
+  'Rafael Maia':        'Prof. Rafael Maia',
+  'Fernando':           'Prof. Fernando',
+  'Rafael':             'Prof. Rafael',
+}
+
+def fetch_csv(gid):
+  url = f'https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={gid}'
+  req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+  with urllib.request.urlopen(req, timeout=30) as r:
+    return r.read().decode('utf-8')
+
+def normalize_name(raw):
+  name = re.sub(r'\s+\d+$', '', raw).strip()
+  cap = ' '.join(
+    w if w.lower() in ('de','da','do','dos','das','e') else w.capitalize()
+    for w in name.split()
+  )
+  return NOMES_MAP.get(cap, f'Prof. {cap}')
+
+def parse_aba(csv_text, dia):
+  reader = csv.reader(io.StringIO(csv_text))
+  rows = list(reader)
+  header_idx = next(
+    (i for i, r in enumerate(rows) if r and re.match(r'HOR[AÁ]RIOS', r[0].strip(), re.I)),
+    -1
+  )
+  if header_idx == -1:
+    print(f'  [{dia}] Cabeçalho não encontrado')
+    return []
+  entradas = []
+  for row in rows[header_idx + 1:]:
+    if not row: continue
+    m = re.match(r'(\d{2}:\d{2})\s*/\s*(\d{2}:\d{2})', row[0].strip())
+    if not m: continue
+    inicio, fim = m.group(1), m.group(2)
+    for c in range(1, 14):
+      if c >= len(row): continue
+      cell = row[c].strip().replace('\n', ' / ')
+      if not cell or cell == 'FECHADA': continue
+      for nome_raw in cell.split('/'):
+        nome_raw = nome_raw.strip()
+        if nome_raw and nome_raw != 'FECHADA':
+          entradas.append({'inicio': inicio, 'fim': fim, 'col': c-1, 'nome': normalize_name(nome_raw)})
+  return entradas
+
+def build_horarios(todos):
+  mapa = {}
+  for item in todos:
+    for e in item['entradas']:
+      col = e['col']
+      if col >= len(COLUNAS): continue
+      k = (e['nome'], item['dia'], col)
+      if k not in mapa:
+        mapa[k] = {'nome': e['nome'], 'dia': item['dia'],
+                    'disciplina': COLUNAS[col]['disciplina'],
+                    'local': COLUNAS[col]['local'], 'slots': []}
+      mapa[k]['slots'].append((e['inicio'], e['fim']))
+  prof_map = {}
+  for item in mapa.values():
+    nome = item['nome']
+    if nome not in prof_map:
+      prof_map[nome] = {'nome': nome, 'foto': '', 'disciplinas': set(), 'horarios': []}
+    p = prof_map[nome]
+    p['disciplinas'].add(item['disciplina'])
+    ss = sorted(item['slots'])
+    groups = []
+    if ss:
+      current_group = [ss[0]]
+      for i in range(1, len(ss)):
+        prev = current_group[-1]
+        curr = ss[i]
+        if curr[0] == prev[1]:
+          current_group.append(curr)
+        else:
+          groups.append(current_group)
+          current_group = [curr]
+      groups.append(current_group)
+      
+    for g in groups:
+      entry = {'dia': item['dia'], 'inicio': g[0][0], 'fim': g[-1][1], 'local': item['local']}
+      if entry not in p['horarios']:
+        p['horarios'].append(entry)
+  ORDEM = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira']
+  result = []
+  for nome in sorted(prof_map):
+    p = prof_map[nome]
+    p['horarios'].sort(key=lambda h: (ORDEM.index(h['dia']) if h['dia'] in ORDEM else 9, h['inicio']))
+    result.append({'nome': p['nome'], 'foto': '', 'disciplinas': sorted(p['disciplinas']), 'horarios': p['horarios']})
+  return result
+
+def gerar_bloco_js(horarios):
+  lines = ['[']
+  for i, p in enumerate(horarios):
+    vc = ',' if i < len(horarios)-1 else ''
+    lines.append('    {')
+    lines.append(f'      nome: {json.dumps(p["nome"], ensure_ascii=False)},')
+    lines.append(f'      foto: "",')
+    discs = ', '.join(json.dumps(d, ensure_ascii=False) for d in p['disciplinas'])
+    lines.append(f'      disciplinas: [{discs}],')
+    lines.append('      horarios: [')
+    for j, h in enumerate(p['horarios']):
+      vh = ',' if j < len(p['horarios'])-1 else ''
+      lines.append(f'        {{ dia: {json.dumps(h["dia"], ensure_ascii=False)}, inicio: "{h["inicio"]}", fim: "{h["fim"]}", local: {json.dumps(h["local"], ensure_ascii=False)} }}{vh}')
+    lines.append('      ]')
+    lines.append(f'    }}{vc}')
+  lines.append('  ]')
+  return '\n'.join(lines)
+
+# ── EXECUÇÃO ────────────────────────────────────────────────────────
+print('=== CEJA - Sync de Horários (Python) ===')
+todos_dados = []
+for aba in ABAS:
+  print(f'  {aba["dia"]}...', end=' ', flush=True)
+  csv_text = fetch_csv(aba['gid'])
+  entradas = parse_aba(csv_text, aba['dia'])
+  todos_dados.append({'dia': aba['dia'], 'entradas': entradas})
+  print(f'OK ({len(entradas)} entradas)')
+
+print('\n  Consolidando...')
+novo = build_horarios(todos_dados)
+print(f'  {len(novo)} professores\n')
+
+with open('dados_escola.js', 'r', encoding='utf-8') as f:
+  conteudo = f.read()
+
+novo_bloco = gerar_bloco_js(novo)
+
+MARKER_START = '// HORARIOS_SYNC_START'
+MARKER_END   = '// HORARIOS_SYNC_END'
+
+if MARKER_START not in conteudo or MARKER_END not in conteudo:
+  print('ERRO: Marcadores HORARIOS_SYNC não encontrados em dados_escola.js!')
+  sys.exit(1)
+
+novo_conteudo = (
+  conteudo[:conteudo.index(MARKER_START) + len(MARKER_START)]
+  + '\n  horarioProfessores: ' + novo_bloco + ',\n  '
+  + conteudo[conteudo.index(MARKER_END):]
+)
+
+if novo_conteudo == conteudo:
+  print('Sem alterações detectadas. dados_escola.js já está atualizado.')
+  sys.exit(0)
+
+print('Alterações detectadas! Atualizando dados_escola.js...')
+with open('dados_escola.js', 'w', encoding='utf-8') as f:
+  f.write(novo_conteudo)
+
+print('dados_escola.js atualizado com sucesso!')
+for p in novo:
+  print(f'  • {p["nome"]} | {", ".join(p["disciplinas"])}')

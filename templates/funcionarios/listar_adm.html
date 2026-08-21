@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Funcionários Administrativos{% endblock %}
+{% block nav_administrativos %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-briefcase-fill me-1"></i> Funcionários Administrativos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Funcionários Administrativos</div>
+    <div class="page-subtitle">{{ funcionarios.count }} funcionário{{ funcionarios.count|pluralize:"s" }} ativo{{ funcionarios.count|pluralize:"s" }}</div>
+  </div>
+  {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+  <a href="{% url 'criar_administrativo' %}" class="btn-gestao btn-gestao-primary">
+    <i class="bi bi-person-plus-fill"></i> Novo Funcionário
+  </a>
+  {% endif %}
+</div>
+
+<div class="card-gestao">
+  {% if funcionarios %}
+  <div class="table-responsive">
+    <table class="table-gestao" id="tabela-adm">
+      <thead>
+        <tr>
+          <th>Classif.</th>
+          <th>Nome</th>
+          <th>Cargo</th>
+          <th>Função de ingresso</th>
+          <th>Matrícula</th>
+          <th>Ingresso na escola</th>
+          <th>Tempo na escola</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for func in funcionarios %}
+        <tr>
+          <td>
+            <span class="badge-gestao badge-primary">
+              {% if func.classificacao %}{{ func.classificacao }}º{% else %}—{% endif %}
+            </span>
+          </td>
+          <td style="font-weight:600;">{{ func.nome_completo }}</td>
+          <td>{{ func.get_cargo_display }}</td>
+          <td style="color:var(--text-secondary); font-size:0.85rem;">{{ func.funcao_ingresso }}</td>
+          <td style="font-family:monospace; font-size:0.82rem;">
+            {{ func.matricula }}
+            {% if func.matricula_acumulacao %}
+            <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ func.matricula_acumulacao }}</span>
+            {% endif %}
+          </td>
+          <td>{{ func.data_ingresso_unidade|date:"d/m/Y" }}</td>
+          <td><span style="color:var(--green); font-size:0.82rem;">{{ func.tempo_na_escola }}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'detalhe_administrativo' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
+                <i class="bi bi-eye"></i>
+              </a>
+              {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+              <a href="{% url 'editar_administrativo' func.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding:48px; color:var(--text-muted);">
+    <i class="bi bi-briefcase" style="font-size:3rem; display:block; margin-bottom:12px;"></i>
+    Nenhum funcionário administrativo cadastrado.
+    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+    <br><a href="{% url 'criar_administrativo' %}" class="btn-gestao btn-gestao-primary mt-3">Cadastrar o primeiro</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

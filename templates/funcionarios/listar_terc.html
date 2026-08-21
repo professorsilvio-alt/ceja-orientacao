@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Funcionários Terceirizados{% endblock %}
+{% block nav_terceirizados %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-people-fill me-1"></i> Funcionários Terceirizados{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Funcionários Terceirizados</div>
+    <div class="page-subtitle">{{ funcionarios.count }} funcionário{{ funcionarios.count|pluralize:"s" }} ativo{{ funcionarios.count|pluralize:"s" }}</div>
+  </div>
+  {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+  <a href="{% url 'criar_terceirizado' %}" class="btn-gestao btn-gestao-primary">
+    <i class="bi bi-person-plus-fill"></i> Novo Terceirizado
+  </a>
+  {% endif %}
+</div>
+
+<div class="card-gestao">
+  {% if funcionarios %}
+  <div class="table-responsive">
+    <table class="table-gestao" id="tabela-terc">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Cargo / Função</th>
+          <th>Empresa</th>
+          <th>Admissão</th>
+          <th>Tempo</th>
+          <th>Contato</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for func in funcionarios %}
+        <tr>
+          <td>
+            <div style="font-weight:600;">{{ func.nome_completo }}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">CPF: {{ func.cpf|slice:":3" }}.{{ func.cpf|slice:"3:6" }}.{{ func.cpf|slice:"6:9" }}-{{ func.cpf|slice:"9:" }}</div>
+          </td>
+          <td>{{ func.cargo_funcao }}</td>
+          <td style="font-size:0.85rem; color:var(--text-secondary);">{{ func.empresa_contratante }}</td>
+          <td>{{ func.data_admissao|date:"d/m/Y" }}</td>
+          <td><span style="color:var(--green); font-size:0.82rem;">{{ func.tempo_na_escola }}</span></td>
+          <td style="font-size:0.82rem;">
+            {% if func.telefone %}<div><i class="bi bi-phone me-1" style="color:var(--text-muted);"></i>{{ func.telefone }}</div>{% endif %}
+            {% if func.email %}<div><i class="bi bi-envelope me-1" style="color:var(--text-muted);"></i>{{ func.email }}</div>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'detalhe_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
+                <i class="bi bi-eye"></i>
+              </a>
+              {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+              <a href="{% url 'editar_terceirizado' func.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding:48px; color:var(--text-muted);">
+    <i class="bi bi-people" style="font-size:3rem; display:block; margin-bottom:12px;"></i>
+    Nenhum funcionário terceirizado cadastrado.
+    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+    <br><a href="{% url 'criar_terceirizado' %}" class="btn-gestao btn-gestao-primary mt-3">Cadastrar o primeiro</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Horários — {{ professor.nome_curto }}{% endblock %}
+{% block nav_professores %}active{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'listar_professores' %}" style="color:var(--text-secondary); text-decoration:none;"><i class="bi bi-person-video3 me-1"></i>Professores</a> ›
+  <a href="{% url 'detalhe_professor' professor.pk %}" style="color:var(--text-secondary); text-decoration:none;">{{ professor.nome_curto }}</a> › Horários
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Horários — {{ professor.nome_completo }}</div>
+    <div class="page-subtitle">Ano letivo: {{ ano }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="?ano={{ ano|add:"-1" }}" class="btn-gestao btn-gestao-secondary" style="padding:6px 12px;">◀ {{ ano|add:"-1" }}</a>
+    <a href="?ano={{ ano|add:"1" }}" class="btn-gestao btn-gestao-secondary" style="padding:6px 12px;">{{ ano|add:"1" }} ▶</a>
+    <a href="{% url 'detalhe_professor' professor.pk %}" class="btn-gestao btn-gestao-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Lista de horários -->
+  <div class="col-md-7">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; margin-bottom:16px;">Horários cadastrados em {{ ano }}</h6>
+      {% if horarios %}
+      {% for h in horarios %}
+      <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px 16px; margin-bottom:8px; border-left:3px solid {% if h.aprovado %}var(--green){% else %}var(--yellow){% endif %};">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div style="font-weight:700;">{{ h.get_dia_semana_display }}</div>
+            <div style="color:var(--text-secondary); font-size:0.88rem;">
+              {{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">{{ h.local_display }}</div>
+          </div>
+          <div class="d-flex flex-column gap-1 align-items-end">
+            <span class="badge-gestao {% if h.aprovado %}badge-success{% else %}badge-warning{% endif %}">
+              {% if h.aprovado %}✅ Aprovado{% else %}⏳ Pendente{% endif %}
+            </span>
+            <div class="d-flex gap-1 mt-1">
+              {% if is_diretor and not h.aprovado %}
+              <form method="post" action="{% url 'aprovar_horario' h.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-gestao btn-gestao-success" style="padding:4px 10px; font-size:0.72rem;" title="Aprovar">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+              </form>
+              {% endif %}
+              {% if is_diretor %}
+              <form method="post" action="{% url 'remover_horario' h.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-gestao btn-gestao-danger" style="padding:4px 10px; font-size:0.72rem;"
+                  onclick="return confirm('Remover este horário?')" title="Remover">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:24px 0;">
+        <i class="bi bi-clock" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+        Nenhum horário cadastrado para {{ ano }}.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Formulário para adicionar horário -->
+  <div class="col-md-5">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; margin-bottom:16px;">Adicionar Horário</h6>
+      <form method="post" id="form-horario">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger mb-3" style="font-size:0.82rem;">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+        <div class="mb-2">
+          <label class="form-label">Ano letivo</label>
+          {{ form.ano_letivo }}
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Dia da semana</label>
+          {{ form.dia_semana }}
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label">Início</label>
+            {{ form.hora_inicio }}
+          </div>
+          <div class="col-6">
+            <label class="form-label">Fim</label>
+            {{ form.hora_fim }}
+          </div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Local</label>
+          {{ form.local }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descrição do local (se "Outro")</label>
+          {{ form.local_descricao }}
+        </div>
+        <button type="submit" class="btn-gestao btn-gestao-primary w-100" id="btn-add-horario">
+          <i class="bi bi-plus-circle-fill"></i> Adicionar Horário
+        </button>
+      </form>
+      {% if not is_diretor %}
+      <p style="color:var(--text-muted); font-size:0.75rem; margin-top:12px;">
+        <i class="bi bi-info-circle me-1"></i>
+        Horários adicionados precisam ser aprovados pela Direção para aparecer no totem.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

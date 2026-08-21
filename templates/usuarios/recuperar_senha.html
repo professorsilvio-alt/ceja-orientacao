@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Recuperar Senha — CEJA Gestão</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'gestao/css/painel.css' %}">
+</head>
+<body class="painel-body">
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo-wrap">
+      <img src="{% static 'logo.png' %}" alt="CEJA" class="login-logo">
+    </div>
+    <div class="login-title">Recuperar Senha</div>
+    <div class="login-desc">
+      Informe o e-mail cadastrado no sistema. Enviaremos um link para criar uma nova senha.
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} mb-3">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="form-label">E-mail cadastrado</label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+      <button type="submit" class="login-btn">
+        <i class="bi bi-envelope-fill"></i> Enviar Link de Recuperação
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="{% url 'login' %}" style="font-size:0.82rem; color:#64748b; text-decoration:none;">
+        <i class="bi bi-arrow-left me-1"></i>Voltar ao login
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

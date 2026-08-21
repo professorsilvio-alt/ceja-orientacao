@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_terceirizados %}active{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'listar_terceirizados' %}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-people-fill me-1"></i>Terceirizados
+  </a> › {{ titulo }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">{{ titulo }}</div>
+  <a href="{% url 'listar_terceirizados' %}" class="btn-gestao btn-gestao-secondary">
+    <i class="bi bi-arrow-left"></i> Voltar
+  </a>
+</div>
+
+<div class="card-gestao" style="max-width:900px;">
+  <form method="post" enctype="multipart/form-data" id="form-terc">
+    {% csrf_token %}
+    <div class="row g-3">
+
+      <!-- DADOS PESSOAIS -->
+      <div class="col-12"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados Pessoais</h6></div>
+
+      <div class="col-12">
+        <label class="form-label">Nome Completo *</label>
+        {{ form.nome_completo }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">CPF *</label>
+        {{ form.cpf }}
+        {% if form.cpf.errors %}<small class="text-danger">{{ form.cpf.errors.0 }}</small>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">RG *</label>
+        {{ form.rg }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Data de Nascimento *</label>
+        {{ form.data_nascimento }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Sexo</label>
+        {{ form.sexo }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Estado Civil</label>
+        {{ form.estado_civil }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Naturalidade</label>
+        {{ form.naturalidade }}
+      </div>
+
+      <!-- DOCUMENTOS TRABALHISTAS -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Documentos Trabalhistas</h6></div>
+
+      <div class="col-md-4">
+        <label class="form-label">PIS / PASEP</label>
+        {{ form.pis_pasep }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">CTPS — Número</label>
+        {{ form.ctps_numero }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">CTPS — Série</label>
+        {{ form.ctps_serie }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">CTPS — UF</label>
+        {{ form.ctps_uf }}
+      </div>
+
+      <!-- CONTRATO CLT -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Contrato CLT</h6></div>
+
+      <div class="col-md-6">
+        <label class="form-label">Empresa Contratante *</label>
+        {{ form.empresa_contratante }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Cargo / Função *</label>
+        {{ form.cargo_funcao }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Salário (R$)</label>
+        {{ form.salario }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data de Admissão *</label>
+        {{ form.data_admissao }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Data de Demissão</label>
+        {{ form.data_demissao }}
+        <small style="color:var(--text-muted);">Deixe em branco se ainda ativo</small>
+      </div>
+      <div class="col-md-3 d-flex align-items-center" style="margin-top:8px;">
+        <div class="form-check form-switch">
+          {{ form.ativo }}
+          <label class="form-check-label form-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
+        </div>
+      </div>
+
+      <!-- ENDEREÇO -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Endereço</h6></div>
+
+      <div class="col-md-2">
+        <label class="form-label">CEP</label>
+        {{ form.cep }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Logradouro</label>
+        {{ form.logradouro }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Número</label>
+        {{ form.numero }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Complemento</label>
+        {{ form.complemento }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Bairro</label>
+        {{ form.bairro }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Cidade</label>
+        {{ form.cidade }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">UF</label>
+        {{ form.uf }}
+      </div>
+
+      <!-- CONTATO -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Contato</h6></div>
+
+      <div class="col-md-4">
+        <label class="form-label">E-mail</label>
+        {{ form.email }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Telefone</label>
+        {{ form.telefone }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Telefone de Emergência</label>
+        {{ form.telefone_emergencia }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Foto</label>
+        {{ form.foto }}
+      </div>
+      <div class="col-md-9">
+        <label class="form-label">Observações</label>
+        {{ form.observacoes }}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn-gestao btn-gestao-primary" id="btn-salvar-terc">
+        <i class="bi bi-check2-circle"></i> Salvar
+      </button>
+      <a href="{% url 'listar_terceirizados' %}" class="btn-gestao btn-gestao-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Máscara de CEP para buscar endereço automaticamente
+  const campoCEP = document.querySelector('[name="cep"]');
+  if (campoCEP) {
+    campoCEP.addEventListener('blur', async () => {
+      const cep = campoCEP.value.replace(/\D/g, '');
+      if (cep.length === 8) {
+        try {
+          const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+          const dados = await res.json();
+          if (!dados.erro) {
+            document.querySelector('[name="logradouro"]').value = dados.logradouro || '';
+            document.querySelector('[name="bairro"]').value = dados.bairro || '';
+            document.querySelector('[name="cidade"]').value = dados.localidade || '';
+            document.querySelector('[name="uf"]').value = dados.uf || 'RJ';
+          }
+        } catch (e) {}
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Presenças e Faltas{% endblock %}
+{% block nav_presencas %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-clipboard-check-fill me-1"></i> Presenças e Faltas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Presenças e Faltas</div>
+    <div class="page-subtitle">{{ registros.count }} registro{{ registros.count|pluralize:"s" }} no período</div>
+  </div>
+  <a href="{% url 'novo_registro_presenca' %}" class="btn-gestao btn-gestao-primary">
+    <i class="bi bi-plus-lg"></i> Registrar Ocorrência
+  </a>
+</div>
+
+<!-- Filtros -->
+<div class="card-gestao mb-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Data inicial</label>
+      <input type="date" name="data_inicio" value="{{ data_inicio }}" class="form-control" id="filtro-inicio">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Data final</label>
+      <input type="date" name="data_fim" value="{{ data_fim }}" class="form-control" id="filtro-fim">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Tipo</label>
+      <select name="tipo" class="form-select" id="filtro-tipo">
+        <option value="">Todos</option>
+        <option value="falta" {% if tipo_filtro == 'falta' %}selected{% endif %}>Falta</option>
+        <option value="ausencia" {% if tipo_filtro == 'ausencia' %}selected{% endif %}>Ausência justificada</option>
+        <option value="atraso" {% if tipo_filtro == 'atraso' %}selected{% endif %}>Atraso</option>
+        <option value="saida_antecipada" {% if tipo_filtro == 'saida_antecipada' %}selected{% endif %}>Saída antecipada</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn-gestao btn-gestao-primary w-100" id="btn-filtrar">
+        <i class="bi bi-funnel-fill"></i> Filtrar
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Tabela -->
+<div class="card-gestao">
+  {% if registros %}
+  <div class="table-responsive">
+    <table class="table-gestao">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Funcionário</th>
+          <th>Tipo/Função</th>
+          <th>Ocorrência</th>
+          <th>Justificado</th>
+          <th>Motivo</th>
+          <th>Registrado por</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reg in registros %}
+        <tr>
+          <td style="font-weight:600; white-space:nowrap;">{{ reg.data|date:"d/m/Y" }}</td>
+          <td>{{ reg.nome_funcionario }}</td>
+          <td>
+            <span class="badge-gestao badge-secondary" style="font-size:0.65rem;">{{ reg.get_tipo_funcionario_display }}</span>
+          </td>
+          <td>
+            <span class="badge-gestao badge-{{ reg.badge_color }}">{{ reg.get_tipo_display }}</span>
+            {% if reg.hora_chegada %}
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Chegada: {{ reg.hora_chegada|time:"H:i" }}</div>
+            {% endif %}
+          </td>
+          <td>
+            {% if reg.justificado %}
+            <i class="bi bi-check-circle-fill" style="color:var(--green);"></i>
+            {% else %}
+            <i class="bi bi-x-circle-fill" style="color:var(--red);"></i>
+            {% endif %}
+          </td>
+          <td style="font-size:0.82rem; color:var(--text-secondary);">{{ reg.motivo|default:"—" }}</td>
+          <td style="font-size:0.78rem; color:var(--text-muted);">{{ reg.registrado_por.primeiro_nome|default:"—" }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'editar_registro_presenca' reg.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:4px 10px; font-size:0.75rem;">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="{% url 'excluir_registro_presenca' reg.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-gestao btn-gestao-danger" style="padding:4px 10px; font-size:0.75rem;"
+                  onclick="return confirm('Excluir este registro?')">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding:48px; color:var(--text-muted);">
+    <i class="bi bi-clipboard-check" style="font-size:2.5rem; display:block; margin-bottom:12px;"></i>
+    Nenhuma ocorrência no período selecionado.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

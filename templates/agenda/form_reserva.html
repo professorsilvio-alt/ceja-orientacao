@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_auditorio %}active{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'agenda_auditorio' %}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-calendar-event-fill me-1"></i>Auditório
+  </a> › {{ titulo }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">{{ titulo }}</div>
+  <a href="{% url 'agenda_auditorio' %}" class="btn-gestao btn-gestao-secondary">
+    <i class="bi bi-arrow-left"></i> Voltar
+  </a>
+</div>
+
+<div class="card-gestao" style="max-width:760px;">
+  <form method="post" id="form-reserva">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger mb-3" style="font-size:0.85rem;">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ form.non_field_errors.0 }}
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <div class="col-md-8">
+        <label class="form-label">Título do Evento / Atividade *</label>
+        {{ form.titulo }}
+        {% if form.titulo.errors %}<small class="text-danger">{{ form.titulo.errors.0 }}</small>{% endif %}
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Tipo de Evento *</label>
+        {{ form.tipo }}
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Data *</label>
+        {{ form.data }}
+        {% if form.data.errors %}<small class="text-danger">{{ form.data.errors.0 }}</small>{% endif %}
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Horário de Início *</label>
+        {{ form.hora_inicio }}
+        {% if form.hora_inicio.errors %}<small class="text-danger">{{ form.hora_inicio.errors.0 }}</small>{% endif %}
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Horário de Término *</label>
+        {{ form.hora_fim }}
+        {% if form.hora_fim.errors %}<small class="text-danger">{{ form.hora_fim.errors.0 }}</small>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Responsável pelo Evento *</label>
+        {{ form.responsavel }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Turma / Público Alvo</label>
+        {{ form.turma_publico }}
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Capacidade Prevista (Nº Pessoas)</label>
+        {{ form.capacidade_prevista }}
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Status *</label>
+        {{ form.status }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Descrição / Detalhes</label>
+        {{ form.descricao }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Observações internas</label>
+        {{ form.observacoes }}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn-gestao btn-gestao-primary">
+        <i class="bi bi-check2-circle"></i> Salvar Reserva
+      </button>
+      <a href="{% url 'agenda_auditorio' %}" class="btn-gestao btn-gestao-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Auditório{% endblock %}
+{% block nav_auditorio %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-calendar-event-fill me-1"></i> Agenda do Auditório{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Agenda do Auditório</div>
+    <div class="page-subtitle">{{ nome_mes }} {{ ano }}</div>
+  </div>
+  {% if is_diretor %}
+  <a href="{% url 'nova_reserva' %}" class="btn-gestao btn-gestao-primary">
+    <i class="bi bi-calendar-plus-fill"></i> Nova Reserva
+  </a>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <!-- CALENDÁRIO -->
+  <div class="col-lg-8">
+    <div class="card-gestao">
+      <!-- Navegação do mês -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <a href="?mes={{ mes_ant }}&ano={{ ano_ant }}" class="btn-gestao btn-gestao-secondary" style="padding:6px 14px;">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+        <h5 style="font-weight:800; font-size:1.2rem; color:var(--text-primary); margin:0;">
+          {{ nome_mes }} {{ ano }}
+        </h5>
+        <a href="?mes={{ mes_prox }}&ano={{ ano_prox }}" class="btn-gestao btn-gestao-secondary" style="padding:6px 14px;">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+
+      <!-- Grid do calendário -->
+      <div class="calendario-grid" id="calendario">
+        <div class="cal-header">Dom</div>
+        <div class="cal-header">Seg</div>
+        <div class="cal-header">Ter</div>
+        <div class="cal-header">Qua</div>
+        <div class="cal-header">Qui</div>
+        <div class="cal-header">Sex</div>
+        <div class="cal-header">Sáb</div>
+        <!-- Dias gerados pelo JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTA LATERAL -->
+  <div class="col-lg-4">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; margin-bottom:16px; color:var(--text-primary);">
+        <i class="bi bi-list-ul me-2" style="color:var(--blue);"></i>Próximos Eventos
+      </h6>
+      {% for reserva in proximas %}
+      <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px; margin-bottom:8px; border-left:3px solid var(--blue);">
+        <div class="d-flex justify-content-between align-items-start">
+          <span class="badge-gestao badge-{{ reserva.badge_color }}">{{ reserva.get_tipo_display }}</span>
+          {% if is_diretor %}
+          <div class="d-flex gap-1">
+            <a href="{% url 'editar_reserva' reserva.pk %}" style="color:var(--text-muted); font-size:0.8rem;"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{% url 'excluir_reserva' reserva.pk %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" style="background:none;border:none;color:var(--red);font-size:0.8rem; cursor:pointer;" onclick="return confirm('Excluir esta reserva?')">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+        <div style="font-weight:600; font-size:0.88rem; margin-top:6px;">{{ reserva.titulo }}</div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:3px;">
+          <i class="bi bi-calendar3 me-1"></i>{{ reserva.data|date:"d/m/Y" }}
+          &nbsp;•&nbsp;
+          <i class="bi bi-clock me-1"></i>{{ reserva.hora_inicio|time:"H:i" }}–{{ reserva.hora_fim|time:"H:i" }}
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+          <i class="bi bi-person me-1"></i>{{ reserva.responsavel }}
+        </div>
+      </div>
+      {% empty %}
+      <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:24px 0;">
+        <i class="bi bi-calendar-x" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+        Sem reservas próximas.
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal de detalhe da reserva (JS) -->
+<div class="modal fade" id="modal-reserva" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; color:var(--text-primary);">
+      <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+        <h5 class="modal-title" id="modal-titulo"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modal-corpo"></div>
+      <div class="modal-footer" style="border-top:1px solid var(--card-border);" id="modal-footer">
+        <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const MES = {{ mes }};
+const ANO = {{ ano }};
+const HOJE_STR = '{{ hoje|date:"Y-m-d" }}';
+const MESES_NOMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const IS_DIRETOR = {{ is_diretor|yesno:"true,false" }};
+
+// Exibe o nome do mês
+document.getElementById('nome-mes').textContent = MESES_NOMES[MES - 1];
+
+// Carrega reservas e monta o calendário
+fetch(`/agenda/auditorio/json/?mes=${MES}&ano=${ANO}`)
+  .then(r => r.json())
+  .then(data => montarCalendario(data.reservas));
+
+function montarCalendario(reservas) {
+  const grid = document.getElementById('calendario');
+  // Mantém os 7 headers
+  const headers = Array.from(grid.querySelectorAll('.cal-header'));
+
+  // Remove dias anteriores
+  grid.querySelectorAll('.cal-day').forEach(el => el.remove());
+
+  const primeiroDia = new Date(ANO, MES - 1, 1);
+  const ultimoDia = new Date(ANO, MES, 0);
+  const diaSemanaInicio = primeiroDia.getDay(); // 0=Dom
+
+  // Dias vazios antes do mês
+  for (let i = 0; i < diaSemanaInicio; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day outro-mes';
+    grid.appendChild(el);
+  }
+
+  // Dias do mês
+  for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+    const dataStr = `${ANO}-${String(MES).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (dataStr === HOJE_STR ? ' hoje' : '');
+
+    const numEl = document.createElement('div');
+    numEl.className = 'cal-day-num';
+    numEl.textContent = dia;
+    el.appendChild(numEl);
+
+    // Eventos deste dia
+    const eventos = reservas.filter(r => r.data === dataStr);
+    eventos.forEach(ev => {
+      const evEl = document.createElement('div');
+      evEl.className = `cal-evento ${ev.tipo}`;
+      evEl.textContent = `${ev.hora_inicio} ${ev.titulo}`;
+      evEl.title = `${ev.titulo} — ${ev.responsavel}`;
+      evEl.style.cursor = 'pointer';
+      evEl.addEventListener('click', () => abrirModal(ev));
+      el.appendChild(evEl);
+    });
+
+    grid.appendChild(el);
+  }
+}
+
+function abrirModal(ev) {
+  document.getElementById('modal-titulo').textContent = ev.titulo;
+
+  const tiposLabel = {
+    oficina: 'Oficina', aula: 'Aula', evento: 'Evento / Palestra',
+    reuniao: 'Reunião', outro: 'Outro'
+  };
+  const statusLabel = {
+    confirmada: '✅ Confirmada', pendente: '⏳ Pendente',
+    cancelada: '❌ Cancelada', realizada: '✔️ Realizada'
+  };
+
+  document.getElementById('modal-corpo').innerHTML = `
+    <p><strong>Tipo:</strong> ${tiposLabel[ev.tipo] || ev.tipo}</p>
+    <p><strong>Data:</strong> ${new Date(ev.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+    <p><strong>Horário:</strong> ${ev.hora_inicio} às ${ev.hora_fim}</p>
+    <p><strong>Responsável:</strong> ${ev.responsavel}</p>
+    <p><strong>Status:</strong> ${statusLabel[ev.status] || ev.status}</p>
+  `;
+
+  if (IS_DIRETOR) {
+    document.getElementById('modal-footer').innerHTML = `
+      <a href="/agenda/auditorio/${ev.id}/editar/" class="btn-gestao btn-gestao-primary">
+        <i class="bi bi-pencil"></i> Editar
+      </a>
+      <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Fechar</button>
+    `;
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById('modal-reserva'));
+  modal.show();
+}
+</script>
+{% endblock %}

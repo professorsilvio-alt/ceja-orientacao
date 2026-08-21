@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_professores %}active{% endblock %}
+{% block breadcrumb %}<a href="{% url 'listar_professores' %}" style="color:var(--text-secondary); text-decoration:none;"><i class="bi bi-person-video3 me-1"></i>Professores</a> › {{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">{{ titulo }}</div>
+  <a href="{% url 'listar_professores' %}" class="btn-gestao btn-gestao-secondary">
+    <i class="bi bi-arrow-left"></i> Voltar
+  </a>
+</div>
+
+<div class="card-gestao" style="max-width:860px;">
+  <form method="post" enctype="multipart/form-data" id="form-professor">
+    {% csrf_token %}
+
+    <div class="row g-3">
+      <!-- Dados pessoais -->
+      <div class="col-12"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Identificação</h6></div>
+
+      <div class="col-md-4">
+        <label class="form-label">CPF *</label>
+        {{ form.cpf }}
+        {% if form.cpf.errors %}<small class="text-danger">{{ form.cpf.errors.0 }}</small>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Matrícula *</label>
+        {{ form.matricula }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Matrícula Acumulação</label>
+        {{ form.matricula_acumulacao }}
+      </div>
+      <div class="col-12">
+        <label class="form-label">Nome Completo *</label>
+        {{ form.nome_completo }}
+      </div>
+
+      <!-- Cargo e disciplinas -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Cargo e Disciplinas</h6></div>
+
+      <div class="col-md-6">
+        <label class="form-label">Cargo *</label>
+        {{ form.cargo }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Disciplina de Ingresso *</label>
+        {{ form.disciplina_ingresso }}
+      </div>
+      <div class="col-12">
+        <label class="form-label">Disciplinas que leciona na escola</label>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px;">
+          {{ form.disciplinas_lecionadas }}
+        </div>
+      </div>
+
+      <!-- Movimentação -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Movimentação e Classificação</h6></div>
+
+      <div class="col-md-3">
+        <label class="form-label">Classificação</label>
+        {{ form.classificacao }}
+        <small style="color:var(--text-muted);">1 = mais antigo</small>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Data da CI de movimentação *</label>
+        {{ form.data_ci_movimentacao }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Data de ingresso na escola *</label>
+        {{ form.data_ingresso_unidade }}
+      </div>
+
+      <!-- Contato -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Contato</h6></div>
+
+      <div class="col-md-6">
+        <label class="form-label">E-mail</label>
+        {{ form.email }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Telefone</label>
+        {{ form.telefone }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Foto</label>
+        {{ form.foto }}
+      </div>
+
+      <!-- Status e observações -->
+      <div class="col-md-2 d-flex align-items-center" style="margin-top:8px;">
+        <div class="form-check form-switch">
+          {{ form.ativo }}
+          <label class="form-check-label form-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
+        </div>
+      </div>
+      <div class="col-md-10">
+        <label class="form-label">Observações</label>
+        {{ form.observacoes }}
+      </div>
+
+    </div><!-- /row -->
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn-gestao btn-gestao-primary" id="btn-salvar-prof">
+        <i class="bi bi-check2-circle"></i> Salvar
+      </button>
+      <a href="{% url 'listar_professores' %}" class="btn-gestao btn-gestao-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

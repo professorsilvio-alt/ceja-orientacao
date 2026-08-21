@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_presencas %}active{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'listar_presencas' %}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-clipboard-check-fill me-1"></i>Presenças
+  </a> › {{ titulo }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">{{ titulo }}</div>
+  <a href="{% url 'listar_presencas' %}" class="btn-gestao btn-gestao-secondary">
+    <i class="bi bi-arrow-left"></i> Voltar
+  </a>
+</div>
+
+<div class="card-gestao" style="max-width:700px;">
+  <form method="post" id="form-presenca">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger mb-3" style="font-size:0.85rem;">
+      {{ form.non_field_errors.0 }}
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <!-- Tipo de funcionário -->
+      <div class="col-md-6">
+        <label class="form-label">Tipo de Funcionário *</label>
+        <select name="tipo_funcionario" class="form-select" id="id_tipo_funcionario" required>
+          <option value="">Selecione o tipo...</option>
+          <option value="professor" {% if form.tipo_funcionario.value == 'professor' %}selected{% endif %}>Professor</option>
+          <option value="administrativo" {% if form.tipo_funcionario.value == 'administrativo' %}selected{% endif %}>Funcionário Administrativo</option>
+          <option value="terceirizado" {% if form.tipo_funcionario.value == 'terceirizado' %}selected{% endif %}>Funcionário Terceirizado</option>
+        </select>
+      </div>
+
+      <!-- Select de Funcionário (Diferente para cada tipo) -->
+      <div class="col-md-6" id="wrap-professores" style="display:none;">
+        <label class="form-label">Professor *</label>
+        <select name="professor_id" class="form-select" id="id_professor_id">
+          <option value="">Selecione o professor...</option>
+          {% for p in professores %}
+          <option value="{{ p.id }}" {% if form.professor_id.value == p.id or registro.professor_id == p.id %}selected{% endif %}>
+            {{ p.nome_completo }} ({{ p.get_disciplina_ingresso_display }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-6" id="wrap-administrativos" style="display:none;">
+        <label class="form-label">Funcionário Administrativo *</label>
+        <select name="administrativo_id" class="form-select" id="id_administrativo_id">
+          <option value="">Selecione o funcionário...</option>
+          {% for a in administrativos %}
+          <option value="{{ a.id }}" {% if form.administrativo_id.value == a.id or registro.administrativo_id == a.id %}selected{% endif %}>
+            {{ a.nome_completo }} ({{ a.get_cargo_display }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-6" id="wrap-terceirizados" style="display:none;">
+        <label class="form-label">Funcionário Terceirizado *</label>
+        <select name="terceirizado_id" class="form-select" id="id_terceirizado_id">
+          <option value="">Selecione o funcionário...</option>
+          {% for t in terceirizados %}
+          <option value="{{ t.id }}" {% if form.terceirizado_id.value == t.id or registro.terceirizado_id == t.id %}selected{% endif %}>
+            {{ t.nome_completo }} ({{ t.cargo_funcao }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Detalhes da Ocorrência -->
+      <div class="col-12 mt-3">
+        <h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+          Detalhes da Ocorrência
+        </h6>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Data da Ocorrência *</label>
+        {{ form.data }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Tipo de Ocorrência *</label>
+        {{ form.tipo }}
+      </div>
+
+      <div class="col-md-6" id="wrap-chegada">
+        <label class="form-label">Horário de Chegada (para Atraso)</label>
+        {{ form.hora_chegada }}
+      </div>
+
+      <div class="col-md-6" id="wrap-saida">
+        <label class="form-label">Horário de Saída (para Saída Antecipada)</label>
+        {{ form.hora_saida }}
+      </div>
+
+      <div class="col-12">
+        <div class="form-check form-switch mt-2">
+          {{ form.justificado }}
+          <label class="form-check-label form-label" for="{{ form.justificado.id_for_label }}">
+            Ocorrência Justificada
+          </label>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Motivo</label>
+        {{ form.motivo }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Observações</label>
+        {{ form.observacoes }}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn-gestao btn-gestao-primary">
+        <i class="bi bi-check2-circle"></i> Salvar Ocorrência
+      </button>
+      <a href="{% url 'listar_presencas' %}" class="btn-gestao btn-gestao-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  const selectTipoFunc = document.getElementById('id_tipo_funcionario');
+  const wrapProf = document.getElementById('wrap-professores');
+  const wrapAdm = document.getElementById('wrap-administrativos');
+  const wrapTerc = document.getElementById('wrap-terceirizados');
+
+  function atualizarExibicaoCampos() {
+    const val = selectTipoFunc.value;
+    wrapProf.style.display = (val === 'professor') ? 'block' : 'none';
+    wrapAdm.style.display = (val === 'administrativo') ? 'block' : 'none';
+    wrapTerc.style.display = (val === 'terceirizado') ? 'block' : 'none';
+  }
+
+  selectTipoFunc.addEventListener('change', atualizarExibicaoCampos);
+  atualizarExibicaoCampos();
+</script>
+{% endblock %}

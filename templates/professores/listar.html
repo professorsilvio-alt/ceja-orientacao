@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Professores{% endblock %}
+{% block nav_professores %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-person-video3 me-1"></i> Professores{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Professores</div>
+    <div class="page-subtitle">{{ total }} professor{{ total|pluralize:"es" }} ativos cadastrados</div>
+  </div>
+  {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+  <a href="{% url 'criar_professor' %}" class="btn-gestao btn-gestao-primary">
+    <i class="bi bi-person-plus-fill"></i> Novo Professor
+  </a>
+  {% endif %}
+</div>
+
+<div class="card-gestao">
+  {% if professores %}
+  <div class="table-responsive">
+    <table class="table-gestao" id="tabela-professores">
+      <thead>
+        <tr>
+          <th>Classif.</th>
+          <th>Nome</th>
+          <th>Disciplina de ingresso</th>
+          <th>Cargo</th>
+          <th>Matrícula</th>
+          <th>Ingresso na escola</th>
+          <th>Tempo na escola</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prof in professores %}
+        <tr>
+          <td>
+            <span class="badge-gestao badge-primary">
+              {% if prof.classificacao %}{{ prof.classificacao }}º{% else %}—{% endif %}
+            </span>
+          </td>
+          <td>
+            <div style="font-weight:600;">{{ prof.nome_completo }}</div>
+            {% for disc in prof.disciplinas_lecionadas.all %}
+            <span class="badge-gestao badge-secondary" style="font-size:0.65rem; margin-top:3px;">{{ disc.nome }}</span>
+            {% endfor %}
+          </td>
+          <td>{{ prof.get_disciplina_ingresso_display }}</td>
+          <td>{{ prof.get_cargo_display }}</td>
+          <td style="font-family:monospace; font-size:0.82rem;">
+            {{ prof.matricula }}
+            {% if prof.matricula_acumulacao %}
+            <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ prof.matricula_acumulacao }}</span>
+            {% endif %}
+          </td>
+          <td>{{ prof.data_ingresso_unidade|date:"d/m/Y" }}</td>
+          <td>
+            <span style="color:var(--green); font-size:0.82rem;">{{ prof.tempo_na_escola }}</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'detalhe_professor' prof.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'horarios_professor' prof.pk %}" class="btn-gestao btn-gestao-success" style="padding:5px 10px; font-size:0.78rem;" title="Horários">
+                <i class="bi bi-clock"></i>
+              </a>
+              {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+              <a href="{% url 'editar_professor' prof.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding:48px; color:var(--text-muted);">
+    <i class="bi bi-person-slash" style="font-size:3rem; display:block; margin-bottom:12px;"></i>
+    Nenhum professor cadastrado ainda.
+    {% if request.user.perfil == 'diretor' %}
+    <br><a href="{% url 'criar_professor' %}" class="btn-gestao btn-gestao-primary mt-3">Cadastrar o primeiro professor</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

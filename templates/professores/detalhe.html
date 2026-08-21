@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ professor.nome_completo }}{% endblock %}
+{% block nav_professores %}active{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'listar_professores' %}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-person-video3 me-1"></i>Professores
+  </a> › {{ professor.nome_curto }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">{{ professor.nome_completo }}</div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success">
+      <i class="bi bi-clock-fill"></i> Horários
+    </a>
+    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+    <a href="{% url 'editar_professor' professor.pk %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-pencil"></i> Editar
+    </a>
+    {% endif %}
+    <a href="{% url 'listar_professores' %}" class="btn-gestao btn-gestao-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-3">
+    <div class="card-gestao text-center">
+      {% if professor.foto %}
+      <img src="{{ professor.foto.url }}" alt="Foto" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--blue); margin:0 auto 16px;">
+      {% else %}
+      <div style="width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:2.2rem; color:white; font-weight:800;">
+        {{ professor.nome_completo|first|upper }}
+      </div>
+      {% endif %}
+      <div style="font-weight:800; font-size:1rem;">{{ professor.nome_completo }}</div>
+      <div style="color:var(--text-secondary); margin-top:4px; font-size:0.85rem;">{{ professor.get_cargo_display }}</div>
+      <div class="mt-2">
+        {% if professor.classificacao %}
+        <span class="badge-gestao badge-primary" style="font-size:0.9rem;">{{ professor.classificacao }}º lugar</span>
+        {% endif %}
+      </div>
+      <div class="mt-2">
+        <span class="badge-gestao {% if professor.ativo %}badge-success{% else %}badge-danger{% endif %}">
+          {% if professor.ativo %}Ativo{% else %}Inativo{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    <div class="card-gestao mb-3">
+      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados Funcionais</h6>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <div style="font-size:0.72rem; color:var(--text-muted);">MATRÍCULA</div>
+          <div style="font-family:monospace; font-weight:600;">{{ professor.matricula }}</div>
+        </div>
+        {% if professor.matricula_acumulacao %}
+        <div class="col-md-4">
+          <div style="font-size:0.72rem; color:var(--text-muted);">MATRÍCULA ACUMULAÇÃO</div>
+          <div style="font-family:monospace; font-weight:600;">{{ professor.matricula_acumulacao }}</div>
+        </div>
+        {% endif %}
+        <div class="col-md-4">
+          <div style="font-size:0.72rem; color:var(--text-muted);">CPF</div>
+          <div style="font-family:monospace; font-weight:600;">{{ professor.cpf|slice:":3" }}.{{ professor.cpf|slice:"3:6" }}.{{ professor.cpf|slice:"6:9" }}-{{ professor.cpf|slice:"9:" }}</div>
+        </div>
+        <div class="col-md-6 mt-1">
+          <div style="font-size:0.72rem; color:var(--text-muted);">DISCIPLINA DE INGRESSO</div>
+          <div style="font-weight:600;">{{ professor.get_disciplina_ingresso_display }}</div>
+        </div>
+        <div class="col-md-6 mt-1">
+          <div style="font-size:0.72rem; color:var(--text-muted);">DISCIPLINAS NA ESCOLA</div>
+          <div>
+            {% for d in professor.disciplinas_lecionadas.all %}
+            <span class="badge-gestao badge-primary" style="margin-right:4px;">{{ d.nome }}</span>
+            {% empty %}<span style="color:var(--text-muted);">—</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-md-4 mt-1">
+          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DA CI DE MOVIMENTAÇÃO</div>
+          <div style="font-weight:600;">{{ professor.data_ci_movimentacao|date:"d/m/Y" }}</div>
+        </div>
+        <div class="col-md-4 mt-1">
+          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE INGRESSO NA ESCOLA</div>
+          <div style="font-weight:600;">{{ professor.data_ingresso_unidade|date:"d/m/Y" }}</div>
+        </div>
+        <div class="col-md-4 mt-1">
+          <div style="font-size:0.72rem; color:var(--text-muted);">TEMPO NA ESCOLA</div>
+          <div style="font-weight:700; color:var(--green); font-size:1.05rem;">{{ professor.tempo_na_escola }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Horários do ano atual -->
+    <div class="card-gestao">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 style="font-weight:700; color:var(--blue); margin:0;">Horários {{ "now"|date:"Y" }}</h6>
+        <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-secondary" style="font-size:0.78rem; padding:6px 12px;">
+          <i class="bi bi-pencil"></i> Gerenciar
+        </a>
+      </div>
+      {% if horarios %}
+      {% for h in horarios %}
+      <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px 14px; margin-bottom:6px; border-left:3px solid {% if h.aprovado %}var(--green){% else %}var(--yellow){% endif %};">
+        <div class="d-flex justify-content-between">
+          <div>
+            <strong style="font-size:0.88rem;">{{ h.get_dia_semana_display }}</strong>
+            <span style="color:var(--text-secondary); font-size:0.85rem; margin-left:10px;">{{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}</span>
+          </div>
+          <span class="badge-gestao {% if h.aprovado %}badge-success{% else %}badge-warning{% endif %}">
+            {% if h.aprovado %}Aprovado{% else %}Pendente{% endif %}
+          </span>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">{{ h.local_display }}</div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:var(--text-muted); font-size:0.85rem;">Nenhum horário cadastrado para este ano.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

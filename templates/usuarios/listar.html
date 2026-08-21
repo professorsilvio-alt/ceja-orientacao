@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Usuários do Sistema{% endblock %}
+{% block nav_usuarios %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-person-gear me-1"></i> Usuários do Sistema{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Usuários do Sistema</div>
+    <div class="page-subtitle">{{ usuarios.count }} usuário{{ usuarios.count|pluralize:"s" }} cadastrado{{ usuarios.count|pluralize:"s" }}</div>
+  </div>
+  <a href="{% url 'criar_usuario' %}" class="btn-gestao btn-gestao-primary">
+    <i class="bi bi-person-plus-fill"></i> Novo Usuário
+  </a>
+</div>
+
+<div class="card-gestao">
+  <div class="table-responsive">
+    <table class="table-gestao">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Perfil</th>
+          <th>E-mail</th>
+          <th>Status</th>
+          <th>1º Acesso</th>
+          <th>Cadastro</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td style="font-weight:600;">{{ u.nome_completo }}</td>
+          <td style="font-family:monospace; font-size:0.82rem;">{{ u.cpf_formatado }}</td>
+          <td>
+            <span class="badge-gestao
+              {% if u.perfil == 'diretor' %}badge-primary
+              {% elif u.perfil == 'professor' %}badge-success
+              {% elif u.perfil == 'administrativo' %}badge-info
+              {% else %}badge-secondary{% endif %}">
+              {{ u.get_perfil_display }}
+            </span>
+          </td>
+          <td style="font-size:0.82rem; color:var(--text-secondary);">{{ u.email }}</td>
+          <td>
+            {% if u.is_active %}
+            <span class="badge-gestao badge-success">Ativo</span>
+            {% else %}
+            <span class="badge-gestao badge-danger">Inativo</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.primeiro_acesso %}
+            <span class="badge-gestao badge-warning">Pendente</span>
+            {% else %}
+            <i class="bi bi-check-circle-fill" style="color:var(--green);"></i>
+            {% endif %}
+          </td>
+          <td style="font-size:0.78rem; color:var(--text-muted);">{{ u.data_cadastro|date:"d/m/Y" }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'editar_usuario' u.cpf %}" class="btn-gestao btn-gestao-secondary" style="padding:4px 10px; font-size:0.75rem;" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% if u.cpf != request.user.cpf %}
+              <form method="post" action="{% url 'resetar_senha_usuario' u.cpf %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-gestao btn-gestao-warning" style="padding:4px 10px; font-size:0.75rem; background:rgba(234,179,8,0.15); color:var(--yellow);"
+                  onclick="return confirm('Resetar a senha de {{ u.primeiro_nome }} para o CPF?')" title="Resetar senha">
+                  <i class="bi bi-key-fill"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">Nenhum usuário cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

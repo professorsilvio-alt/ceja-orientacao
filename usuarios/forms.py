@@ -1,0 +1,102 @@
+"""Formulários de autenticação e gestão de usuários"""
+from django import forms
+from django.contrib.auth import get_user_model
+import re
+
+User = get_user_model()
+
+
+class LoginForm(forms.Form):
+    cpf = forms.CharField(
+        label='CPF',
+        max_length=14,
+        widget=forms.TextInput(attrs={
+            'placeholder': '000.000.000-00',
+            'autocomplete': 'username',
+            'id': 'id_cpf',
+        })
+    )
+    password = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={
+            'placeholder': '••••••••',
+            'autocomplete': 'current-password',
+            'id': 'id_password',
+        })
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data['cpf'])
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Digite os 11 dígitos.')
+        return cpf
+
+
+class TrocaSenhaForm(forms.Form):
+    """Troca de senha — obrigatória no primeiro acesso."""
+    nova_senha = forms.CharField(
+        label='Nova senha',
+        min_length=8,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Mínimo 8 caracteres', 'id': 'id_nova_senha'})
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar nova senha',
+        widget=forms.PasswordInput(attrs={'placeholder': 'Repita a senha', 'id': 'id_confirmar_senha'})
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nova = cleaned.get('nova_senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if nova and confirmar and nova != confirmar:
+            raise forms.ValidationError('As senhas não coincidem.')
+        return cleaned
+
+
+class RecuperarSenhaForm(forms.Form):
+    """Solicita recuperação de senha por e-mail."""
+    email = forms.EmailField(
+        label='E-mail cadastrado',
+        widget=forms.EmailInput(attrs={'placeholder': 'seu@email.com', 'id': 'id_email'})
+    )
+
+
+class RedefinirSenhaForm(forms.Form):
+    """Redefine senha a partir do token enviado por e-mail."""
+    nova_senha = forms.CharField(
+        label='Nova senha',
+        min_length=8,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Mínimo 8 caracteres', 'id': 'id_nova_senha'})
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar nova senha',
+        widget=forms.PasswordInput(attrs={'placeholder': 'Repita a senha', 'id': 'id_confirmar_senha'})
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nova = cleaned.get('nova_senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if nova and confirmar and nova != confirmar:
+            raise forms.ValidationError('As senhas não coincidem.')
+        return cleaned
+
+
+class UsuarioForm(forms.ModelForm):
+    """Formulário para criar/editar usuários (uso do Diretor)."""
+
+    class Meta:
+        model = User
+        fields = ['cpf', 'nome_completo', 'email', 'telefone', 'perfil', 'is_active']
+        widgets = {
+            'cpf': forms.TextInput(attrs={'placeholder': '00000000000', 'id': 'id_cpf_usuario'}),
+            'nome_completo': forms.TextInput(attrs={'id': 'id_nome_completo'}),
+            'email': forms.EmailInput(attrs={'id': 'id_email_usuario'}),
+            'telefone': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_telefone'}),
+        }
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data['cpf'])
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF deve ter 11 dígitos.')
+        return cpf
