@@ -57,7 +57,7 @@ class Professor(models.Model):
 
     # ── Identificação ──────────────────────────────────────
     cpf = models.CharField(
-        max_length=11, unique=True, verbose_name='CPF',
+        max_length=11, verbose_name='CPF',
         help_text='Somente números.'
     )
     id_vinculo = models.CharField(
@@ -72,12 +72,14 @@ class Professor(models.Model):
     nome_completo = models.CharField(max_length=200, verbose_name='Nome completo')
 
     # ── Cargo e disciplina ─────────────────────────────────
-    cargo = models.CharField(max_length=30, choices=CARGO_CHOICES, verbose_name='Cargo')
+    cargo = models.CharField(max_length=150, verbose_name='Cargo')
     disciplina_ingresso = models.CharField(
-        max_length=30, choices=DISCIPLINAS_CHOICES,
-        verbose_name='Disciplina de ingresso',
-        help_text='Disciplina do concurso público / admissão.'
+        max_length=150, blank=True, verbose_name='Disciplina de ingresso'
     )
+    funcao = models.CharField(max_length=150, blank=True, verbose_name='Função')
+    tipo_funcao = models.CharField(max_length=100, blank=True, verbose_name='Tipo de Função')
+    regime_contratacao = models.CharField(max_length=100, blank=True, verbose_name='Regime de Contratação')
+
     disciplinas_lecionadas = models.ManyToManyField(
         'Disciplina',
         blank=True,
@@ -85,15 +87,31 @@ class Professor(models.Model):
         related_name='professores'
     )
 
-    # ── Movimentação para a escola ─────────────────────────
+    # ── Datas ──────────────────────────────────────────────
+    data_admissao = models.DateField(null=True, blank=True, verbose_name='Data de Admissão')
+    data_nomeacao = models.DateField(null=True, blank=True, verbose_name='Data de Nomeação')
     data_ci_movimentacao = models.DateField(
-        verbose_name='Data da CI de movimentação',
-        help_text='Data do documento de movimentação para esta unidade escolar.'
+        null=True, blank=True, verbose_name='Data da CI de movimentação'
     )
     data_ingresso_unidade = models.DateField(
-        verbose_name='Data de ingresso na unidade',
-        help_text='Data em que o professor começou a trabalhar nesta escola.'
+        null=True, blank=True, verbose_name='Data de ingresso na unidade'
     )
+
+    # ── Carga Horária & Acumulação ─────────────────────────
+    ch_planejamento = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Planejamento')
+    ch_regencia = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Regência')
+    ch_complementacao = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Complementação')
+    ch_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Total')
+    acumulacao = models.CharField(max_length=100, blank=True, verbose_name='Acumulação')
+
+    # ── Dados Pessoais & Endereço ─────────────────────────
+    data_nascimento = models.DateField(null=True, blank=True, verbose_name='Data de Nascimento')
+    sexo = models.CharField(max_length=10, blank=True, verbose_name='Sexo')
+    endereco = models.CharField(max_length=250, blank=True, verbose_name='Endereço')
+    numero = models.CharField(max_length=20, blank=True, verbose_name='Número')
+    complemento = models.CharField(max_length=100, blank=True, verbose_name='Complemento')
+    bairro = models.CharField(max_length=100, blank=True, verbose_name='Bairro')
+    municipio = models.CharField(max_length=100, blank=True, verbose_name='Município')
 
     # ── Classificação (ordem de chegada) ───────────────────
     classificacao = models.PositiveIntegerField(
@@ -103,8 +121,11 @@ class Professor(models.Model):
     )
 
     # ── Contato ────────────────────────────────────────────
-    email = models.EmailField(blank=True, verbose_name='E-mail')
-    telefone = models.CharField(max_length=20, blank=True, verbose_name='Telefone')
+    email = models.EmailField(blank=True, verbose_name='E-mail Interno')
+    email_google = models.EmailField(blank=True, verbose_name='E-mail Google')
+    email_alternativo = models.EmailField(blank=True, verbose_name='E-mail Alternativo')
+    telefone = models.CharField(max_length=50, blank=True, verbose_name='Telefone')
+    celular = models.CharField(max_length=50, blank=True, verbose_name='Celular')
     foto = models.ImageField(
         upload_to='professores/fotos/', blank=True, null=True, verbose_name='Foto'
     )

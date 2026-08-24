@@ -37,26 +37,43 @@ class FuncionarioAdministrativo(models.Model):
     """Funcionário público administrativo da escola."""
 
     # ── Identificação ──────────────────────────────────────
-    cpf = models.CharField(max_length=11, unique=True, verbose_name='CPF')
+    cpf = models.CharField(max_length=11, verbose_name='CPF')
     id_vinculo = models.CharField(max_length=30, blank=True, verbose_name='ID / Vínculo', help_text='Ex: 40260437/2')
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')
     matricula_acumulacao = models.CharField(max_length=20, blank=True, verbose_name='Matrícula acumulação')
     nome_completo = models.CharField(max_length=200, verbose_name='Nome completo')
 
     # ── Cargo e função ─────────────────────────────────────
-    cargo = models.CharField(max_length=100, verbose_name='Cargo')
-    disciplina_ingresso = models.CharField(max_length=100, blank=True, verbose_name='Disciplina de ingresso')
-    funcao_atual = models.CharField(max_length=100, blank=True, verbose_name='Função Atual')
+    cargo = models.CharField(max_length=150, verbose_name='Cargo')
+    disciplina_ingresso = models.CharField(max_length=150, blank=True, verbose_name='Disciplina de ingresso')
+    funcao_atual = models.CharField(max_length=150, blank=True, verbose_name='Função Atual')
     funcao_ingresso = models.CharField(
-        max_length=100,
+        max_length=150,
         blank=True,
         verbose_name='Função de ingresso',
         help_text='Função original do concurso / admissão.'
     )
+    tipo_funcao = models.CharField(max_length=100, blank=True, verbose_name='Tipo de Função')
+    regime_contratacao = models.CharField(max_length=100, blank=True, verbose_name='Regime de Contratação')
 
-    # ── Movimentação para a escola ─────────────────────────
-    data_ci_movimentacao = models.DateField(verbose_name='Data da CI de movimentação')
-    data_ingresso_unidade = models.DateField(verbose_name='Data de ingresso na unidade')
+    # ── Datas ──────────────────────────────────────────────
+    data_admissao = models.DateField(null=True, blank=True, verbose_name='Data de Admissão')
+    data_nomeacao = models.DateField(null=True, blank=True, verbose_name='Data de Nomeação')
+    data_ci_movimentacao = models.DateField(null=True, blank=True, verbose_name='Data da CI de movimentação')
+    data_ingresso_unidade = models.DateField(null=True, blank=True, verbose_name='Data de ingresso na unidade')
+
+    # ── Carga Horária & Acumulação ─────────────────────────
+    ch_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Total')
+    acumulacao = models.CharField(max_length=100, blank=True, verbose_name='Acumulação')
+
+    # ── Dados Pessoais & Endereço ─────────────────────────
+    data_nascimento = models.DateField(null=True, blank=True, verbose_name='Data de Nascimento')
+    sexo = models.CharField(max_length=10, blank=True, verbose_name='Sexo')
+    endereco = models.CharField(max_length=250, blank=True, verbose_name='Endereço')
+    numero = models.CharField(max_length=20, blank=True, verbose_name='Número')
+    complemento = models.CharField(max_length=100, blank=True, verbose_name='Complemento')
+    bairro = models.CharField(max_length=100, blank=True, verbose_name='Bairro')
+    municipio = models.CharField(max_length=100, blank=True, verbose_name='Município')
 
     # ── Classificação (ordem de chegada) ───────────────────
     classificacao = models.PositiveIntegerField(
@@ -65,8 +82,11 @@ class FuncionarioAdministrativo(models.Model):
     )
 
     # ── Contato ────────────────────────────────────────────
-    email = models.EmailField(blank=True, verbose_name='E-mail')
-    telefone = models.CharField(max_length=20, blank=True, verbose_name='Telefone')
+    email = models.EmailField(blank=True, verbose_name='E-mail Interno')
+    email_google = models.EmailField(blank=True, verbose_name='E-mail Google')
+    email_alternativo = models.EmailField(blank=True, verbose_name='E-mail Alternativo')
+    telefone = models.CharField(max_length=50, blank=True, verbose_name='Telefone')
+    celular = models.CharField(max_length=50, blank=True, verbose_name='Celular')
     foto = models.ImageField(upload_to='funcionarios/fotos/', blank=True, null=True, verbose_name='Foto')
 
     # ── Status ─────────────────────────────────────────────
