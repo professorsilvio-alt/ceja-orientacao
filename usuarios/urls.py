@@ -18,5 +18,6 @@ urlpatterns = [
     path('usuarios/', views.view_listar_usuarios, name='listar_usuarios'),
     path('usuarios/novo/', views.view_criar_usuario, name='criar_usuario'),
     path('usuarios/<str:cpf>/editar/', views.view_editar_usuario, name='editar_usuario'),
+    path('usuarios/<str:cpf>/alterar-perfil/', views.view_alterar_perfil_rapido, name='alterar_perfil_rapido'),
     path('usuarios/<str:cpf>/resetar-senha/', views.view_resetar_senha_usuario, name='resetar_senha_usuario'),
 ]

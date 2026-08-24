@@ -3,6 +3,7 @@ import uuid
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.contrib import messages
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -198,13 +199,62 @@ def view_dashboard(request):
 
 
 # ============================================================
-# CRUD DE USUÁRIOS (somente Diretor)
+# CRUD DE USUÁRIOS E PERMISSÕES (somente Diretor)
 # ============================================================
 
 @diretor_required
 def view_listar_usuarios(request):
-    usuarios = User.objects.all().order_by('perfil', 'nome_completo')
-    return render(request, 'usuarios/listar.html', {'usuarios': usuarios})
+    perfil_filtro = request.GET.get('perfil', '')
+    busca = request.GET.get('q', '').strip()
+
+    qs = User.objects.all()
+
+    if perfil_filtro:
+        qs = qs.filter(perfil=perfil_filtro)
+
+    if busca:
+        qs = qs.filter(
+            Q(nome_completo__icontains=busca) |
+            Q(cpf__icontains=busca) |
+            Q(email__icontains=busca)
+        )
+
+    qs = qs.order_by('perfil', 'nome_completo')
+
+    contagem_perfis = {
+        'todos': User.objects.count(),
+        'diretor': User.objects.filter(perfil='diretor').count(),
+        'professor': User.objects.filter(perfil='professor').count(),
+        'administrativo': User.objects.filter(perfil='administrativo').count(),
+        'terceirizado': User.objects.filter(perfil='terceirizado').count(),
+    }
+
+    return render(request, 'usuarios/listar.html', {
+        'usuarios': qs,
+        'perfil_filtro': perfil_filtro,
+        'busca': busca,
+        'contagem': contagem_perfis,
+        'perfil_choices': User.PERFIL_CHOICES,
+    })
+
+
+@diretor_required
+def view_alterar_perfil_rapido(request, cpf):
+    """Permite ao Diretor alterar rapidamente o perfil de acesso de qualquer usuário."""
+    user = get_object_or_404(User, pk=cpf)
+    if request.method == 'POST':
+        novo_perfil = request.POST.get('perfil')
+        if novo_perfil in dict(User.PERFIL_CHOICES):
+            perfil_antigo = user.get_perfil_display()
+            user.perfil = novo_perfil
+            if novo_perfil == 'diretor':
+                user.is_staff = True
+            user.save()
+            messages.success(
+                request,
+                f'Perfil de {user.nome_completo} alterado de "{perfil_antigo}" para "{user.get_perfil_display()}".'
+            )
+    return redirect('listar_usuarios')
 
 
 @diretor_required

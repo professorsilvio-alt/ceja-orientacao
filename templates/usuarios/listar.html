@@ -1,47 +1,88 @@
 {% extends "base.html" %}
-{% block title %}Usuários do Sistema{% endblock %}
+{% block title %}Usuários e Permissões{% endblock %}
 {% block nav_usuarios %}active{% endblock %}
-{% block breadcrumb %}<i class="bi bi-person-gear me-1"></i> Usuários do Sistema{% endblock %}
+{% block breadcrumb %}<i class="bi bi-shield-lock-fill me-1"></i> Gestão de Usuários e Permissões{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <div class="page-title">Usuários do Sistema</div>
-    <div class="page-subtitle">{{ usuarios.count }} usuário{{ usuarios.count|pluralize:"s" }} cadastrado{{ usuarios.count|pluralize:"s" }}</div>
+    <div class="page-title">Gestão de Usuários e Permissões</div>
+    <div class="page-subtitle">Altere os perfis de acesso (Direção, Professores, Funcionários) e gerencie permissões do sistema.</div>
   </div>
   <a href="{% url 'criar_usuario' %}" class="btn-gestao btn-gestao-primary">
     <i class="bi bi-person-plus-fill"></i> Novo Usuário
   </a>
 </div>
 
-<div class="card-gestao">
+<!-- Filtros de Perfil e Busca -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'listar_usuarios' %}" class="btn-gestao {% if not perfil_filtro %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-people-fill me-1"></i> Todos <span class="badge bg-dark ms-1">{{ contagem.todos }}</span>
+    </a>
+    <a href="{% url 'listar_usuarios' %}?perfil=diretor" class="btn-gestao {% if perfil_filtro == 'diretor' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-shield-shaded me-1" style="color:#eab308;"></i> Diretores <span class="badge bg-dark ms-1">{{ contagem.diretor }}</span>
+    </a>
+    <a href="{% url 'listar_usuarios' %}?perfil=professor" class="btn-gestao {% if perfil_filtro == 'professor' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-person-video3 me-1" style="color:#22c55e;"></i> Professores <span class="badge bg-dark ms-1">{{ contagem.professor }}</span>
+    </a>
+    <a href="{% url 'listar_usuarios' %}?perfil=administrativo" class="btn-gestao {% if perfil_filtro == 'administrativo' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-briefcase-fill me-1" style="color:#06b6d4;"></i> Adm. <span class="badge bg-dark ms-1">{{ contagem.administrativo }}</span>
+    </a>
+    <a href="{% url 'listar_usuarios' %}?perfil=terceirizado" class="btn-gestao {% if perfil_filtro == 'terceirizado' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-person-badge me-1" style="color:#94a3b8;"></i> Terceirizados <span class="badge bg-dark ms-1">{{ contagem.terceirizado }}</span>
+    </a>
+  </div>
+
+  <form method="get" action="{% url 'listar_usuarios' %}" class="d-flex gap-2" style="max-width:320px; width:100%;">
+    {% if perfil_filtro %}<input type="hidden" name="perfil" value="{{ perfil_filtro }}">{% endif %}
+    <div class="input-group">
+      <input type="text" name="q" value="{{ busca }}" class="form-control form-control-sm" placeholder="Buscar por nome, CPF..." style="font-size:0.85rem;">
+      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
+    </div>
+  </form>
+</div>
+
+<!-- Tabela de Usuários com Troca Rápida de Permissão -->
+<div class="card-gestao mb-4">
   <div class="table-responsive">
-    <table class="table-gestao">
+    <table class="table-gestao align-middle">
       <thead>
         <tr>
           <th>Nome</th>
-          <th>CPF</th>
-          <th>Perfil</th>
+          <th>CPF (Login)</th>
+          <th>Perfil de Acesso (Permissão)</th>
           <th>E-mail</th>
           <th>Status</th>
-          <th>1º Acesso</th>
-          <th>Cadastro</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for u in usuarios %}
         <tr>
-          <td style="font-weight:600;">{{ u.nome_completo }}</td>
-          <td style="font-family:monospace; font-size:0.82rem;">{{ u.cpf_formatado }}</td>
+          <td style="font-weight:600;">
+            {{ u.nome_completo }}
+            {% if u.primeiro_acesso %}
+            <span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;" title="Ainda não alterou a senha padrão">1º Acesso Pendente</span>
+            {% endif %}
+          </td>
+          <td style="font-family:monospace; font-size:0.85rem; color:#60a5fa;">{{ u.cpf_formatado }}</td>
           <td>
-            <span class="badge-gestao
-              {% if u.perfil == 'diretor' %}badge-primary
-              {% elif u.perfil == 'professor' %}badge-success
-              {% elif u.perfil == 'administrativo' %}badge-info
-              {% else %}badge-secondary{% endif %}">
-              {{ u.get_perfil_display }}
-            </span>
+            <form method="post" action="{% url 'alterar_perfil_rapido' u.cpf %}" class="d-inline-block">
+              {% csrf_token %}
+              <select name="perfil" class="form-select form-select-sm" onchange="this.form.submit()" 
+                style="font-size:0.82rem; font-weight:600; padding:4px 28px 4px 10px; cursor:pointer;
+                {% if u.perfil == 'diretor' %}background:rgba(234,179,8,0.15) !important; color:#fde047 !important; border-color:rgba(234,179,8,0.4) !important;
+                {% elif u.perfil == 'professor' %}background:rgba(34,197,94,0.15) !important; color:#86efac !important; border-color:rgba(34,197,94,0.4) !important;
+                {% elif u.perfil == 'administrativo' %}background:rgba(6,182,212,0.15) !important; color:#67e8f9 !important; border-color:rgba(6,182,212,0.4) !important;
+                {% else %}background:rgba(148,163,184,0.15) !important; color:#cbd5e1 !important; border-color:rgba(148,163,184,0.4) !important;{% endif %}">
+                {% for valor, rotulo in perfil_choices %}
+                <option value="{{ valor }}" {% if u.perfil == valor %}selected{% endif %} style="background:#0f172a; color:#f8fafc;">
+                  {{ rotulo }}
+                </option>
+                {% endfor %}
+              </select>
+            </form>
           </td>
           <td style="font-size:0.82rem; color:var(--text-secondary);">{{ u.email }}</td>
           <td>
@@ -52,23 +93,15 @@
             {% endif %}
           </td>
           <td>
-            {% if u.primeiro_acesso %}
-            <span class="badge-gestao badge-warning">Pendente</span>
-            {% else %}
-            <i class="bi bi-check-circle-fill" style="color:var(--green);"></i>
-            {% endif %}
-          </td>
-          <td style="font-size:0.78rem; color:var(--text-muted);">{{ u.data_cadastro|date:"d/m/Y" }}</td>
-          <td>
             <div class="d-flex gap-1">
-              <a href="{% url 'editar_usuario' u.cpf %}" class="btn-gestao btn-gestao-secondary" style="padding:4px 10px; font-size:0.75rem;" title="Editar">
+              <a href="{% url 'editar_usuario' u.cpf %}" class="btn-gestao btn-gestao-secondary" style="padding:4px 10px; font-size:0.75rem;" title="Editar usuário completo">
                 <i class="bi bi-pencil"></i>
               </a>
               {% if u.cpf != request.user.cpf %}
-              <form method="post" action="{% url 'resetar_senha_usuario' u.cpf %}">
+              <form method="post" action="{% url 'resetar_senha_usuario' u.cpf %}" class="d-inline">
                 {% csrf_token %}
                 <button type="submit" class="btn-gestao btn-gestao-warning" style="padding:4px 10px; font-size:0.75rem; background:rgba(234,179,8,0.15); color:var(--yellow);"
-                  onclick="return confirm('Resetar a senha de {{ u.primeiro_nome }} para o CPF?')" title="Resetar senha">
+                  onclick="return confirm('Resetar a senha de {{ u.nome_completo }} para o CPF?')" title="Resetar senha para CPF">
                   <i class="bi bi-key-fill"></i>
                 </button>
               </form>
@@ -77,10 +110,54 @@
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">Nenhum usuário cadastrado.</td></tr>
+        <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Nenhum usuário encontrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Guia de Permissões de Acesso -->
+<div class="row g-3">
+  <div class="col-md-3">
+    <div style="background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.2); border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#fde047; font-size:0.9rem; margin-bottom:6px;">
+        <i class="bi bi-shield-shaded me-1"></i> Perfil Diretor
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+        Acesso total: gerencia usuários, aprova horários, edita cadastros de professores e funcionários, gera relatórios e auditoria.
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#86efac; font-size:0.9rem; margin-bottom:6px;">
+        <i class="bi bi-person-video3 me-1"></i> Perfil Professor
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+        Acesso ao próprio painel: cadastro e envio de disponibilidade de horários, registro de presenças e consulta de grade.
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#67e8f9; font-size:0.9rem; margin-bottom:6px;">
+        <i class="bi bi-briefcase-fill me-1"></i> Perfil Administrativo
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+        Acesso administrativo: registros de frequência de funcionários, reservas de auditório e rotinas da secretaria.
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div style="background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.2); border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#e2e8f0; font-size:0.9rem; margin-bottom:6px;">
+        <i class="bi bi-person-badge me-1"></i> Perfil Terceirizado
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+        Acesso básico: consulta de pontos registrados, dados contratuais e identificação na unidade escolar.
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
