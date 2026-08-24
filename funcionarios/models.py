@@ -44,6 +44,30 @@ class FuncionarioAdministrativo(models.Model):
     # ── Acumulação (2ª Matrícula / Cargo na escola) ────────
     id_vinculo_acumulacao = models.CharField(max_length=30, blank=True, verbose_name='ID / Vínculo (2ª Matrícula)')
     matricula_acumulacao = models.CharField(max_length=20, blank=True, verbose_name='Matrícula acumulação')
+    
+    SITUACAO_CHOICES = [
+        ('ativo', 'Ativo(a)'),
+        ('aposentado', 'Aposentado(a)'),
+        ('licenca', 'Em Licença'),
+        ('saida', 'Inativo / Transferido(a)'),
+    ]
+
+    SITUACAO_MAT2_CHOICES = [
+        ('n_a', 'Não Possui 2ª Matrícula'),
+        ('ativo', 'Ativo(a)'),
+        ('aposentado', 'Aposentado(a)'),
+        ('licenca', 'Em Licença'),
+        ('saida', 'Inativo / Transferido(a)'),
+    ]
+
+    situacao_matricula_1 = models.CharField(
+        max_length=20, choices=SITUACAO_CHOICES, default='ativo',
+        verbose_name='Situação da 1ª Matrícula'
+    )
+    situacao_matricula_2 = models.CharField(
+        max_length=20, choices=SITUACAO_MAT2_CHOICES, default='n_a',
+        verbose_name='Situação da 2ª Matrícula'
+    )
     cargo_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Cargo (2ª Matrícula)')
     disciplina_ingresso_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Disciplina de Ingresso (2ª Matrícula)')
     funcao_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Função (2ª Matrícula)')

@@ -50,7 +50,8 @@ for cpf_int, group in grouped:
         'funcao_acumulacao': str(row2['FUNÇÃO']).strip() if (row2 is not None and pd.notna(row2['FUNÇÃO'])) else '',
         'ch_total_acumulacao': int(row2['C.H.\nTOTAL']) if (row2 is not None and pd.notna(row2.get('C.H.\nTOTAL'))) else None,
         'data_admissao_acumulacao': str(row2.get('DATA ADMISSÃO')).split(' ')[0] if (row2 is not None and pd.notna(row2.get('DATA ADMISSÃO'))) else '',
-        
+        'situacao_matricula_2': 'ativo' if (row2 is not None or mat2) else 'n_a',
+
         'acumulacao': str(row1['ACUMULAÇÃO']).strip() if pd.notna(row1.get('ACUMULAÇÃO')) else '',
         'endereco': str(row1['ENDEREÇO']).strip() if pd.notna(row1.get('ENDEREÇO')) else '',
         'numero': str(row1['END NUM']).strip() if pd.notna(row1.get('END NUM')) else '',
@@ -77,11 +78,29 @@ from datetime import datetime
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ceja_gestao.settings')
 django.setup()
 
-from professores.models import Professor
+from professores.models import Professor, Disciplina
 from funcionarios.models import FuncionarioAdministrativo
 from usuarios.models import Usuario
 
 DADOS = ''' + json_dados + '''
+
+DISCIPLINAS_PADRAO = [
+    "Artes",
+    "Biologia",
+    "Ciências Físicas e Biológicas",
+    "Educação Física",
+    "Espanhol",
+    "Filosofia",
+    "Física",
+    "Geografia",
+    "História",
+    "Inglês",
+    "Língua Portuguesa",
+    "Matemática",
+    "Química",
+    "Sociologia",
+    "Docência II (Área Integrada)"
+]
 
 def parse_d(val):
     if not val:
@@ -95,7 +114,12 @@ def parse_d(val):
     return None
 
 def executar():
-    print("Iniciando povoamento automatico (datas de ingresso na escola e classificacao em branco para alimentacao posterior)...")
+    print("Iniciando povoamento automatico com disciplinas e situacoes por matricula...")
+    
+    # Criar Disciplinas padrao da escola se nao existirem
+    for d_nome in DISCIPLINAS_PADRAO:
+        Disciplina.objects.get_or_create(nome=d_nome)
+
     cpfs_reais = {r['cpf'] for r in DADOS}
     
     Professor.objects.all().delete()
@@ -133,6 +157,7 @@ def executar():
                 cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
                 funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
                 data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
+                situacao_matricula_1='ativo', situacao_matricula_2=r.get('situacao_matricula_2', 'n_a'),
                 nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao_atual=funcao,
                 funcao_ingresso=disc_ing, tipo_funcao=tipo_funcao, regime_contratacao=regime,
                 data_admissao=dt_adm, data_nomeacao=dt_nom, data_ci_movimentacao=None, data_ingresso_unidade=None,
@@ -144,12 +169,13 @@ def executar():
             )
             perfil_usuario = 'administrativo'
         else:
-            Professor.objects.create(
+            prof = Professor.objects.create(
                 cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
                 id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
                 cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
                 funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
                 data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
+                situacao_matricula_1='ativo', situacao_matricula_2=r.get('situacao_matricula_2', 'n_a'),
                 nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao=funcao,
                 tipo_funcao=tipo_funcao, regime_contratacao=regime, data_admissao=dt_adm, data_nomeacao=dt_nom,
                 data_ci_movimentacao=None, data_ingresso_unidade=None, ch_planejamento=r['ch_planejamento'],
@@ -159,6 +185,12 @@ def executar():
                 email=r['email_interno'], email_google=r['email_google'], email_alternativo=r['email_alternativo'],
                 telefone=r['telefone'], celular=r['celular'], classificacao=None, ativo=True
             )
+            # Tentar associar disciplina de ingresso se bater o nome
+            if disc_ing:
+                d_found = Disciplina.objects.filter(nome__icontains=disc_ing.split(' ')[0]).first()
+                if d_found:
+                    prof.disciplinas_lecionadas.add(d_found)
+
             perfil_usuario = 'professor'
 
         if 'SILVIO LUIZ' in nome.upper():
@@ -181,6 +213,7 @@ def executar():
             user.save()
 
     print("Povoamento concluido com sucesso!")
+    print(f"Disciplinas cadastradas: {Disciplina.objects.count()}")
     print(f"Professores: {Professor.objects.count()}")
     print(f"Administrativos: {FuncionarioAdministrativo.objects.count()}")
     print(f"Usuarios: {Usuario.objects.count()}")
@@ -192,4 +225,4 @@ if __name__ == '__main__':
 with open('carregar_dados.py', 'w', encoding='utf-8') as f:
     f.write(python_code)
 
-print("Gerado carregar_dados.py com data de ingresso na escola e classificacao em branco!")
+print("Gerado carregar_dados.py com disciplinas e situacao por matricula!")

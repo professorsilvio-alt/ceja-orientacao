@@ -5,7 +5,7 @@ from datetime import datetime
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ceja_gestao.settings')
 django.setup()
 
-from professores.models import Professor
+from professores.models import Professor, Disciplina
 from funcionarios.models import FuncionarioAdministrativo
 from usuarios.models import Usuario
 
@@ -33,6 +33,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "RUA DOUTOR ODIM GÓIS",
         "numero": "250",
@@ -70,6 +71,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA BELEM",
         "numero": "47",
@@ -107,6 +109,7 @@ DADOS = [
         "funcao_acumulacao": "REGENTE DOC I 40H",
         "ch_total_acumulacao": 40,
         "data_admissao_acumulacao": "1994-07-01",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "NÃO",
         "endereco": "RUA MENA BARRETO",
         "numero": "1109",
@@ -144,6 +147,7 @@ DADOS = [
         "funcao_acumulacao": "REGENTE DOC I 18H",
         "ch_total_acumulacao": 18,
         "data_admissao_acumulacao": "2007-05-24",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA PROFESSOR SANTOS MOREIRA",
         "numero": "11",
@@ -181,6 +185,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "Av Coelho da Rocha",
         "numero": "2095",
@@ -218,6 +223,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA SAO MATEUS",
         "numero": "0",
@@ -255,6 +261,7 @@ DADOS = [
         "funcao_acumulacao": "REGENTE DOC I 30H",
         "ch_total_acumulacao": 30,
         "data_admissao_acumulacao": "2008-02-28",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA BARONESA",
         "numero": "162",
@@ -292,6 +299,7 @@ DADOS = [
         "funcao_acumulacao": "DIRETOR ADJUNTO",
         "ch_total_acumulacao": 40,
         "data_admissao_acumulacao": "2018-02-08",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA AURELIA",
         "numero": "858",
@@ -329,6 +337,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA MARCÍLIO DIAS",
         "numero": "11",
@@ -366,6 +375,7 @@ DADOS = [
         "funcao_acumulacao": "REGENTE DOC I 18H",
         "ch_total_acumulacao": 18,
         "data_admissao_acumulacao": "2007-05-24",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA OLIVA MAIA",
         "numero": "158",
@@ -403,6 +413,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "RUA ROQUE BARRETO",
         "numero": "145",
@@ -440,6 +451,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA EX COMBATENTE",
         "numero": "355",
@@ -477,6 +489,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA DIVISA",
         "numero": "365",
@@ -514,6 +527,7 @@ DADOS = [
         "funcao_acumulacao": "REGENTE DOC I 18H",
         "ch_total_acumulacao": 18,
         "data_admissao_acumulacao": "2011-08-01",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "RUA BERNARDINO TILLIA",
         "numero": "531",
@@ -551,6 +565,7 @@ DADOS = [
         "funcao_acumulacao": "ORIENTADOR EDUCACIONAL",
         "ch_total_acumulacao": 40,
         "data_admissao_acumulacao": "2008-02-28",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA EGIDIO",
         "numero": "122",
@@ -588,6 +603,7 @@ DADOS = [
         "funcao_acumulacao": "DIRETOR ADJUNTO",
         "ch_total_acumulacao": 40,
         "data_admissao_acumulacao": "2012-06-18",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "NÃO",
         "endereco": "EST ELIZEU DE ALVARENGA",
         "numero": "1908",
@@ -625,6 +641,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA CAIRUÇU",
         "numero": "259",
@@ -662,6 +679,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "RUA COMENDADOR SOARES",
         "numero": "26",
@@ -699,6 +717,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "AV ALFREDO BALTAZAR DA SILVEIRA",
         "numero": "419",
@@ -736,6 +755,7 @@ DADOS = [
         "funcao_acumulacao": "REGENTE DOC I 18H",
         "ch_total_acumulacao": 18,
         "data_admissao_acumulacao": "2009-02-12",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA EGIDIO",
         "numero": "112",
@@ -773,6 +793,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "ETR DE CAMORIM",
         "numero": "1003",
@@ -810,6 +831,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "RUA SOUZA CALDAS",
         "numero": "154",
@@ -847,6 +869,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "ETR DOUTOR MANUEL REIS",
         "numero": "110",
@@ -884,6 +907,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "AVENIDA UNIÃO",
         "numero": "1333",
@@ -921,6 +945,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA PIO DUTRA",
         "numero": "211",
@@ -958,6 +983,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA CACHOEIRA",
         "numero": "4",
@@ -995,6 +1021,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "Rua Arnaud Guedes de Amorim",
         "numero": "627",
@@ -1032,6 +1059,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SEM MARCAÇÃO",
         "endereco": "AVENIDA MINISTRO LAFAYETE DE ANDRADE",
         "numero": "1683",
@@ -1069,6 +1097,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA ATLAS",
         "numero": "24",
@@ -1106,6 +1135,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "SIM",
         "endereco": "RUA JOAO FERREIRA GOULART",
         "numero": "40",
@@ -1143,6 +1173,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "rUA MAUA",
         "numero": "12",
@@ -1180,6 +1211,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "COSMORAMA",
         "numero": "900",
@@ -1217,6 +1249,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "R MARIA EMILIA",
         "numero": "622",
@@ -1254,6 +1287,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA TORQUATO TAPAJOS",
         "numero": "373",
@@ -1291,6 +1325,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA JOSEFINA",
         "numero": "42",
@@ -1328,6 +1363,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA VISCONDE DE ABAETÉ",
         "numero": "109",
@@ -1365,6 +1401,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO É DOCENTE",
         "endereco": "AVENIDA BANDEIRANTE",
         "numero": "0",
@@ -1402,6 +1439,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA COSMORAMA",
         "numero": "700",
@@ -1439,6 +1477,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO É DOCENTE",
         "endereco": "RUA CIRIACO",
         "numero": "0",
@@ -1476,6 +1515,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "AVENIDA BRASIL",
         "numero": "1352",
@@ -1513,6 +1553,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO É DOCENTE",
         "endereco": "RUA COSMORAMA",
         "numero": "197",
@@ -1550,6 +1591,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO",
         "endereco": "RUA RAIMUNDO CORREA",
         "numero": "20",
@@ -1587,6 +1629,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "n_a",
         "acumulacao": "NÃO É DOCENTE",
         "endereco": "RUA EDMUNDO BITTENCOURT",
         "numero": "153",
@@ -1624,6 +1667,7 @@ DADOS = [
         "funcao_acumulacao": "",
         "ch_total_acumulacao": None,
         "data_admissao_acumulacao": "",
+        "situacao_matricula_2": "ativo",
         "acumulacao": "SIM",
         "endereco": "RUA B",
         "numero": "110",
@@ -1640,6 +1684,24 @@ DADOS = [
     }
 ]
 
+DISCIPLINAS_PADRAO = [
+    "Artes",
+    "Biologia",
+    "Ciências Físicas e Biológicas",
+    "Educação Física",
+    "Espanhol",
+    "Filosofia",
+    "Física",
+    "Geografia",
+    "História",
+    "Inglês",
+    "Língua Portuguesa",
+    "Matemática",
+    "Química",
+    "Sociologia",
+    "Docência II (Área Integrada)"
+]
+
 def parse_d(val):
     if not val:
         return None
@@ -1652,7 +1714,12 @@ def parse_d(val):
     return None
 
 def executar():
-    print("Iniciando povoamento automatico (datas de ingresso na escola e classificacao em branco para alimentacao posterior)...")
+    print("Iniciando povoamento automatico com disciplinas e situacoes por matricula...")
+    
+    # Criar Disciplinas padrao da escola se nao existirem
+    for d_nome in DISCIPLINAS_PADRAO:
+        Disciplina.objects.get_or_create(nome=d_nome)
+
     cpfs_reais = {r['cpf'] for r in DADOS}
     
     Professor.objects.all().delete()
@@ -1690,6 +1757,7 @@ def executar():
                 cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
                 funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
                 data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
+                situacao_matricula_1='ativo', situacao_matricula_2=r.get('situacao_matricula_2', 'n_a'),
                 nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao_atual=funcao,
                 funcao_ingresso=disc_ing, tipo_funcao=tipo_funcao, regime_contratacao=regime,
                 data_admissao=dt_adm, data_nomeacao=dt_nom, data_ci_movimentacao=None, data_ingresso_unidade=None,
@@ -1701,12 +1769,13 @@ def executar():
             )
             perfil_usuario = 'administrativo'
         else:
-            Professor.objects.create(
+            prof = Professor.objects.create(
                 cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
                 id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
                 cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
                 funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
                 data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
+                situacao_matricula_1='ativo', situacao_matricula_2=r.get('situacao_matricula_2', 'n_a'),
                 nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao=funcao,
                 tipo_funcao=tipo_funcao, regime_contratacao=regime, data_admissao=dt_adm, data_nomeacao=dt_nom,
                 data_ci_movimentacao=None, data_ingresso_unidade=None, ch_planejamento=r['ch_planejamento'],
@@ -1716,6 +1785,12 @@ def executar():
                 email=r['email_interno'], email_google=r['email_google'], email_alternativo=r['email_alternativo'],
                 telefone=r['telefone'], celular=r['celular'], classificacao=None, ativo=True
             )
+            # Tentar associar disciplina de ingresso se bater o nome
+            if disc_ing:
+                d_found = Disciplina.objects.filter(nome__icontains=disc_ing.split(' ')[0]).first()
+                if d_found:
+                    prof.disciplinas_lecionadas.add(d_found)
+
             perfil_usuario = 'professor'
 
         if 'SILVIO LUIZ' in nome.upper():
@@ -1738,6 +1813,7 @@ def executar():
             user.save()
 
     print("Povoamento concluido com sucesso!")
+    print(f"Disciplinas cadastradas: {Disciplina.objects.count()}")
     print(f"Professores: {Professor.objects.count()}")
     print(f"Administrativos: {FuncionarioAdministrativo.objects.count()}")
     print(f"Usuarios: {Usuario.objects.count()}")

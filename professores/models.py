@@ -74,6 +74,30 @@ class Professor(models.Model):
         max_length=20, blank=True, verbose_name='Matrícula acumulação',
         help_text='Preencha apenas se o professor acumula cargo.'
     )
+    SITUACAO_CHOICES = [
+        ('ativo', 'Ativo(a)'),
+        ('aposentado', 'Aposentado(a)'),
+        ('licenca', 'Em Licença'),
+        ('saida', 'Inativo / Transferido(a)'),
+    ]
+
+    SITUACAO_MAT2_CHOICES = [
+        ('n_a', 'Não Possui 2ª Matrícula'),
+        ('ativo', 'Ativo(a)'),
+        ('aposentado', 'Aposentado(a)'),
+        ('licenca', 'Em Licença'),
+        ('saida', 'Inativo / Transferido(a)'),
+    ]
+
+    situacao_matricula_1 = models.CharField(
+        max_length=20, choices=SITUACAO_CHOICES, default='ativo',
+        verbose_name='Situação da 1ª Matrícula'
+    )
+    situacao_matricula_2 = models.CharField(
+        max_length=20, choices=SITUACAO_MAT2_CHOICES, default='n_a',
+        verbose_name='Situação da 2ª Matrícula'
+    )
+
     cargo_acumulacao = models.CharField(
         max_length=150, blank=True, verbose_name='Cargo (2ª Matrícula)'
     )

@@ -20,17 +20,29 @@ class ProfessorForm(forms.ModelForm):
     class Meta:
         model = Professor
         fields = [
-            'cpf', 'id_vinculo', 'matricula', 'matricula_acumulacao', 'nome_completo',
-            'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
-            'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
-            'email', 'telefone', 'foto', 'ativo', 'observacoes',
+            'cpf', 'id_vinculo', 'matricula', 'situacao_matricula_1',
+            'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2',
+            'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'ch_total_acumulacao',
+            'nome_completo', 'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
+            'data_admissao', 'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
+            'email', 'telefone', 'celular', 'foto', 'ativo', 'observacoes',
         ]
         widgets = {
             'cpf': forms.TextInput(attrs={'placeholder': '00000000000', 'id': 'id_cpf_prof'}),
             'id_vinculo': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/2', 'id': 'id_vinculo_prof'}),
             'matricula': forms.TextInput(attrs={'id': 'id_matricula'}),
+            'situacao_matricula_1': forms.Select(attrs={'id': 'id_sit_mat1'}),
+            'id_vinculo_acumulacao': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/1', 'id': 'id_vinc_acum'}),
             'matricula_acumulacao': forms.TextInput(attrs={'id': 'id_mat_acum'}),
+            'situacao_matricula_2': forms.Select(attrs={'id': 'id_sit_mat2'}),
+            'cargo_acumulacao': forms.TextInput(attrs={'id': 'id_cargo_acum'}),
+            'disciplina_ingresso_acumulacao': forms.TextInput(attrs={'id': 'id_disc_acum'}),
+            'funcao_acumulacao': forms.TextInput(attrs={'id': 'id_func_acum'}),
+            'ch_total_acumulacao': forms.NumberInput(attrs={'id': 'id_ch_acum'}),
             'nome_completo': forms.TextInput(attrs={'id': 'id_nome_prof'}),
+            'cargo': forms.TextInput(attrs={'id': 'id_cargo'}),
+            'disciplina_ingresso': forms.TextInput(attrs={'id': 'id_disc_ing'}),
+            'data_admissao': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_adm'}, format='%Y-%m-%d'),
             'data_ci_movimentacao': forms.DateInput(
                 attrs={'type': 'date', 'id': 'id_data_ci'}, format='%Y-%m-%d'
             ),
@@ -40,12 +52,17 @@ class ProfessorForm(forms.ModelForm):
             'classificacao': forms.NumberInput(attrs={'min': 1, 'id': 'id_classificacao'}),
             'email': forms.EmailInput(attrs={'id': 'id_email_prof'}),
             'telefone': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_tel_prof'}),
+            'celular': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_cel_prof'}),
             'observacoes': forms.Textarea(attrs={'rows': 3, 'id': 'id_obs_prof'}),
             'disciplinas_lecionadas': forms.CheckboxSelectMultiple(),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['data_admissao'].required = False
+        self.fields['data_ci_movimentacao'].required = False
+        self.fields['data_ingresso_unidade'].required = False
+        self.fields['data_admissao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
         aplicar_estilo_campos(self)
