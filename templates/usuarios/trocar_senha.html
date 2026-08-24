@@ -8,7 +8,38 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'gestao/css/painel.css' %}">
+  <link rel="stylesheet" href="{% static 'gestao/css/painel.css' %}?v=20260824_v3">
+  <style>
+    html, body, body.login-body, body.painel-body {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #090d16 !important;
+      overflow-x: hidden !important;
+    }
+    .login-page {
+      width: 100% !important;
+      min-height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 auto !important;
+      padding: 32px 16px !important;
+      box-sizing: border-box !important;
+    }
+    .login-card {
+      position: relative !important;
+      z-index: 2 !important;
+      width: 100% !important;
+      max-width: 440px !important;
+      margin: auto !important;
+    }
+  </style>
 </head>
 <body class="login-body">
 <div class="login-page">
