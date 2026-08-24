@@ -78,28 +78,28 @@ from datetime import datetime
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ceja_gestao.settings')
 django.setup()
 
-from professores.models import Professor, Disciplina
+from professores.models import Professor, Disciplina, ConfiguracaoEscola, DisciplinaOfertada
 from funcionarios.models import FuncionarioAdministrativo
 from usuarios.models import Usuario
 
 DADOS = ''' + json_dados + '''
 
-DISCIPLINAS_PADRAO = [
-    "Artes",
-    "Biologia",
-    "Ciências Físicas e Biológicas",
-    "Educação Física",
-    "Espanhol",
-    "Filosofia",
-    "Física",
-    "Geografia",
-    "História",
-    "Inglês",
-    "Língua Portuguesa",
-    "Matemática",
-    "Química",
-    "Sociologia",
-    "Docência II (Área Integrada)"
+DISCIPLINAS_MATRIZ = [
+    ("Língua Portuguesa", 6, 120),
+    ("Matemática", 6, 120),
+    ("História", 4, 80),
+    ("Geografia", 4, 80),
+    ("Biologia", 4, 80),
+    ("Física", 4, 80),
+    ("Química", 4, 80),
+    ("Inglês", 2, 40),
+    ("Espanhol", 2, 40),
+    ("Sociologia", 2, 40),
+    ("Filosofia", 2, 40),
+    ("Artes", 2, 40),
+    ("Educação Física", 2, 40),
+    ("Ciências Físicas e Biológicas", 4, 80),
+    ("Docência II (Área Integrada)", 4, 80),
 ]
 
 def parse_d(val):
@@ -114,11 +114,31 @@ def parse_d(val):
     return None
 
 def executar():
-    print("Iniciando povoamento automatico com disciplinas e situacoes por matricula...")
+    print("Iniciando povoamento automatico com calculo automatico de C.H. por horas/aula...")
     
-    # Criar Disciplinas padrao da escola se nao existirem
-    for d_nome in DISCIPLINAS_PADRAO:
-        Disciplina.objects.get_or_create(nome=d_nome)
+    config, _ = ConfiguracaoEscola.objects.get_or_create(
+        ano_letivo=2026,
+        defaults={
+            'ativo': True, 'duracao_hora_aula': 50,
+            'horario_abertura': '08:50', 'horario_fechamento': '20:30',
+            'sex_abertura': '08:50', 'sex_fechamento': '17:00',
+            'func_segunda': True, 'func_terca': True, 'func_quarta': True,
+            'func_quinta': True, 'func_sexta': True, 'func_sabado': False, 'func_domingo': False
+        }
+    )
+
+    # Criar Disciplinas e Ofertas padrao com CH calculada (horas_aula * 20 semanas)
+    for d_nome, ha, ch_tot in DISCIPLINAS_MATRIZ:
+        disc, _ = Disciplina.objects.get_or_create(nome=d_nome)
+        DisciplinaOfertada.objects.update_or_create(
+            configuracao=config,
+            disciplina=disc,
+            defaults={
+                'horas_aula_semanais': ha,
+                'carga_horaria_total': ch_tot,
+                'ativo': True
+            }
+        )
 
     cpfs_reais = {r['cpf'] for r in DADOS}
     
@@ -185,7 +205,6 @@ def executar():
                 email=r['email_interno'], email_google=r['email_google'], email_alternativo=r['email_alternativo'],
                 telefone=r['telefone'], celular=r['celular'], classificacao=None, ativo=True
             )
-            # Tentar associar disciplina de ingresso se bater o nome
             if disc_ing:
                 d_found = Disciplina.objects.filter(nome__icontains=disc_ing.split(' ')[0]).first()
                 if d_found:
@@ -213,7 +232,7 @@ def executar():
             user.save()
 
     print("Povoamento concluido com sucesso!")
-    print(f"Disciplinas cadastradas: {Disciplina.objects.count()}")
+    print(f"Disciplinas Ofertadas configuradas: {DisciplinaOfertada.objects.count()}")
     print(f"Professores: {Professor.objects.count()}")
     print(f"Administrativos: {FuncionarioAdministrativo.objects.count()}")
     print(f"Usuarios: {Usuario.objects.count()}")
@@ -225,4 +244,4 @@ if __name__ == '__main__':
 with open('carregar_dados.py', 'w', encoding='utf-8') as f:
     f.write(python_code)
 
-print("Gerado carregar_dados.py com disciplinas e situacao por matricula!")
+print("Gerado carregar_dados.py com matriz curricular e CH automatica!")

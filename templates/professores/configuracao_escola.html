@@ -164,10 +164,10 @@
                   {{ of.disciplina.nome }}
                 </td>
                 <td class="text-center">
-                  <input type="number" name="disc_ha_{{ of.pk }}" value="{{ of.horas_aula_semanais }}" min="1" max="40" class="form-control form-control-sm text-center" style="width:80px; margin:0 auto; font-weight:700;">
+                  <input type="number" id="disc_ha_{{ of.pk }}" name="disc_ha_{{ of.pk }}" value="{{ of.horas_aula_semanais }}" min="1" max="40" class="form-control form-control-sm text-center" style="width:80px; margin:0 auto; font-weight:700;" oninput="calcularCH(this, '{{ of.pk }}')">
                 </td>
                 <td class="text-center">
-                  <input type="number" name="disc_ch_{{ of.pk }}" value="{{ of.carga_horaria_total }}" min="10" max="500" class="form-control form-control-sm text-center" style="width:85px; margin:0 auto; font-weight:700; color:#fde047;">
+                  <input type="number" id="disc_ch_{{ of.pk }}" name="disc_ch_{{ of.pk }}" value="{{ of.carga_horaria_total }}" min="10" max="500" class="form-control form-control-sm text-center" style="width:85px; margin:0 auto; font-weight:700; color:#fde047;">
                 </td>
               </tr>
               {% empty %}
@@ -189,4 +189,15 @@
     </button>
   </div>
 </form>
+
+<script>
+  function calcularCH(inputHA, pk) {
+    const ha = parseInt(inputHA.value) || 0;
+    const inputCH = document.getElementById('disc_ch_' + pk);
+    if (inputCH) {
+      // Cálculo automático: Horas/Aula Semanais * 20 semanas = C.H. Total (Horas)
+      inputCH.value = ha * 20;
+    }
+  }
+</script>
 {% endblock %}
