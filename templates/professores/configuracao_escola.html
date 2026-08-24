@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Configuração da Escola{% endblock %}
+{% block nav_configuracao %}active{% endblock %}
+
+{% block breadcrumb %}
+  <span style="color:var(--text-secondary);"><i class="bi bi-gear-fill me-1"></i>Configuração da Escola</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <div class="page-title"><i class="bi bi-gear-fill text-primary me-2"></i>Configuração da Escola</div>
+    <div style="color:var(--text-secondary); font-size:0.9rem;">
+      Gerencie o ano letivo, horário de abertura/fechamento, dias de funcionamento e carga horária (horas/aula) das disciplinas.
+    </div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <label style="font-weight:600; font-size:0.88rem; color:var(--text-muted); min-width:85px;">Ano Letivo:</label>
+    <select class="form-select form-select-sm" style="width:130px; font-weight:700;" onchange="location = '?ano=' + this.value;">
+      {% for a in anos_cadastrados %}
+      <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>{{ a }}</option>
+      {% empty %}
+      <option value="{{ ano_selecionado }}">{{ ano_selecionado }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<form method="post" id="form-configuracao-escola">
+  {% csrf_token %}
+
+  <div class="row g-4">
+    <!-- Card 1: Horários e Funcionamento -->
+    <div class="col-lg-6">
+      <div class="card-gestao h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+          <h6 style="font-weight:700; color:var(--blue); margin:0;">
+            <i class="bi bi-clock-history me-1"></i> Funcionamento do Ano Letivo {{ config.ano_letivo }}
+          </h6>
+          {% if config.ativo %}
+          <span class="badge-gestao badge-success"><i class="bi bi-check-circle-fill me-1"></i>Ano Ativo</span>
+          {% else %}
+          <span class="badge-gestao badge-secondary">Inativo</span>
+          {% endif %}
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Ano Letivo</label>
+            {{ form.ano_letivo }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Duração da Hora/Aula (Minutos)</label>
+            {{ form.duracao_hora_aula }}
+            <small style="color:var(--text-muted); font-size:0.75rem;">Padrão estadual: 50 minutos</small>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Horário de Abertura da Escola</label>
+            {{ form.horario_abertura }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Horário de Fechamento da Escola</label>
+            {{ form.horario_fechamento }}
+          </div>
+
+          <div class="col-12 mt-3">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Dias da Semana com Funcionamento na Unidade</label>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:8px; padding:12px;" class="d-flex flex-wrap gap-3">
+              <div class="form-check">
+                {{ form.func_segunda }}
+                <label class="form-check-label" for="{{ form.func_segunda.id_for_label }}">Segunda-feira</label>
+              </div>
+              <div class="form-check">
+                {{ form.func_terca }}
+                <label class="form-check-label" for="{{ form.func_terca.id_for_label }}">Terça-feira</label>
+              </div>
+              <div class="form-check">
+                {{ form.func_quarta }}
+                <label class="form-check-label" for="{{ form.func_quarta.id_for_label }}">Quarta-feira</label>
+              </div>
+              <div class="form-check">
+                {{ form.func_quinta }}
+                <label class="form-check-label" for="{{ form.func_quinta.id_for_label }}">Quinta-feira</label>
+              </div>
+              <div class="form-check">
+                {{ form.func_sexta }}
+                <label class="form-check-label" for="{{ form.func_sexta.id_for_label }}">Sexta-feira</label>
+              </div>
+              <div class="form-check">
+                {{ form.func_sabado }}
+                <label class="form-check-label" for="{{ form.func_sabado.id_for_label }}">Sábado</label>
+              </div>
+              <div class="form-check">
+                {{ form.func_domingo }}
+                <label class="form-check-label" for="{{ form.func_domingo.id_for_label }}">Domingo</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Observações do Ano Letivo</label>
+            {{ form.observacoes }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Disciplinas Ofertadas e Horas/Aula -->
+    <div class="col-lg-6">
+      <div class="card-gestao h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+          <h6 style="font-weight:700; color:#67e8f9; margin:0;">
+            <i class="bi bi-journal-check me-1"></i> Disciplinas Ofertadas e Carga Horária (Ano {{ config.ano_letivo }})
+          </h6>
+          <span style="font-size:0.75rem; color:var(--text-muted);">Unidade de 50 min/aula</span>
+        </div>
+
+        <div class="table-responsive" style="max-height:480px; overflow-y:auto;">
+          <table class="table table-dark table-hover align-middle mb-0" style="font-size:0.85rem;">
+            <thead>
+              <tr style="color:var(--text-muted); border-bottom:1px solid var(--card-border);">
+                <th style="width:60px;" class="text-center">Ofertar</th>
+                <th>Disciplina</th>
+                <th style="width:130px;" class="text-center">Horas/Aula (Sem.)</th>
+                <th style="width:130px;" class="text-center">C.H. Total (Horas)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for of in ofertas %}
+              <tr>
+                <td class="text-center">
+                  <input type="checkbox" name="disc_ativo_{{ of.pk }}" class="form-check-input" {% if of.ativo %}checked{% endif %} style="accent-color:var(--blue); width:18px; height:18px; cursor:pointer;">
+                </td>
+                <td style="font-weight:600;">
+                  {{ of.disciplina.nome }}
+                </td>
+                <td class="text-center">
+                  <input type="number" name="disc_ha_{{ of.pk }}" value="{{ of.horas_aula_semanais }}" min="1" max="40" class="form-control form-control-sm text-center" style="width:80px; margin:0 auto; font-weight:700;">
+                </td>
+                <td class="text-center">
+                  <input type="number" name="disc_ch_{{ of.pk }}" value="{{ of.carga_horaria_total }}" min="10" max="500" class="form-control form-control-sm text-center" style="width:85px; margin:0 auto; font-weight:700; color:#fde047;">
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">Nenhuma disciplina cadastrada.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão Salvar Geral -->
+  <div class="mt-4 text-end">
+    <button type="submit" class="btn-gestao btn-gestao-primary" style="padding:10px 24px; font-size:0.95rem;">
+      <i class="bi bi-check2-circle me-1"></i> Salvar Configurações da Escola
+    </button>
+  </div>
+</form>
+{% endblock %}

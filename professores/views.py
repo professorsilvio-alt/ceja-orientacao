@@ -4,8 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from usuarios.views import diretor_required, verificar_primeiro_acesso
-from .models import Professor, HorarioProfessor
-from .forms import ProfessorForm, HorarioProfessorForm
+from .models import Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, Disciplina
+from .forms import ProfessorForm, HorarioProfessorForm, ConfiguracaoEscolaForm
 
 
 @login_required
@@ -113,3 +113,76 @@ def view_remover_horario(request, horario_pk):
         horario.delete()
         messages.success(request, 'Horário removido.')
     return redirect('horarios_professor', pk=prof_pk)
+
+
+@diretor_required
+def view_configuracao_escola(request):
+    ano_req = request.GET.get('ano') or timezone.now().year
+    try:
+        ano_req = int(ano_req)
+    except ValueError:
+        ano_req = timezone.now().year
+
+    config, _ = ConfiguracaoEscola.objects.get_or_create(
+        ano_letivo=ano_req,
+        defaults={
+            'ativo': True,
+            'duracao_hora_aula': 50,
+            'horario_abertura': '07:00',
+            'horario_fechamento': '22:00',
+            'func_segunda': True,
+            'func_terca': True,
+            'func_quarta': True,
+            'func_quinta': True,
+            'func_sexta': True,
+            'func_sabado': False,
+            'func_domingo': False,
+        }
+    )
+
+    disciplinas = Disciplina.objects.all().order_by('nome')
+    for disc in disciplinas:
+        DisciplinaOfertada.objects.get_or_create(
+            configuracao=config,
+            disciplina=disc,
+            defaults={'horas_aula_semanais': 4, 'carga_horaria_total': 80, 'ativo': True}
+        )
+
+    form = ConfiguracaoEscolaForm(request.POST or None, instance=config)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            
+            ofertas = DisciplinaOfertada.objects.filter(configuracao=config)
+            for of in ofertas:
+                ativo_key = f'disc_ativo_{of.pk}'
+                ha_key = f'disc_ha_{of.pk}'
+                ch_key = f'disc_ch_{of.pk}'
+                
+                of.ativo = ativo_key in request.POST
+                if ha_key in request.POST:
+                    try:
+                        of.horas_aula_semanais = int(request.POST[ha_key])
+                    except ValueError:
+                        pass
+                if ch_key in request.POST:
+                    try:
+                        of.carga_horaria_total = int(request.POST[ch_key])
+                    except ValueError:
+                        pass
+                of.save()
+
+            messages.success(request, f'Configurações do Ano Letivo {config.ano_letivo} salvas com sucesso!')
+            return redirect(f'/professores/configuracao/?ano={config.ano_letivo}')
+
+    ofertas = DisciplinaOfertada.objects.filter(configuracao=config).select_related('disciplina').order_by('disciplina__nome')
+    anos_cadastrados = ConfiguracaoEscola.objects.values_list('ano_letivo', flat=True).order_by('-ano_letivo')
+
+    return render(request, 'professores/configuracao_escola.html', {
+        'form': form,
+        'config': config,
+        'ofertas': ofertas,
+        'anos_cadastrados': anos_cadastrados,
+        'ano_selecionado': config.ano_letivo,
+    })

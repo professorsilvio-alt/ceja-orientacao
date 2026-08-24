@@ -1,6 +1,29 @@
 """Formulários do app professores"""
 from django import forms
-from .models import Professor, HorarioProfessor
+from .models import Professor, HorarioProfessor, ConfiguracaoEscola
+
+
+class ConfiguracaoEscolaForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracaoEscola
+        fields = [
+            'ano_letivo', 'ativo', 'duracao_hora_aula',
+            'horario_abertura', 'horario_fechamento',
+            'func_segunda', 'func_terca', 'func_quarta',
+            'func_quinta', 'func_sexta', 'func_sabado', 'func_domingo',
+            'observacoes',
+        ]
+        widgets = {
+            'ano_letivo': forms.NumberInput(attrs={'min': 2020, 'max': 2099, 'id': 'id_ano_letivo_cfg'}),
+            'duracao_hora_aula': forms.NumberInput(attrs={'min': 15, 'max': 120, 'id': 'id_duracao_ha'}),
+            'horario_abertura': forms.TimeInput(attrs={'type': 'time', 'id': 'id_abertura'}),
+            'horario_fechamento': forms.TimeInput(attrs={'type': 'time', 'id': 'id_fechamento'}),
+            'observacoes': forms.Textarea(attrs={'rows': 2, 'id': 'id_obs_cfg'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        aplicar_estilo_campos(self)
 import re
 
 

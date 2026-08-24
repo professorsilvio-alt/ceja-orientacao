@@ -250,26 +250,99 @@ class HorarioProfessor(models.Model):
     hora_fim = models.TimeField(verbose_name='Fim')
     local = models.CharField(max_length=40, choices=LOCAL_CHOICES, verbose_name='Local')
     local_descricao = models.CharField(
-        max_length=100, blank=True, verbose_name='Descrição do local',
-        help_text='Complemento se "Outro" for selecionado.'
+        max_length=100, blank=True,
+        verbose_name='Descrição do local',
+        help_text='Ex: Sala 204, Auditório, etc.'
     )
     aprovado = models.BooleanField(
-        default=False, verbose_name='Aprovado pela Direção',
-        help_text='Diretor marca como aprovado após revisão.'
+        default=False, verbose_name='Aprovado pela direção'
     )
+    observacoes = models.TextField(blank=True, verbose_name='Observações')
     criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'Horário do Professor'
         verbose_name_plural = 'Horários dos Professores'
-        ordering = ['dia_semana', 'hora_inicio']
-        unique_together = ['professor', 'ano_letivo', 'dia_semana', 'hora_inicio']
+        ordering = ['ano_letivo', 'dia_semana', 'hora_inicio']
 
     def __str__(self):
-        return f'{self.professor.nome_curto} — {self.get_dia_semana_display()} {self.hora_inicio:%H:%M}–{self.hora_fim:%H:%M}'
+        return f'{self.professor.nome_curto} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}-{self.hora_fim.strftime("%H:%M")}'
+
+
+class ConfiguracaoEscola(models.Model):
+    """Configuração Geral da Escola por Ano Letivo."""
+
+    ano_letivo = models.PositiveIntegerField(
+        unique=True, verbose_name='Ano Letivo',
+        help_text='Ex: 2026'
+    )
+    ativo = models.BooleanField(
+        default=True, verbose_name='Ano Letivo Atual / Ativo'
+    )
+    duracao_hora_aula = models.PositiveIntegerField(
+        default=50, verbose_name='Duração da Hora/Aula (Minutos)',
+        help_text='Padrão: 50 minutos'
+    )
+    horario_abertura = models.TimeField(
+        default='07:00', verbose_name='Horário de Abertura'
+    )
+    horario_fechamento = models.TimeField(
+        default='22:00', verbose_name='Horário de Fechamento'
+    )
+
+    # Dias de Funcionamento (Segunda a Domingo)
+    func_segunda = models.BooleanField(default=True, verbose_name='Segunda-feira')
+    func_terca = models.BooleanField(default=True, verbose_name='Terça-feira')
+    func_quarta = models.BooleanField(default=True, verbose_name='Quarta-feira')
+    func_quinta = models.BooleanField(default=True, verbose_name='Quinta-feira')
+    func_sexta = models.BooleanField(default=True, verbose_name='Sexta-feira')
+    func_sabado = models.BooleanField(default=False, verbose_name='Sábado')
+    func_domingo = models.BooleanField(default=False, verbose_name='Domingo')
+
+    observacoes = models.TextField(blank=True, verbose_name='Observações do Ano Letivo')
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Configuração da Escola'
+        verbose_name_plural = 'Configurações da Escola'
+        ordering = ['-ano_letivo']
+
+    def __str__(self):
+        status = ' (Ativo)' if self.ativo else ''
+        return f'Ano Letivo {self.ano_letivo}{status}'
+
+
+class DisciplinaOfertada(models.Model):
+    """Disciplinas ofertadas e carga horária (horas/aula) por Ano Letivo."""
+
+    configuracao = models.ForeignKey(
+        ConfiguracaoEscola, on_delete=models.CASCADE,
+        related_name='disciplinas_ofertadas', verbose_name='Ano Letivo'
+    )
+    disciplina = models.ForeignKey(
+        Disciplina, on_delete=models.CASCADE,
+        related_name='ofertas', verbose_name='Disciplina'
+    )
+    horas_aula_semanais = models.PositiveIntegerField(
+        default=4, verbose_name='Horas/Aula Semanais (50 min cada)'
+    )
+    carga_horaria_total = models.PositiveIntegerField(
+        default=80, verbose_name='Carga Horária Total (Horas)'
+    )
+    ativo = models.BooleanField(default=True, verbose_name='Ofertada no Ano')
+
+    class Meta:
+        verbose_name = 'Disciplina Ofertada'
+        verbose_name_plural = 'Disciplinas Ofertadas'
+        unique_together = ['configuracao', 'disciplina']
+
+    def __str__(self):
+        return f'{self.disciplina.nome} — {self.configuracao.ano_letivo} ({self.horas_aula_semanais} h/a)'
 
     @property
     def local_display(self):
         if self.local == 'outro' and self.local_descricao:
             return self.local_descricao
-        return self.get_local_display()
