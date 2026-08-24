@@ -117,6 +117,32 @@ def view_remover_horario(request, horario_pk):
 
 @diretor_required
 def view_configuracao_escola(request):
+    unidades = UnidadeEscolar.objects.filter(ativo=True).order_by('tipo', 'nome')
+    sede_padrao = unidades.filter(tipo='sede').first() or unidades.first()
+
+    if not sede_padrao:
+        sede_padrao = UnidadeEscolar.objects.create(
+            nome="CEJA Professora Rosa Soares - Sede",
+            tipo="sede",
+            codigo="SEDE"
+        )
+        unidades = UnidadeEscolar.objects.filter(ativo=True).order_by('tipo', 'nome')
+
+    unidade_id = request.GET.get('unidade') or request.POST.get('unidade_id')
+    if unidade_id:
+        unidade_atual = get_object_or_404(UnidadeEscolar, pk=unidade_id)
+    else:
+        unidade_atual = sede_padrao
+
+    if request.method == 'POST' and request.POST.get('action') == 'nova_unidade':
+        unidade_form = UnidadeEscolarForm(request.POST)
+        if unidade_form.is_valid():
+            nueva_u = unidade_form.save()
+            messages.success(request, f'Unidade Vinculada "{nueva_u.nome}" cadastrada com sucesso!')
+            return redirect(f'/professores/configuracao/?unidade={nueva_u.pk}')
+    else:
+        unidade_form = UnidadeEscolarForm(initial={'tipo': 'vinculada'})
+
     ano_req = request.GET.get('ano') or timezone.now().year
     try:
         ano_req = int(ano_req)
@@ -124,19 +150,23 @@ def view_configuracao_escola(request):
         ano_req = timezone.now().year
 
     config, _ = ConfiguracaoEscola.objects.get_or_create(
+        unidade=unidade_atual,
         ano_letivo=ano_req,
         defaults={
             'ativo': True,
             'duracao_hora_aula': 50,
-            'horario_abertura': '07:00',
-            'horario_fechamento': '22:00',
+            'horario_abertura': '08:50',
+            'horario_fechamento': '20:30',
+            'seg_abertura': '08:50', 'seg_fechamento': '20:30',
+            'ter_abertura': '08:50', 'ter_fechamento': '20:30',
+            'qua_abertura': '08:50', 'qua_fechamento': '20:30',
+            'qui_abertura': '08:50', 'qui_fechamento': '20:30',
+            'sex_abertura': '08:50', 'sex_fechamento': '17:00',
             'func_segunda': True,
             'func_terca': True,
             'func_quarta': True,
             'func_quinta': True,
             'func_sexta': True,
-            'func_sabado': False,
-            'func_domingo': False,
         }
     )
 
@@ -150,7 +180,7 @@ def view_configuracao_escola(request):
 
     form = ConfiguracaoEscolaForm(request.POST or None, instance=config)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and (request.POST.get('action') == 'salvar_config' or not request.POST.get('action')):
         if form.is_valid():
             form.save()
             
@@ -173,16 +203,19 @@ def view_configuracao_escola(request):
                         pass
                 of.save()
 
-            messages.success(request, f'Configurações do Ano Letivo {config.ano_letivo} salvas com sucesso!')
-            return redirect(f'/professores/configuracao/?ano={config.ano_letivo}')
+            messages.success(request, f'Configurações de {unidade_atual.nome} ({config.ano_letivo}) salvas!')
+            return redirect(f'/professores/configuracao/?unidade={unidade_atual.pk}&ano={config.ano_letivo}')
 
     ofertas = DisciplinaOfertada.objects.filter(configuracao=config).select_related('disciplina').order_by('disciplina__nome')
-    anos_cadastrados = ConfiguracaoEscola.objects.values_list('ano_letivo', flat=True).order_by('-ano_letivo')
+    anos_cadastrados = ConfiguracaoEscola.objects.filter(unidade=unidade_atual).values_list('ano_letivo', flat=True).order_by('-ano_letivo')
 
     return render(request, 'professores/configuracao_escola.html', {
         'form': form,
         'config': config,
         'ofertas': ofertas,
+        'unidades': unidades,
+        'unidade_atual': unidade_atual,
+        'unidade_form': unidade_form,
         'anos_cadastrados': anos_cadastrados,
         'ano_selecionado': config.ano_letivo,
     })

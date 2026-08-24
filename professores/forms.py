@@ -1,13 +1,30 @@
 """Formulários do app professores"""
 from django import forms
-from .models import Professor, HorarioProfessor, ConfiguracaoEscola
+from .models import Professor, HorarioProfessor, ConfiguracaoEscola, UnidadeEscolar
+
+
+class UnidadeEscolarForm(forms.ModelForm):
+    class Meta:
+        model = UnidadeEscolar
+        fields = ['nome', 'tipo', 'codigo', 'endereco', 'telefone', 'ativo']
+        widgets = {
+            'nome': forms.TextInput(attrs={'placeholder': 'Ex: Unidade Vinculada Maricá / Extensão Itaipuaçu', 'id': 'id_nome_unidade'}),
+            'tipo': forms.Select(attrs={'id': 'id_tipo_unidade'}),
+            'codigo': forms.TextInput(attrs={'placeholder': 'Ex: EXT-01', 'id': 'id_codigo_unidade'}),
+            'endereco': forms.TextInput(attrs={'placeholder': 'Rua, Número, Bairro', 'id': 'id_end_unidade'}),
+            'telefone': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_tel_unidade'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        aplicar_estilo_campos(self)
 
 
 class ConfiguracaoEscolaForm(forms.ModelForm):
     class Meta:
         model = ConfiguracaoEscola
         fields = [
-            'ano_letivo', 'ativo', 'duracao_hora_aula',
+            'unidade', 'ano_letivo', 'ativo', 'duracao_hora_aula',
             'horario_abertura', 'horario_fechamento',
             'func_segunda', 'seg_abertura', 'seg_fechamento',
             'func_terca', 'ter_abertura', 'ter_fechamento',
@@ -119,8 +136,9 @@ class ProfessorForm(forms.ModelForm):
 class HorarioProfessorForm(forms.ModelForm):
     class Meta:
         model = HorarioProfessor
-        fields = ['ano_letivo', 'dia_semana', 'hora_inicio', 'hora_fim', 'local', 'local_descricao']
+        fields = ['unidade', 'ano_letivo', 'dia_semana', 'hora_inicio', 'hora_fim', 'local', 'local_descricao']
         widgets = {
+            'unidade': forms.Select(attrs={'id': 'id_unidade_horario'}),
             'hora_inicio': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_inicio_h'}),
             'hora_fim': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_fim_h'}),
             'ano_letivo': forms.NumberInput(attrs={'min': 2020, 'max': 2099, 'id': 'id_ano_letivo_h'}),

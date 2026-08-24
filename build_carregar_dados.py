@@ -78,7 +78,7 @@ from datetime import datetime
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ceja_gestao.settings')
 django.setup()
 
-from professores.models import Professor, Disciplina, ConfiguracaoEscola, DisciplinaOfertada
+from professores.models import Professor, Disciplina, ConfiguracaoEscola, DisciplinaOfertada, UnidadeEscolar
 from funcionarios.models import FuncionarioAdministrativo
 from usuarios.models import Usuario
 
@@ -114,9 +114,15 @@ def parse_d(val):
     return None
 
 def executar():
-    print("Iniciando povoamento automatico com calculo automatico de C.H. por horas/aula...")
+    print("Iniciando povoamento com suporte a Unidades Escolares (Sede e Vinculadas)...")
     
+    sede, _ = UnidadeEscolar.objects.get_or_create(
+        nome="CEJA Professora Rosa Soares - Sede",
+        defaults={'tipo': 'sede', 'codigo': 'SEDE'}
+    )
+
     config, _ = ConfiguracaoEscola.objects.get_or_create(
+        unidade=sede,
         ano_letivo=2026,
         defaults={
             'ativo': True, 'duracao_hora_aula': 50,
@@ -127,7 +133,6 @@ def executar():
         }
     )
 
-    # Criar Disciplinas e Ofertas padrao com CH calculada (horas_aula * 20 semanas)
     for d_nome, ha, ch_tot in DISCIPLINAS_MATRIZ:
         disc, _ = Disciplina.objects.get_or_create(nome=d_nome)
         DisciplinaOfertada.objects.update_or_create(
@@ -232,6 +237,7 @@ def executar():
             user.save()
 
     print("Povoamento concluido com sucesso!")
+    print(f"Unidades Escolares cadastradas: {UnidadeEscolar.objects.count()}")
     print(f"Disciplinas Ofertadas configuradas: {DisciplinaOfertada.objects.count()}")
     print(f"Professores: {Professor.objects.count()}")
     print(f"Administrativos: {FuncionarioAdministrativo.objects.count()}")
@@ -244,4 +250,4 @@ if __name__ == '__main__':
 with open('carregar_dados.py', 'w', encoding='utf-8') as f:
     f.write(python_code)
 
-print("Gerado carregar_dados.py com matriz curricular e CH automatica!")
+print("Gerado carregar_dados.py com suporte a UnidadeEscolar!")

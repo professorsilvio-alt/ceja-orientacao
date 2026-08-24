@@ -7,41 +7,75 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header d-flex justify-content-between align-items-center mb-4">
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
   <div>
     <div class="page-title"><i class="bi bi-gear-fill text-primary me-2"></i>Configuração da Escola</div>
     <div style="color:var(--text-secondary); font-size:0.9rem;">
-      Gerencie o ano letivo, horário de abertura/fechamento, dias de funcionamento e carga horária (horas/aula) das disciplinas.
+      Gerencie os horários de funcionamento, dias de atendimento e matriz de disciplinas por <strong>Unidade Escolar (Sede ou Vinculadas)</strong>.
     </div>
   </div>
-  <div class="d-flex align-items-center gap-2">
-    <label style="font-weight:600; font-size:0.88rem; color:var(--text-muted); min-width:85px;">Ano Letivo:</label>
-    <select class="form-select form-select-sm" style="width:130px; font-weight:700;" onchange="location = '?ano=' + this.value;">
-      {% for a in anos_cadastrados %}
-      <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>{{ a }}</option>
-      {% empty %}
-      <option value="{{ ano_selecionado }}">{{ ano_selecionado }}</option>
-      {% endfor %}
-    </select>
+  
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <!-- Seletor de Unidade Escolar (Sede / Vinculada) -->
+    <div class="d-flex align-items-center gap-2">
+      <label style="font-weight:700; font-size:0.85rem; color:#67e8f9;"><i class="bi bi-building me-1"></i>Unidade:</label>
+      <select class="form-select form-select-sm" style="min-width:210px; font-weight:700; background:var(--card-bg); color:var(--text-main); border-color:var(--blue);" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
+        {% for u in unidades %}
+        <option value="{{ u.pk }}" {% if u.pk == unidade_atual.pk %}selected{% endif %}>
+          {{ u.nome }} {% if u.tipo == 'sede' %}(Sede){% else %}(Vinculada){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Seletor de Ano Letivo -->
+    <div class="d-flex align-items-center gap-2">
+      <label style="font-weight:600; font-size:0.85rem; color:var(--text-muted);">Ano Letivo:</label>
+      <select class="form-select form-select-sm" style="width:110px; font-weight:700;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
+        {% for a in anos_cadastrados %}
+        <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>{{ a }}</option>
+        {% empty %}
+        <option value="{{ ano_selecionado }}">{{ ano_selecionado }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Botão de Nova Unidade Vinculada -->
+    <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-toggle="modal" data-bs-target="#modalNovaUnidade" style="font-size:0.85rem;">
+      <i class="bi bi-plus-circle me-1"></i> Nova Unidade Vinculada
+    </button>
   </div>
 </div>
 
 <form method="post" id="form-configuracao-escola">
   {% csrf_token %}
+  <input type="hidden" name="action" value="salvar_config">
+  <input type="hidden" name="unidade_id" value="{{ unidade_atual.pk }}">
 
   <div class="row g-4">
-    <!-- Card 1: Horários e Funcionamento -->
+    <!-- Card 1: Horários e Funcionamento da Unidade Selecionada -->
     <div class="col-lg-6">
       <div class="card-gestao h-100">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
-          <h6 style="font-weight:700; color:var(--blue); margin:0;">
-            <i class="bi bi-clock-history me-1"></i> Funcionamento do Ano Letivo {{ config.ano_letivo }}
-          </h6>
-          {% if config.ativo %}
-          <span class="badge-gestao badge-success"><i class="bi bi-check-circle-fill me-1"></i>Ano Ativo</span>
-          {% else %}
-          <span class="badge-gestao badge-secondary">Inativo</span>
-          {% endif %}
+          <div>
+            <h6 style="font-weight:700; color:var(--blue); margin:0;">
+              <i class="bi bi-clock-history me-1"></i> Funcionamento: {{ unidade_atual.nome }}
+            </h6>
+            <small style="color:var(--text-muted);">Ano Letivo {{ config.ano_letivo }}</small>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            {% if unidade_atual.tipo == 'sede' %}
+            <span class="badge-gestao badge-primary"><i class="bi bi-bank me-1"></i>Sede Principal</span>
+            {% else %}
+            <span class="badge-gestao badge-warning"><i class="bi bi-diagram-3 me-1"></i>Unidade Vinculada</span>
+            {% endif %}
+
+            {% if config.ativo %}
+            <span class="badge-gestao badge-success"><i class="bi bi-check-circle-fill me-1"></i>Ano Ativo</span>
+            {% else %}
+            <span class="badge-gestao badge-secondary">Inativo</span>
+            {% endif %}
+          </div>
         </div>
 
         <div class="row g-3">
@@ -195,9 +229,58 @@
     const ha = parseInt(inputHA.value) || 0;
     const inputCH = document.getElementById('disc_ch_' + pk);
     if (inputCH) {
-      // Cálculo automático: Horas/Aula Semanais * 20 semanas = C.H. Total (Horas)
       inputCH.value = ha * 20;
     }
   }
 </script>
+
+<!-- Modal Nova Unidade Vinculada -->
+<div class="modal fade" id="modalNovaUnidade" tabindex="-1" aria-labelledby="modalNovaUnidadeLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-main);">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="nova_unidade">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="modalNovaUnidadeLabel" style="font-weight:700; color:var(--blue);">
+            <i class="bi bi-building me-1"></i> Cadastrar Nova Unidade Vinculada / Filial
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-12">
+            <label class="form-label" style="font-weight:600;">Nome da Unidade Vinculada *</label>
+            {{ unidade_form.nome }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" style="font-weight:600;">Tipo de Unidade *</label>
+            {{ unidade_form.tipo }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" style="font-weight:600;">Código / Sigla</label>
+            {{ unidade_form.codigo }}
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-weight:600;">Endereço</label>
+            {{ unidade_form.endereco }}
+          </div>
+          <div class="col-md-8">
+            <label class="form-label" style="font-weight:600;">Telefone</label>
+            {{ unidade_form.telefone }}
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check form-switch mb-2">
+              {{ unidade_form.ativo }}
+              <label class="form-check-label" for="{{ unidade_form.ativo.id_for_label }}">Ativa</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-plus-circle me-1"></i> Cadastrar Unidade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

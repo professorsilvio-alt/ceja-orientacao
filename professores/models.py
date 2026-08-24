@@ -235,6 +235,33 @@ class Disciplina(models.Model):
         return self.nome
 
 
+class UnidadeEscolar(models.Model):
+    """
+    Unidades Escolares (Sede e Unidades Vinculadas / Filiais / Extensões).
+    """
+    TIPO_CHOICES = [
+        ('sede', 'Sede Principal'),
+        ('vinculada', 'Unidade Vinculada / Filial'),
+    ]
+
+    nome = models.CharField(max_length=150, verbose_name='Nome da Unidade')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='sede', verbose_name='Tipo de Unidade')
+    codigo = models.CharField(max_length=30, blank=True, verbose_name='Código / Sigla')
+    endereco = models.CharField(max_length=255, blank=True, verbose_name='Endereço Completo')
+    telefone = models.CharField(max_length=30, blank=True, verbose_name='Telefone')
+    ativo = models.BooleanField(default=True, verbose_name='Ativo')
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Unidade Escolar'
+        verbose_name_plural = 'Unidades Escolares'
+        ordering = ['tipo', 'nome']
+
+    def __str__(self):
+        sufixo = " (Sede)" if self.tipo == 'sede' else " (Vinculada)"
+        return f'{self.nome}{sufixo}'
+
+
 class HorarioProfessor(models.Model):
     """
     Horário semanal do professor nesta escola.
@@ -243,6 +270,11 @@ class HorarioProfessor(models.Model):
     professor = models.ForeignKey(
         Professor, on_delete=models.CASCADE,
         related_name='horarios', verbose_name='Professor'
+    )
+    unidade = models.ForeignKey(
+        UnidadeEscolar, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='horarios_professores',
+        verbose_name='Unidade / Filial'
     )
     ano_letivo = models.PositiveIntegerField(verbose_name='Ano letivo')
     dia_semana = models.CharField(max_length=10, choices=DIA_SEMANA_CHOICES, verbose_name='Dia da semana')
@@ -267,14 +299,20 @@ class HorarioProfessor(models.Model):
         ordering = ['ano_letivo', 'dia_semana', 'hora_inicio']
 
     def __str__(self):
-        return f'{self.professor.nome_curto} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}-{self.hora_fim.strftime("%H:%M")}'
+        u_nome = f" — {self.unidade.nome}" if self.unidade else ""
+        return f'{self.professor.nome_curto}{u_nome} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}-{self.hora_fim.strftime("%H:%M")}'
 
 
 class ConfiguracaoEscola(models.Model):
-    """Configuração Geral da Escola por Ano Letivo."""
+    """Configuração Geral da Escola por Unidade Escolar e Ano Letivo."""
 
+    unidade = models.ForeignKey(
+        UnidadeEscolar, on_delete=models.CASCADE,
+        related_name='configuracoes', verbose_name='Unidade Escolar',
+        null=True, blank=True
+    )
     ano_letivo = models.PositiveIntegerField(
-        unique=True, verbose_name='Ano Letivo',
+        verbose_name='Ano Letivo',
         help_text='Ex: 2026'
     )
     ativo = models.BooleanField(
@@ -329,10 +367,12 @@ class ConfiguracaoEscola(models.Model):
         verbose_name = 'Configuração da Escola'
         verbose_name_plural = 'Configurações da Escola'
         ordering = ['-ano_letivo']
+        unique_together = ['unidade', 'ano_letivo']
 
     def __str__(self):
         status = ' (Ativo)' if self.ativo else ''
-        return f'Ano Letivo {self.ano_letivo}{status}'
+        u_str = f" — {self.unidade.nome}" if self.unidade else ""
+        return f'Ano Letivo {self.ano_letivo}{u_str}{status}'
 
 
 class DisciplinaOfertada(models.Model):
