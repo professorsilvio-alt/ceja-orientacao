@@ -9,8 +9,13 @@ class ConfiguracaoEscolaForm(forms.ModelForm):
         fields = [
             'ano_letivo', 'ativo', 'duracao_hora_aula',
             'horario_abertura', 'horario_fechamento',
-            'func_segunda', 'func_terca', 'func_quarta',
-            'func_quinta', 'func_sexta', 'func_sabado', 'func_domingo',
+            'func_segunda', 'seg_abertura', 'seg_fechamento',
+            'func_terca', 'ter_abertura', 'ter_fechamento',
+            'func_quarta', 'qua_abertura', 'qua_fechamento',
+            'func_quinta', 'qui_abertura', 'qui_fechamento',
+            'func_sexta', 'sex_abertura', 'sex_fechamento',
+            'func_sabado', 'sab_abertura', 'sab_fechamento',
+            'func_domingo', 'dom_abertura', 'dom_fechamento',
             'observacoes',
         ]
         widgets = {
@@ -18,6 +23,20 @@ class ConfiguracaoEscolaForm(forms.ModelForm):
             'duracao_hora_aula': forms.NumberInput(attrs={'min': 15, 'max': 120, 'id': 'id_duracao_ha'}),
             'horario_abertura': forms.TimeInput(attrs={'type': 'time', 'id': 'id_abertura'}),
             'horario_fechamento': forms.TimeInput(attrs={'type': 'time', 'id': 'id_fechamento'}),
+            'seg_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'seg_fechamento': forms.TimeInput(attrs={'type': 'time'}),
+            'ter_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'ter_fechamento': forms.TimeInput(attrs={'type': 'time'}),
+            'qua_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'qua_fechamento': forms.TimeInput(attrs={'type': 'time'}),
+            'qui_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'qui_fechamento': forms.TimeInput(attrs={'type': 'time'}),
+            'sex_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'sex_fechamento': forms.TimeInput(attrs={'type': 'time'}),
+            'sab_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'sab_fechamento': forms.TimeInput(attrs={'type': 'time'}),
+            'dom_abertura': forms.TimeInput(attrs={'type': 'time'}),
+            'dom_fechamento': forms.TimeInput(attrs={'type': 'time'}),
             'observacoes': forms.Textarea(attrs={'rows': 2, 'id': 'id_obs_cfg'}),
         }
 

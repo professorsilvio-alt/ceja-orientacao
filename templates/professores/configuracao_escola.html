@@ -64,37 +64,65 @@
             {{ form.horario_fechamento }}
           </div>
 
-          <div class="col-12 mt-3">
-            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Dias da Semana com Funcionamento na Unidade</label>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:8px; padding:12px;" class="d-flex flex-wrap gap-3">
-              <div class="form-check">
-                {{ form.func_segunda }}
-                <label class="form-check-label" for="{{ form.func_segunda.id_for_label }}">Segunda-feira</label>
-              </div>
-              <div class="form-check">
-                {{ form.func_terca }}
-                <label class="form-check-label" for="{{ form.func_terca.id_for_label }}">Terça-feira</label>
-              </div>
-              <div class="form-check">
-                {{ form.func_quarta }}
-                <label class="form-check-label" for="{{ form.func_quarta.id_for_label }}">Quarta-feira</label>
-              </div>
-              <div class="form-check">
-                {{ form.func_quinta }}
-                <label class="form-check-label" for="{{ form.func_quinta.id_for_label }}">Quinta-feira</label>
-              </div>
-              <div class="form-check">
-                {{ form.func_sexta }}
-                <label class="form-check-label" for="{{ form.func_sexta.id_for_label }}">Sexta-feira</label>
-              </div>
-              <div class="form-check">
-                {{ form.func_sabado }}
-                <label class="form-check-label" for="{{ form.func_sabado.id_for_label }}">Sábado</label>
-              </div>
-              <div class="form-check">
-                {{ form.func_domingo }}
-                <label class="form-check-label" for="{{ form.func_domingo.id_for_label }}">Domingo</label>
-              </div>
+          <div class="col-12 mt-2">
+            <label class="form-label" style="font-size:0.85rem; font-weight:700; color:var(--blue);">
+              <i class="bi bi-calendar-week me-1"></i> Horários e Dias de Funcionamento da Escola
+            </label>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-radius:8px; padding:10px; overflow-x:auto;">
+              <table class="table table-dark table-sm table-borderless align-middle mb-0" style="font-size:0.83rem;">
+                <thead>
+                  <tr style="color:var(--text-muted); border-bottom:1px solid var(--card-border);">
+                    <th style="width:140px;">Dia da Semana</th>
+                    <th style="width:75px;" class="text-center">Aberto?</th>
+                    <th style="width:130px;" class="text-center">Abertura</th>
+                    <th style="width:130px;" class="text-center">Fechamento</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:600;">Segunda-feira</td>
+                    <td class="text-center">{{ form.func_segunda }}</td>
+                    <td>{{ form.seg_abertura }}</td>
+                    <td>{{ form.seg_fechamento }}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Terça-feira</td>
+                    <td class="text-center">{{ form.func_terca }}</td>
+                    <td>{{ form.ter_abertura }}</td>
+                    <td>{{ form.ter_fechamento }}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Quarta-feira</td>
+                    <td class="text-center">{{ form.func_quarta }}</td>
+                    <td>{{ form.qua_abertura }}</td>
+                    <td>{{ form.qua_fechamento }}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Quinta-feira</td>
+                    <td class="text-center">{{ form.func_quinta }}</td>
+                    <td>{{ form.qui_abertura }}</td>
+                    <td>{{ form.qui_fechamento }}</td>
+                  </tr>
+                  <tr style="background:rgba(234, 179, 8, 0.08); border-radius:6px;">
+                    <td style="font-weight:700; color:#fde047;"><i class="bi bi-clock-history me-1"></i>Sexta-feira</td>
+                    <td class="text-center">{{ form.func_sexta }}</td>
+                    <td>{{ form.sex_abertura }}</td>
+                    <td>{{ form.sex_fechamento }}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600; color:var(--text-muted);">Sábado</td>
+                    <td class="text-center">{{ form.func_sabado }}</td>
+                    <td>{{ form.sab_abertura }}</td>
+                    <td>{{ form.sab_fechamento }}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600; color:var(--text-muted);">Domingo</td>
+                    <td class="text-center">{{ form.func_domingo }}</td>
+                    <td>{{ form.dom_abertura }}</td>
+                    <td>{{ form.dom_fechamento }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 

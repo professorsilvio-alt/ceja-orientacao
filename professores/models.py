@@ -291,14 +291,34 @@ class ConfiguracaoEscola(models.Model):
         default='22:00', verbose_name='Horário de Fechamento'
     )
 
-    # Dias de Funcionamento (Segunda a Domingo)
+    # Dias e Horários Específicos de Funcionamento (Segunda a Domingo)
     func_segunda = models.BooleanField(default=True, verbose_name='Segunda-feira')
+    seg_abertura = models.TimeField(default='08:50', verbose_name='Abertura Segunda')
+    seg_fechamento = models.TimeField(default='20:30', verbose_name='Fechamento Segunda')
+
     func_terca = models.BooleanField(default=True, verbose_name='Terça-feira')
+    ter_abertura = models.TimeField(default='08:50', verbose_name='Abertura Terça')
+    ter_fechamento = models.TimeField(default='20:30', verbose_name='Fechamento Terça')
+
     func_quarta = models.BooleanField(default=True, verbose_name='Quarta-feira')
+    qua_abertura = models.TimeField(default='08:50', verbose_name='Abertura Quarta')
+    qua_fechamento = models.TimeField(default='20:30', verbose_name='Fechamento Quarta')
+
     func_quinta = models.BooleanField(default=True, verbose_name='Quinta-feira')
+    qui_abertura = models.TimeField(default='08:50', verbose_name='Abertura Quinta')
+    qui_fechamento = models.TimeField(default='20:30', verbose_name='Fechamento Quinta')
+
     func_sexta = models.BooleanField(default=True, verbose_name='Sexta-feira')
+    sex_abertura = models.TimeField(default='08:50', verbose_name='Abertura Sexta')
+    sex_fechamento = models.TimeField(default='17:00', verbose_name='Fechamento Sexta')
+
     func_sabado = models.BooleanField(default=False, verbose_name='Sábado')
+    sab_abertura = models.TimeField(default='08:00', verbose_name='Abertura Sábado')
+    sab_fechamento = models.TimeField(default='12:00', verbose_name='Fechamento Sábado')
+
     func_domingo = models.BooleanField(default=False, verbose_name='Domingo')
+    dom_abertura = models.TimeField(default='08:00', verbose_name='Abertura Domingo')
+    dom_fechamento = models.TimeField(default='12:00', verbose_name='Fechamento Domingo')
 
     observacoes = models.TextField(blank=True, verbose_name='Observações do Ano Letivo')
 
