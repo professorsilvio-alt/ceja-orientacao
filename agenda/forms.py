@@ -4,6 +4,18 @@ from django.utils import timezone
 from .models import RegistroPresenca, ReservaAuditorio
 
 
+def aplicar_estilo_campos(form_instance):
+    """Aplica classes CSS form-control e form-select a todos os campos do formulário."""
+    for field in form_instance.fields.values():
+        if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = 'form-select'
+        elif not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
+            existing = field.widget.attrs.get('class', '')
+            if 'form-control' not in existing:
+                field.widget.attrs['class'] = (existing + ' form-control').strip()
+
+
 class RegistroPresencaForm(forms.ModelForm):
     class Meta:
         model = RegistroPresenca
@@ -27,6 +39,7 @@ class RegistroPresencaForm(forms.ModelForm):
         self.fields['professor_id'].required = False
         self.fields['administrativo_id'].required = False
         self.fields['terceirizado_id'].required = False
+        aplicar_estilo_campos(self)
 
     def clean(self):
         cleaned = super().clean()
@@ -64,6 +77,7 @@ class ReservaAuditorioForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['data'].initial = timezone.now().date()
         self.fields['data'].input_formats = ['%Y-%m-%d']
+        aplicar_estilo_campos(self)
 
     def clean(self):
         cleaned = super().clean()

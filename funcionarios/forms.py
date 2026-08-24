@@ -4,6 +4,18 @@ from .models import FuncionarioAdministrativo, FuncionarioTerceirizado
 import re
 
 
+def aplicar_estilo_campos(form_instance):
+    """Aplica classes CSS form-control e form-select a todos os campos do formulário."""
+    for field in form_instance.fields.values():
+        if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = 'form-select'
+        elif not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
+            existing = field.widget.attrs.get('class', '')
+            if 'form-control' not in existing:
+                field.widget.attrs['class'] = (existing + ' form-control').strip()
+
+
 class FuncionarioAdmForm(forms.ModelForm):
     class Meta:
         model = FuncionarioAdministrativo
@@ -24,6 +36,7 @@ class FuncionarioAdmForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
+        aplicar_estilo_campos(self)
 
     def clean_cpf(self):
         cpf = re.sub(r'\D', '', self.cleaned_data['cpf'])
@@ -57,6 +70,7 @@ class FuncionarioTercForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for f in ['data_nascimento', 'data_admissao', 'data_demissao']:
             self.fields[f].input_formats = ['%Y-%m-%d']
+        aplicar_estilo_campos(self)
 
     def clean_cpf(self):
         cpf = re.sub(r'\D', '', self.cleaned_data['cpf'])

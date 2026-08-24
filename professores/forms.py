@@ -4,6 +4,18 @@ from .models import Professor, HorarioProfessor
 import re
 
 
+def aplicar_estilo_campos(form_instance):
+    """Aplica classes CSS form-control e form-select a todos os campos do formulário."""
+    for field in form_instance.fields.values():
+        if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = 'form-select'
+        elif not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
+            existing = field.widget.attrs.get('class', '')
+            if 'form-control' not in existing:
+                field.widget.attrs['class'] = (existing + ' form-control').strip()
+
+
 class ProfessorForm(forms.ModelForm):
     class Meta:
         model = Professor
@@ -35,6 +47,7 @@ class ProfessorForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
+        aplicar_estilo_campos(self)
 
     def clean_cpf(self):
         cpf = re.sub(r'\D', '', self.cleaned_data['cpf'])
@@ -52,6 +65,10 @@ class HorarioProfessorForm(forms.ModelForm):
             'hora_fim': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_fim_h'}),
             'ano_letivo': forms.NumberInput(attrs={'min': 2020, 'max': 2099, 'id': 'id_ano_letivo_h'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        aplicar_estilo_campos(self)
 
     def clean(self):
         cleaned = super().clean()

@@ -117,6 +117,17 @@ class UsuarioForm(forms.ModelForm):
             'telefone': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_telefone'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
+                if 'class' not in field.widget.attrs:
+                    field.widget.attrs['class'] = 'form-select'
+            elif not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
+                existing = field.widget.attrs.get('class', '')
+                if 'form-control' not in existing:
+                    field.widget.attrs['class'] = (existing + ' form-control').strip()
+
     def clean_cpf(self):
         cpf = re.sub(r'\D', '', self.cleaned_data['cpf'])
         if len(cpf) != 11:
