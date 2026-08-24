@@ -47,9 +47,14 @@
             <span class="badge-gestao badge-secondary" style="font-size:0.65rem; margin-top:3px;">{{ disc.nome }}</span>
             {% endfor %}
           </td>
-          <td style="font-size:0.82rem; font-weight:600; color:#fde047;">{{ prof.id_vinculo|default:"—" }}</td>
-          <td>{{ prof.get_disciplina_ingresso_display }}</td>
-          <td>{{ prof.get_cargo_display }}</td>
+          <td style="font-size:0.82rem; font-weight:600; color:#fde047;">
+            {{ prof.id_vinculo|default:"—" }}
+            {% if prof.id_vinculo_acumulacao %}
+            <br><span style="color:var(--text-muted); font-size:0.75rem;">Acum: {{ prof.id_vinculo_acumulacao }}</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.85rem;">{{ prof.disciplina_ingresso|default:"—" }}</td>
+          <td style="font-size:0.85rem;">{{ prof.cargo|default:"—" }}</td>
           <td style="font-family:monospace; font-size:0.82rem;">
             {{ prof.matricula }}
             {% if prof.matricula_acumulacao %}

@@ -118,6 +118,47 @@
       </div>
     </div>
 
+    {% if professor.matricula_acumulacao or professor.id_vinculo_acumulacao %}
+    <!-- Segunda Matrícula / Cargo em Acumulacao -->
+    <div class="card-gestao mb-3" style="border-left:4px solid var(--purple);">
+      <h6 style="font-weight:700; color:#c084fc; margin-bottom:12px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+        <i class="bi bi-layers-fill me-1"></i> Dados da 2ª Matrícula (Acumulação de Cargo na Escola)
+      </h6>
+      <div class="row g-2">
+        <div class="col-md-3">
+          <div style="font-size:0.72rem; color:var(--text-muted);">ID / VÍNCULO (2ª MATRÍCULA)</div>
+          <div style="font-size:0.9rem; font-weight:700; color:#fde047;">{{ professor.id_vinculo_acumulacao|default:"—" }}</div>
+        </div>
+        <div class="col-md-3">
+          <div style="font-size:0.72rem; color:var(--text-muted);">2ª MATRÍCULA</div>
+          <div style="font-family:monospace; font-weight:700; color:#c084fc;">{{ professor.matricula_acumulacao|default:"—" }}</div>
+        </div>
+        <div class="col-md-6">
+          <div style="font-size:0.72rem; color:var(--text-muted);">CARGO (2ª MATRÍCULA)</div>
+          <div style="font-weight:600;">{{ professor.cargo_acumulacao|default:"—" }}</div>
+        </div>
+        <div class="col-md-4 mt-2">
+          <div style="font-size:0.72rem; color:var(--text-muted);">DISCIPLINA DE INGRESSO</div>
+          <div style="font-weight:600;">{{ professor.disciplina_ingresso_acumulacao|default:"—" }}</div>
+        </div>
+        <div class="col-md-4 mt-2">
+          <div style="font-size:0.72rem; color:var(--text-muted);">FUNÇÃO NA 2ª MATRÍCULA</div>
+          <div style="font-weight:600; color:#67e8f9;">{{ professor.funcao_acumulacao|default:"—" }}</div>
+        </div>
+        <div class="col-md-4 mt-2">
+          <div style="font-size:0.72rem; color:var(--text-muted);">CARGA HORÁRIA 2ª MATRÍCULA</div>
+          <div style="font-weight:700; color:#fde047;">{% if professor.ch_total_acumulacao %}{{ professor.ch_total_acumulacao }} horas{% else %}—{% endif %}</div>
+        </div>
+        {% if professor.data_admissao_acumulacao %}
+        <div class="col-md-4 mt-2">
+          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE ADMISSÃO (2ª MATRÍCULA)</div>
+          <div style="font-weight:600;">{{ professor.data_admissao_acumulacao|date:"d/m/Y" }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Contato e Endereço -->
     <div class="card-gestao mb-3">
       <h6 style="font-weight:700; color:var(--blue); margin-bottom:12px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">

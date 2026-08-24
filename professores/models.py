@@ -57,7 +57,7 @@ class Professor(models.Model):
 
     # ── Identificação ──────────────────────────────────────
     cpf = models.CharField(
-        max_length=11, verbose_name='CPF',
+        max_length=11, unique=True, verbose_name='CPF',
         help_text='Somente números.'
     )
     id_vinculo = models.CharField(
@@ -65,9 +65,29 @@ class Professor(models.Model):
         help_text='Ex: 40645924/2'
     )
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')
+    
+    # ── Acumulação (2ª Matrícula / Cargo na escola) ────────
+    id_vinculo_acumulacao = models.CharField(
+        max_length=30, blank=True, verbose_name='ID / Vínculo (2ª Matrícula)'
+    )
     matricula_acumulacao = models.CharField(
         max_length=20, blank=True, verbose_name='Matrícula acumulação',
         help_text='Preencha apenas se o professor acumula cargo.'
+    )
+    cargo_acumulacao = models.CharField(
+        max_length=150, blank=True, verbose_name='Cargo (2ª Matrícula)'
+    )
+    disciplina_ingresso_acumulacao = models.CharField(
+        max_length=150, blank=True, verbose_name='Disciplina de Ingresso (2ª Matrícula)'
+    )
+    funcao_acumulacao = models.CharField(
+        max_length=150, blank=True, verbose_name='Função (2ª Matrícula)'
+    )
+    ch_total_acumulacao = models.PositiveIntegerField(
+        null=True, blank=True, verbose_name='CH Total (2ª Matrícula)'
+    )
+    data_admissao_acumulacao = models.DateField(
+        null=True, blank=True, verbose_name='Data Admissão (2ª Matrícula)'
     )
     nome_completo = models.CharField(max_length=200, verbose_name='Nome completo')
 

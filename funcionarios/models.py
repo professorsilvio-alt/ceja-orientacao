@@ -37,10 +37,18 @@ class FuncionarioAdministrativo(models.Model):
     """Funcionário público administrativo da escola."""
 
     # ── Identificação ──────────────────────────────────────
-    cpf = models.CharField(max_length=11, verbose_name='CPF')
+    cpf = models.CharField(max_length=11, unique=True, verbose_name='CPF')
     id_vinculo = models.CharField(max_length=30, blank=True, verbose_name='ID / Vínculo', help_text='Ex: 40260437/2')
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')
+
+    # ── Acumulação (2ª Matrícula / Cargo na escola) ────────
+    id_vinculo_acumulacao = models.CharField(max_length=30, blank=True, verbose_name='ID / Vínculo (2ª Matrícula)')
     matricula_acumulacao = models.CharField(max_length=20, blank=True, verbose_name='Matrícula acumulação')
+    cargo_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Cargo (2ª Matrícula)')
+    disciplina_ingresso_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Disciplina de Ingresso (2ª Matrícula)')
+    funcao_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Função (2ª Matrícula)')
+    ch_total_acumulacao = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Total (2ª Matrícula)')
+    data_admissao_acumulacao = models.DateField(null=True, blank=True, verbose_name='Data Admissão (2ª Matrícula)')
     nome_completo = models.CharField(max_length=200, verbose_name='Nome completo')
 
     # ── Cargo e função ─────────────────────────────────────

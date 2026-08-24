@@ -5,42 +5,71 @@ from datetime import datetime
 
 excel_path = r'C:\Users\PC DIR 2 - SILVIO\Downloads\RCustServidores.xlsx'
 df = pd.read_excel(excel_path, header=7)
+
+# Remover duplicatas exatas de vinculo/matricula
 df_clean = df.drop_duplicates(subset=['ID/VÍNCULO', 'MATRÍCULA'])
 
+# Agrupar por CPF para que cada servidor apareca exatamente 1 vez
+grouped = df_clean.groupby('CPF')
+
 records = []
-for _, r in df_clean.iterrows():
+for cpf_int, group in grouped:
+    cpf_num = re.sub(r'\D', '', str(cpf_int)).zfill(11)
+    
+    row1 = group.iloc[0]
+    row2 = group.iloc[1] if len(group) > 1 else None
+    
+    # Se na row1 nao tiver acumulacao explcita e existir row2, pega da row2
+    mat2 = str(row2['MATRÍCULA']).strip() if (row2 is not None and pd.notna(row2.get('MATRÍCULA'))) else (
+        str(int(row1['SEGUNDA MATRÍCULA'])).strip() if pd.notna(row1.get('SEGUNDA MATRÍCULA')) and row1.get('SEGUNDA MATRÍCULA') else ''
+    )
+
     rec = {
-        'id_vinculo': str(r['ID/VÍNCULO']).strip(),
-        'matricula': str(r['MATRÍCULA']).strip(),
-        'matricula_acumulacao': str(int(r['SEGUNDA MATRÍCULA'])).strip() if pd.notna(r.get('SEGUNDA MATRÍCULA')) and r.get('SEGUNDA MATRÍCULA') else '',
-        'cpf': re.sub(r'\D', '', str(r['CPF'])).zfill(11),
-        'nome': str(r['NOME COMPLETO']).strip().title(),
-        'cargo': str(r['CARGO']).strip() if pd.notna(r['CARGO']) else '',
-        'disciplina_ingresso': str(r['DISCIPLINA DE INGRESSO']).strip() if pd.notna(r['DISCIPLINA DE INGRESSO']) else '',
-        'funcao': str(r['FUNÇÃO']).strip() if pd.notna(r['FUNÇÃO']) else '',
-        'tipo_funcao': str(r['TIPO FUNÇÃO']).strip() if pd.notna(r['TIPO FUNÇÃO']) else '',
-        'regime_contratacao': str(r['REGIME CONTRATACAO']).strip() if pd.notna(r['REGIME CONTRATACAO']) else '',
-        'data_admissao': str(r.get('DATA ADMISSÃO')).split(' ')[0] if pd.notna(r.get('DATA ADMISSÃO')) else '',
-        'data_nomeacao': str(r.get('DATA NOMEACAO')).split(' ')[0] if pd.notna(r.get('DATA NOMEACAO')) else '',
-        'data_nascimento': str(r.get('DT NASC')).split(' ')[0] if pd.notna(r.get('DT NASC')) else '',
-        'ch_planejamento': int(r['C.H.\nPLANEJAMENTO']) if pd.notna(r.get('C.H.\nPLANEJAMENTO')) else None,
-        'ch_regencia': int(r['C.H.\nREGÊNCIA']) if pd.notna(r.get('C.H.\nREGÊNCIA')) else None,
-        'ch_complementacao': int(r['C.H.\nCOMPLMENTAÇÃO']) if pd.notna(r.get('C.H.\nCOMPLMENTAÇÃO')) else None,
-        'ch_total': int(r['C.H.\nTOTAL']) if pd.notna(r.get('C.H.\nTOTAL')) else None,
-        'acumulacao': str(r['ACUMULAÇÃO']).strip() if pd.notna(r.get('ACUMULAÇÃO')) else '',
-        'endereco': str(r['ENDEREÇO']).strip() if pd.notna(r.get('ENDEREÇO')) else '',
-        'numero': str(r['END NUM']).strip() if pd.notna(r.get('END NUM')) else '',
-        'complemento': str(r['END COMPL']).strip() if pd.notna(r.get('END COMPL')) else '',
-        'bairro': str(r['BAIRRO']).strip() if pd.notna(r.get('BAIRRO')) else '',
-        'municipio': str(r['MUNICIPIO END']).strip() if pd.notna(r.get('MUNICIPIO END')) else '',
-        'sexo': str(r['SEXO']).strip() if pd.notna(r.get('SEXO')) else '',
-        'telefone': str(r['FONE']).strip() if pd.notna(r.get('FONE')) else '',
-        'celular': str(r['CELULAR']).strip() if pd.notna(r.get('CELULAR')) else '',
-        'email_interno': str(r['E-MAIL INTERNO']).strip() if pd.notna(r.get('E-MAIL INTERNO')) else '',
-        'email_google': str(r['E-MAIL GOOGLE']).strip() if pd.notna(r.get('E-MAIL GOOGLE')) else '',
-        'email_alternativo': str(r['E-MAIL ALTERNATIVO']).strip() if pd.notna(r.get('E-MAIL ALTERNATIVO')) else '',
+        'cpf': cpf_num,
+        'nome': str(row1['NOME COMPLETO']).strip().title(),
+        
+        # Posição 1 (Principal)
+        'id_vinculo': str(row1['ID/VÍNCULO']).strip(),
+        'matricula': str(row1['MATRÍCULA']).strip(),
+        'cargo': str(row1['CARGO']).strip() if pd.notna(row1['CARGO']) else '',
+        'disciplina_ingresso': str(row1['DISCIPLINA DE INGRESSO']).strip() if pd.notna(row1['DISCIPLINA DE INGRESSO']) else '',
+        'funcao': str(row1['FUNÇÃO']).strip() if pd.notna(row1['FUNÇÃO']) else '',
+        'tipo_funcao': str(row1['TIPO FUNÇÃO']).strip() if pd.notna(row1['TIPO FUNÇÃO']) else '',
+        'regime_contratacao': str(row1['REGIME CONTRATACAO']).strip() if pd.notna(row1['REGIME CONTRATACAO']) else '',
+        'data_admissao': str(row1.get('DATA ADMISSÃO')).split(' ')[0] if pd.notna(row1.get('DATA ADMISSÃO')) else '',
+        'data_nomeacao': str(row1.get('DATA NOMEACAO')).split(' ')[0] if pd.notna(row1.get('DATA NOMEACAO')) else '',
+        'ch_planejamento': int(row1['C.H.\nPLANEJAMENTO']) if pd.notna(row1.get('C.H.\nPLANEJAMENTO')) else None,
+        'ch_regencia': int(row1['C.H.\nREGÊNCIA']) if pd.notna(row1.get('C.H.\nREGÊNCIA')) else None,
+        'ch_complementacao': int(row1['C.H.\nCOMPLMENTAÇÃO']) if pd.notna(row1.get('C.H.\nCOMPLMENTAÇÃO')) else None,
+        'ch_total': int(row1['C.H.\nTOTAL']) if pd.notna(row1.get('C.H.\nTOTAL')) else None,
+        
+        # Posição 2 (Segunda Matrícula / Acumulação)
+        'id_vinculo_acumulacao': str(row2['ID/VÍNCULO']).strip() if row2 is not None else '',
+        'matricula_acumulacao': mat2,
+        'cargo_acumulacao': str(row2['CARGO']).strip() if (row2 is not None and pd.notna(row2['CARGO'])) else '',
+        'disciplina_ingresso_acumulacao': str(row2['DISCIPLINA DE INGRESSO']).strip() if (row2 is not None and pd.notna(row2['DISCIPLINA DE INGRESSO'])) else '',
+        'funcao_acumulacao': str(row2['FUNÇÃO']).strip() if (row2 is not None and pd.notna(row2['FUNÇÃO'])) else '',
+        'ch_total_acumulacao': int(row2['C.H.\nTOTAL']) if (row2 is not None and pd.notna(row2.get('C.H.\nTOTAL'))) else None,
+        'data_admissao_acumulacao': str(row2.get('DATA ADMISSÃO')).split(' ')[0] if (row2 is not None and pd.notna(row2.get('DATA ADMISSÃO'))) else '',
+        
+        'acumulacao': str(row1['ACUMULAÇÃO']).strip() if pd.notna(row1.get('ACUMULAÇÃO')) else '',
+        'endereco': str(row1['ENDEREÇO']).strip() if pd.notna(row1.get('ENDEREÇO')) else '',
+        'numero': str(row1['END NUM']).strip() if pd.notna(row1.get('END NUM')) else '',
+        'complemento': str(row1['END COMPL']).strip() if pd.notna(row1.get('END COMPL')) else '',
+        'bairro': str(row1['BAIRRO']).strip() if pd.notna(row1.get('BAIRRO')) else '',
+        'municipio': str(row1['MUNICIPIO END']).strip() if pd.notna(row1.get('MUNICIPIO END')) else '',
+        'data_nascimento': str(row1.get('DT NASC')).split(' ')[0] if pd.notna(row1.get('DT NASC')) else '',
+        'sexo': str(row1['SEXO']).strip() if pd.notna(row1.get('SEXO')) else '',
+        'telefone': str(row1['FONE']).strip() if pd.notna(row1.get('FONE')) else '',
+        'celular': str(row1['CELULAR']).strip() if pd.notna(row1.get('CELULAR')) else '',
+        'email_interno': str(row1['E-MAIL INTERNO']).strip() if pd.notna(row1.get('E-MAIL INTERNO')) else '',
+        'email_google': str(row1['E-MAIL GOOGLE']).strip() if pd.notna(row1.get('E-MAIL GOOGLE')) else '',
+        'email_alternativo': str(row1['E-MAIL ALTERNATIVO']).strip() if pd.notna(row1.get('E-MAIL ALTERNATIVO')) else '',
     }
     records.append(rec)
+
+json_dados = json.dumps(records, ensure_ascii=False, indent=4)
+json_dados = json_dados.replace(': null', ': None').replace(': true', ': True').replace(': false', ': False')
 
 python_code = '''import os
 import django
@@ -53,7 +82,7 @@ from professores.models import Professor
 from funcionarios.models import FuncionarioAdministrativo
 from usuarios.models import Usuario
 
-DADOS = ''' + json.dumps(records, ensure_ascii=False, indent=4) + '''
+DADOS = ''' + json_dados + '''
 
 def parse_d(val):
     if not val:
@@ -67,7 +96,7 @@ def parse_d(val):
     return None
 
 def executar():
-    print("Iniciando povoamento automatico de professores, funcionarios e usuarios...")
+    print("Iniciando povoamento automatico de professores, funcionarios e usuarios agrupados por CPF...")
     cpfs_reais = {r['cpf'] for r in DADOS}
     
     Professor.objects.all().delete()
@@ -100,7 +129,11 @@ def executar():
 
         if is_adm:
             FuncionarioAdministrativo.objects.create(
-                cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula, matricula_acumulacao=matricula_ac,
+                cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
+                id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
+                cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
+                funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
+                data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
                 nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao_atual=funcao,
                 funcao_ingresso=disc_ing, tipo_funcao=tipo_funcao, regime_contratacao=regime,
                 data_admissao=dt_adm, data_nomeacao=dt_nom, data_ci_movimentacao=dt_adm, data_ingresso_unidade=dt_adm,
@@ -112,7 +145,11 @@ def executar():
             perfil_usuario = 'administrativo'
         else:
             Professor.objects.create(
-                cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula, matricula_acumulacao=matricula_ac,
+                cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
+                id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
+                cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
+                funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
+                data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
                 nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao=funcao,
                 tipo_funcao=tipo_funcao, regime_contratacao=regime, data_admissao=dt_adm, data_nomeacao=dt_nom,
                 data_ci_movimentacao=dt_adm, data_ingresso_unidade=dt_adm, ch_planejamento=r['ch_planejamento'],
@@ -155,4 +192,4 @@ if __name__ == '__main__':
 with open('carregar_dados.py', 'w', encoding='utf-8') as f:
     f.write(python_code)
 
-print("Gerado carregar_dados.py com sucesso!")
+print("Gerado carregar_dados.py agrupado por CPF com sucesso!")
