@@ -1652,7 +1652,7 @@ def parse_d(val):
     return None
 
 def executar():
-    print("Iniciando povoamento automatico de professores, funcionarios e usuarios agrupados por CPF...")
+    print("Iniciando povoamento automatico com classificacao por antiguidade...")
     cpfs_reais = {r['cpf'] for r in DADOS}
     
     Professor.objects.all().delete()
@@ -1663,7 +1663,27 @@ def executar():
 
     adm_keywords = ['SERVENTE', 'AGENTE ADM', 'SECRETÁRIO', 'SECRETARIA', 'MERENDEIRA', 'ZELADOR', 'FACILITADOR', 'LEITURA']
 
+    prof_list = []
+    adm_list = []
+
     for r in DADOS:
+        cargo = r['cargo']
+        funcao = r['funcao']
+        is_adm = any(k in funcao.upper() for k in adm_keywords) or any(k in cargo.upper() for k in ['SERVENTE', 'MERENDEIRA', 'ZELADOR'])
+        if is_adm:
+            adm_list.append(r)
+        else:
+            prof_list.append(r)
+
+    # Ordenar professores por data de admissao (mais antigos primeiro) para definir classificacao
+    def get_adm_key(item):
+        d = parse_d(item['data_admissao'])
+        return d if d else datetime(2099, 1, 1).date()
+
+    prof_list.sort(key=get_adm_key)
+    adm_list.sort(key=get_adm_key)
+
+    for rank, r in enumerate(prof_list, start=1):
         cpf_num = r['cpf']
         id_vinculo = r['id_vinculo']
         matricula = r['matricula']
@@ -1680,45 +1700,76 @@ def executar():
         dt_nasc = parse_d(r['data_nascimento'])
         
         primary_email = r['email_google'] or r['email_interno'] or r['email_alternativo'] or (cpf_num + "@cejarosasoares.edu.br")
-        
-        is_adm = any(k in funcao.upper() for k in adm_keywords) or any(k in cargo.upper() for k in ['SERVENTE', 'MERENDEIRA', 'ZELADOR'])
 
-        if is_adm:
-            FuncionarioAdministrativo.objects.create(
-                cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
-                id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
-                cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
-                funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
-                data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
-                nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao_atual=funcao,
-                funcao_ingresso=disc_ing, tipo_funcao=tipo_funcao, regime_contratacao=regime,
-                data_admissao=dt_adm, data_nomeacao=dt_nom, data_ci_movimentacao=dt_adm, data_ingresso_unidade=dt_adm,
-                ch_total=r['ch_total'], acumulacao=r['acumulacao'], data_nascimento=dt_nasc, sexo=r['sexo'],
-                endereco=r['endereco'], numero=r['numero'], complemento=r['complemento'], bairro=r['bairro'],
-                municipio=r['municipio'], email=r['email_interno'], email_google=r['email_google'],
-                email_alternativo=r['email_alternativo'], telefone=r['telefone'], celular=r['celular'], ativo=True
+        Professor.objects.create(
+            cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
+            id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
+            cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
+            funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
+            data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
+            nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao=funcao,
+            tipo_funcao=tipo_funcao, regime_contratacao=regime, data_admissao=dt_adm, data_nomeacao=dt_nom,
+            data_ci_movimentacao=dt_adm, data_ingresso_unidade=dt_adm, ch_planejamento=r['ch_planejamento'],
+            ch_regencia=r['ch_regencia'], ch_complementacao=r['ch_complementacao'], ch_total=r['ch_total'],
+            acumulacao=r['acumulacao'], data_nascimento=dt_nasc, sexo=r['sexo'], endereco=r['endereco'],
+            numero=r['numero'], complemento=r['complemento'], bairro=r['bairro'], municipio=r['municipio'],
+            email=r['email_interno'], email_google=r['email_google'], email_alternativo=r['email_alternativo'],
+            telefone=r['telefone'], celular=r['celular'], classificacao=rank, ativo=True
+        )
+
+        perfil_usuario = 'diretor' if 'SILVIO LUIZ' in nome.upper() else 'professor'
+
+        user = Usuario.objects.filter(cpf=cpf_num).first()
+        if not user:
+            if Usuario.objects.filter(email=primary_email).exists():
+                primary_email = cpf_num + "@cejarosasoares.edu.br"
+            Usuario.objects.create_user(
+                cpf=cpf_num, nome_completo=nome, email=primary_email, perfil=perfil_usuario,
+                password=cpf_num, id_vinculo=id_vinculo, matricula=matricula, telefone=r['celular'] or r['telefone']
             )
-            perfil_usuario = 'administrativo'
         else:
-            Professor.objects.create(
-                cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
-                id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
-                cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
-                funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
-                data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
-                nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao=funcao,
-                tipo_funcao=tipo_funcao, regime_contratacao=regime, data_admissao=dt_adm, data_nomeacao=dt_nom,
-                data_ci_movimentacao=dt_adm, data_ingresso_unidade=dt_adm, ch_planejamento=r['ch_planejamento'],
-                ch_regencia=r['ch_regencia'], ch_complementacao=r['ch_complementacao'], ch_total=r['ch_total'],
-                acumulacao=r['acumulacao'], data_nascimento=dt_nasc, sexo=r['sexo'], endereco=r['endereco'],
-                numero=r['numero'], complemento=r['complemento'], bairro=r['bairro'], municipio=r['municipio'],
-                email=r['email_interno'], email_google=r['email_google'], email_alternativo=r['email_alternativo'],
-                telefone=r['telefone'], celular=r['celular'], ativo=True
-            )
-            perfil_usuario = 'professor'
+            user.nome_completo = nome
+            user.id_vinculo = id_vinculo
+            user.matricula = matricula
+            if user.perfil != 'diretor':
+                user.perfil = perfil_usuario
+            user.save()
 
-        if 'SILVIO LUIZ' in nome.upper():
-            perfil_usuario = 'diretor'
+    for rank, r in enumerate(adm_list, start=1):
+        cpf_num = r['cpf']
+        id_vinculo = r['id_vinculo']
+        matricula = r['matricula']
+        matricula_ac = r['matricula_acumulacao']
+        nome = r['nome']
+        cargo = r['cargo']
+        disc_ing = r['disciplina_ingresso']
+        funcao = r['funcao']
+        tipo_funcao = r['tipo_funcao']
+        regime = r['regime_contratacao']
+        
+        dt_adm = parse_d(r['data_admissao'])
+        dt_nom = parse_d(r['data_nomeacao'])
+        dt_nasc = parse_d(r['data_nascimento'])
+        
+        primary_email = r['email_google'] or r['email_interno'] or r['email_alternativo'] or (cpf_num + "@cejarosasoares.edu.br")
+
+        FuncionarioAdministrativo.objects.create(
+            cpf=cpf_num, id_vinculo=id_vinculo, matricula=matricula,
+            id_vinculo_acumulacao=r['id_vinculo_acumulacao'], matricula_acumulacao=matricula_ac,
+            cargo_acumulacao=r['cargo_acumulacao'], disciplina_ingresso_acumulacao=r['disciplina_ingresso_acumulacao'],
+            funcao_acumulacao=r['funcao_acumulacao'], ch_total_acumulacao=r['ch_total_acumulacao'],
+            data_admissao_acumulacao=parse_d(r['data_admissao_acumulacao']),
+            nome_completo=nome, cargo=cargo, disciplina_ingresso=disc_ing, funcao_atual=funcao,
+            funcao_ingresso=disc_ing, tipo_funcao=tipo_funcao, regime_contratacao=regime,
+            data_admissao=dt_adm, data_nomeacao=dt_nom, data_ci_movimentacao=dt_adm, data_ingresso_unidade=dt_adm,
+            ch_total=r['ch_total'], acumulacao=r['acumulacao'], data_nascimento=dt_nasc, sexo=r['sexo'],
+            endereco=r['endereco'], numero=r['numero'], complemento=r['complemento'], bairro=r['bairro'],
+            municipio=r['municipio'], email=r['email_interno'], email_google=r['email_google'],
+            email_alternativo=r['email_alternativo'], telefone=r['telefone'], celular=r['celular'],
+            classificacao=rank, ativo=True
+        )
+
+        perfil_usuario = 'diretor' if 'SILVIO LUIZ' in nome.upper() else 'administrativo'
 
         user = Usuario.objects.filter(cpf=cpf_num).first()
         if not user:

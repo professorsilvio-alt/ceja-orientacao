@@ -39,7 +39,7 @@
         <tr>
           <td>
             <span class="badge-gestao badge-primary">
-              {% if func.classificacao %}{{ func.classificacao }}º{% else %}—{% endif %}
+              {% if func.classificacao %}{{ func.classificacao }}º{% else %}{{ forloop.counter }}º{% endif %}
             </span>
           </td>
           <td style="font-weight:600;">{{ func.nome_completo }}</td>

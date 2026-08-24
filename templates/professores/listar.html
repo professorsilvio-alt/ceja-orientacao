@@ -38,7 +38,7 @@
         <tr>
           <td>
             <span class="badge-gestao badge-primary">
-              {% if prof.classificacao %}{{ prof.classificacao }}º{% else %}—{% endif %}
+              {% if prof.classificacao %}{{ prof.classificacao }}º{% else %}{{ forloop.counter }}º{% endif %}
             </span>
           </td>
           <td>
