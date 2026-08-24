@@ -24,11 +24,13 @@
         <tr>
           <th>Classif.</th>
           <th>Nome</th>
-          <th>Cargo</th>
-          <th>Função de ingresso</th>
+          <th>ID / Vínculo</th>
           <th>Matrícula</th>
-          <th>Ingresso na escola</th>
-          <th>Tempo na escola</th>
+          <th>Cargo</th>
+          <th>Disc. Ingresso</th>
+          <th>Função Atual</th>
+          <th>Data C.I.</th>
+          <th>Tempo na Escola</th>
           <th>Ações</th>
         </tr>
       </thead>
@@ -41,15 +43,12 @@
             </span>
           </td>
           <td style="font-weight:600;">{{ func.nome_completo }}</td>
-          <td>{{ func.get_cargo_display }}</td>
-          <td style="color:var(--text-secondary); font-size:0.85rem;">{{ func.funcao_ingresso }}</td>
-          <td style="font-family:monospace; font-size:0.82rem;">
-            {{ func.matricula }}
-            {% if func.matricula_acumulacao %}
-            <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ func.matricula_acumulacao }}</span>
-            {% endif %}
-          </td>
-          <td>{{ func.data_ingresso_unidade|date:"d/m/Y" }}</td>
+          <td style="font-size:0.85rem; font-weight:600; color:#fde047;">{{ func.id_vinculo|default:"—" }}</td>
+          <td style="font-family:monospace; font-size:0.82rem;">{{ func.matricula }}</td>
+          <td style="font-size:0.85rem;">{{ func.cargo }}</td>
+          <td style="color:var(--text-secondary); font-size:0.85rem;">{{ func.disciplina_ingresso|default:"—" }}</td>
+          <td style="color:#67e8f9; font-weight:600; font-size:0.85rem;">{{ func.funcao_atual|default:"—" }}</td>
+          <td>{{ func.data_ci_movimentacao|date:"d/m/Y" }}</td>
           <td><span style="color:var(--green); font-size:0.82rem;">{{ func.tempo_na_escola }}</span></td>
           <td>
             <div class="d-flex gap-1">

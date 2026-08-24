@@ -56,18 +56,26 @@
       </h6>
       <div class="row g-2">
         <div class="col-6">
+          <div style="font-size:0.75rem; color:var(--text-muted);">ID / VÍNCULO</div>
+          <div style="font-size:0.9rem; font-weight:700; color:#fde047;">{{ funcionario.id_vinculo|default:"—" }}</div>
+        </div>
+        <div class="col-6">
           <div style="font-size:0.75rem; color:var(--text-muted);">MATRÍCULA</div>
           <div style="font-weight:600; font-family:monospace;">{{ funcionario.matricula }}</div>
         </div>
         {% if funcionario.matricula_acumulacao %}
-        <div class="col-6">
+        <div class="col-6 mt-2">
           <div style="font-size:0.75rem; color:var(--text-muted);">MATRÍCULA ACUMULAÇÃO</div>
           <div style="font-weight:600; font-family:monospace;">{{ funcionario.matricula_acumulacao }}</div>
         </div>
         {% endif %}
         <div class="col-6 mt-2">
-          <div style="font-size:0.75rem; color:var(--text-muted);">FUNÇÃO DE INGRESSO</div>
-          <div style="font-weight:600;">{{ funcionario.funcao_ingresso }}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">DISCIPLINA DE INGRESSO</div>
+          <div style="font-weight:600;">{{ funcionario.disciplina_ingresso|default:"—" }}</div>
+        </div>
+        <div class="col-6 mt-2">
+          <div style="font-size:0.75rem; color:var(--text-muted);">FUNÇÃO ATUAL</div>
+          <div style="font-weight:600; color:#67e8f9;">{{ funcionario.funcao_atual|default:"—" }}</div>
         </div>
         <div class="col-6 mt-2">
           <div style="font-size:0.75rem; color:var(--text-muted);">CPF</div>

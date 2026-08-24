@@ -20,13 +20,17 @@ class FuncionarioAdmForm(forms.ModelForm):
     class Meta:
         model = FuncionarioAdministrativo
         fields = [
-            'cpf', 'matricula', 'matricula_acumulacao', 'nome_completo',
-            'cargo', 'funcao_ingresso',
+            'cpf', 'id_vinculo', 'matricula', 'matricula_acumulacao', 'nome_completo',
+            'cargo', 'disciplina_ingresso', 'funcao_atual', 'funcao_ingresso',
             'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
             'email', 'telefone', 'foto', 'ativo', 'observacoes',
         ]
         widgets = {
             'cpf': forms.TextInput(attrs={'placeholder': '00000000000', 'id': 'id_cpf_adm'}),
+            'id_vinculo': forms.TextInput(attrs={'placeholder': 'Ex: 40260437/2', 'id': 'id_vinculo_adm'}),
+            'cargo': forms.TextInput(attrs={'placeholder': 'Ex: Prof Doc II', 'id': 'id_cargo_adm'}),
+            'disciplina_ingresso': forms.TextInput(attrs={'placeholder': 'Ex: Área Integrada', 'id': 'id_disc_ing'}),
+            'funcao_atual': forms.TextInput(attrs={'placeholder': 'Ex: Auxiliar de Secretaria', 'id': 'id_func_atual'}),
             'data_ci_movimentacao': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'data_ingresso_unidade': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'observacoes': forms.Textarea(attrs={'rows': 3}),
