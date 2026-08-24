@@ -38,7 +38,7 @@
         <tr>
           <td>
             <span class="badge-gestao badge-primary">
-              {% if prof.classificacao %}{{ prof.classificacao }}º{% else %}{{ forloop.counter }}º{% endif %}
+              {% if prof.classificacao %}{{ prof.classificacao }}º{% else %}—{% endif %}
             </span>
           </td>
           <td>
@@ -61,9 +61,13 @@
             <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ prof.matricula_acumulacao }}</span>
             {% endif %}
           </td>
-          <td>{{ prof.data_ingresso_unidade|date:"d/m/Y" }}</td>
+          <td>{{ prof.data_ingresso_unidade|date:"d/m/Y"|default:"—" }}</td>
           <td>
+            {% if prof.data_ingresso_unidade %}
             <span style="color:var(--green); font-size:0.82rem;">{{ prof.tempo_na_escola }}</span>
+            {% else %}
+            <span style="color:var(--text-muted); font-size:0.82rem;">—</span>
+            {% endif %}
           </td>
           <td>
             <div class="d-flex gap-1">
