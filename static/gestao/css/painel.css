@@ -91,20 +91,26 @@ body.painel-body {
 .sidebar-header, .sidebar-user {
   flex-shrink: 0;
 }
+
+.sidebar-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 20px 16px;
+  padding: 18px 20px 16px;
   border-bottom: 1px solid var(--sidebar-border);
+  overflow: hidden;
 }
 
 .sidebar-logo {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
+  width: 42px !important;
+  height: 42px !important;
+  max-width: 42px !important;
+  max-height: 42px !important;
+  object-fit: contain !important;
   border-radius: 10px;
   background: white;
   padding: 4px;
+  flex-shrink: 0;
 }
 
 .sidebar-school-name {
