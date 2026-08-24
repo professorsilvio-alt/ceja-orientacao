@@ -54,7 +54,11 @@
     <div class="card-gestao mb-3">
       <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados Funcionais</h6>
       <div class="row g-2">
-        <div class="col-md-4">
+        <div class="col-md-3">
+          <div style="font-size:0.72rem; color:var(--text-muted);">ID / VÍNCULO</div>
+          <div style="font-size:0.9rem; font-weight:700; color:#fde047;">{{ professor.id_vinculo|default:"—" }}</div>
+        </div>
+        <div class="col-md-3">
           <div style="font-size:0.72rem; color:var(--text-muted);">MATRÍCULA</div>
           <div style="font-family:monospace; font-weight:600;">{{ professor.matricula }}</div>
         </div>

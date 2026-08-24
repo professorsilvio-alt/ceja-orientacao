@@ -60,6 +60,10 @@ class Professor(models.Model):
         max_length=11, unique=True, verbose_name='CPF',
         help_text='Somente números.'
     )
+    id_vinculo = models.CharField(
+        max_length=30, blank=True, verbose_name='ID / Vínculo',
+        help_text='Ex: 40645924/2'
+    )
     matricula = models.CharField(max_length=20, unique=True, verbose_name='Matrícula')
     matricula_acumulacao = models.CharField(
         max_length=20, blank=True, verbose_name='Matrícula acumulação',

@@ -109,9 +109,11 @@ class UsuarioForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['cpf', 'nome_completo', 'email', 'telefone', 'perfil', 'is_active']
+        fields = ['cpf', 'id_vinculo', 'matricula', 'nome_completo', 'email', 'telefone', 'perfil', 'is_active']
         widgets = {
             'cpf': forms.TextInput(attrs={'placeholder': '00000000000', 'id': 'id_cpf_usuario'}),
+            'id_vinculo': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/2', 'id': 'id_vinculo_usuario'}),
+            'matricula': forms.TextInput(attrs={'placeholder': 'Ex: 2427227', 'id': 'id_matricula_usuario'}),
             'nome_completo': forms.TextInput(attrs={'id': 'id_nome_completo'}),
             'email': forms.EmailInput(attrs={'id': 'id_email_usuario'}),
             'telefone': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_telefone'}),

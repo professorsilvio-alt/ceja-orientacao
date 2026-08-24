@@ -88,6 +88,7 @@ def rodar_importacao():
             matricula=d['matricula'],
             defaults={
                 'cpf': cpf_num,
+                'id_vinculo': d['id_vinculo'],
                 'nome_completo': nome,
                 'cargo': d['cargo'],
                 'disciplina_ingresso': d['disciplina'],
@@ -109,11 +110,15 @@ def rodar_importacao():
                 nome_completo=nome,
                 email=email,
                 perfil='professor',
-                password=cpf_num
+                password=cpf_num,
+                id_vinculo=d['id_vinculo'],
+                matricula=d['matricula']
             )
             usuarios_criados += 1
         else:
             user.nome_completo = nome
+            user.id_vinculo = d['id_vinculo']
+            user.matricula = d['matricula']
             user.email = email
             user.save()
 

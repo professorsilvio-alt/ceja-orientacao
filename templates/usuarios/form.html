@@ -17,13 +17,21 @@
   <form method="post" id="form-usuario">
     {% csrf_token %}
     <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">CPF *</label>
+      <div class="col-md-4">
+        <label class="form-label">CPF (Login) *</label>
         {{ form.cpf }}
         {% if form.cpf.errors %}<small class="text-danger">{{ form.cpf.errors.0 }}</small>{% endif %}
       </div>
+      <div class="col-md-4">
+        <label class="form-label">ID / Vínculo</label>
+        {{ form.id_vinculo }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Matrícula</label>
+        {{ form.matricula }}
+      </div>
       <div class="col-md-6">
-        <label class="form-label">Perfil *</label>
+        <label class="form-label">Perfil de Acesso *</label>
         {{ form.perfil }}
       </div>
       <div class="col-12">

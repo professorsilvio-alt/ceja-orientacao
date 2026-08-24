@@ -50,6 +50,8 @@
       <thead>
         <tr>
           <th>Nome</th>
+          <th>ID / Vínculo</th>
+          <th>Matrícula</th>
           <th>CPF (Login)</th>
           <th>Perfil de Acesso (Permissão)</th>
           <th>E-mail</th>
@@ -66,6 +68,8 @@
             <span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;" title="Ainda não alterou a senha padrão">1º Acesso Pendente</span>
             {% endif %}
           </td>
+          <td style="font-size:0.85rem; font-weight:600; color:#fde047;">{{ u.id_vinculo|default:"—" }}</td>
+          <td style="font-family:monospace; font-size:0.85rem; color:#94a3b8;">{{ u.matricula|default:"—" }}</td>
           <td style="font-family:monospace; font-size:0.85rem; color:#60a5fa;">{{ u.cpf_formatado }}</td>
           <td>
             <form method="post" action="{% url 'alterar_perfil_rapido' u.cpf %}" class="d-inline-block">

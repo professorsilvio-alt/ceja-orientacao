@@ -19,16 +19,20 @@
       <!-- Dados pessoais -->
       <div class="col-12"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Identificação</h6></div>
 
-      <div class="col-md-4">
+      <div class="col-md-3">
         <label class="form-label">CPF *</label>
         {{ form.cpf }}
         {% if form.cpf.errors %}<small class="text-danger">{{ form.cpf.errors.0 }}</small>{% endif %}
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <label class="form-label">ID / Vínculo</label>
+        {{ form.id_vinculo }}
+      </div>
+      <div class="col-md-3">
         <label class="form-label">Matrícula *</label>
         {{ form.matricula }}
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <label class="form-label">Matrícula Acumulação</label>
         {{ form.matricula_acumulacao }}
       </div>

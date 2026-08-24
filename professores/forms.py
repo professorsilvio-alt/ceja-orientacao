@@ -20,13 +20,14 @@ class ProfessorForm(forms.ModelForm):
     class Meta:
         model = Professor
         fields = [
-            'cpf', 'matricula', 'matricula_acumulacao', 'nome_completo',
+            'cpf', 'id_vinculo', 'matricula', 'matricula_acumulacao', 'nome_completo',
             'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
             'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
             'email', 'telefone', 'foto', 'ativo', 'observacoes',
         ]
         widgets = {
             'cpf': forms.TextInput(attrs={'placeholder': '00000000000', 'id': 'id_cpf_prof'}),
+            'id_vinculo': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/2', 'id': 'id_vinculo_prof'}),
             'matricula': forms.TextInput(attrs={'id': 'id_matricula'}),
             'matricula_acumulacao': forms.TextInput(attrs={'id': 'id_mat_acum'}),
             'nome_completo': forms.TextInput(attrs={'id': 'id_nome_prof'}),
