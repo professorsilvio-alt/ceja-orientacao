@@ -3,20 +3,35 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redefinir Senha — CEJA Gestão</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'gestao/css/painel.css' %}">
 </head>
 <body class="painel-body">
 <div class="login-page">
+  <div class="login-bg-glow-1"></div>
+  <div class="login-bg-glow-2"></div>
+
   <div class="login-card">
-    <div class="login-title">Redefinir Senha</div>
-    <div class="login-desc">Crie uma nova senha para sua conta.</div>
+    <div class="login-logo-wrap">
+      <div class="login-logo-badge">
+        <img src="{% static 'logo.png' %}" alt="Logo CEJA" class="login-logo">
+      </div>
+    </div>
+
+    <div class="login-header-text">
+      <div class="login-title">Redefinir Senha</div>
+      <div class="login-desc">Crie uma nova senha para acessar sua conta.</div>
+    </div>
 
     {% if messages %}
       {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} mb-3">{{ message }}</div>
+      <div class="alert alert-{{ message.tags|default:'info' }} mb-3" style="border-radius:12px; font-size:0.85rem; padding:10px 14px;">
+        <i class="bi bi-info-circle-fill me-2"></i>{{ message }}
+      </div>
       {% endfor %}
     {% endif %}
 
@@ -24,16 +39,37 @@
       {% csrf_token %}
       <div class="mb-3">
         <label class="form-label">Nova senha</label>
-        {{ form.nova_senha }}
-        {% if form.nova_senha.errors %}<div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.nova_senha.errors.0 }}</div>{% endif %}
+        <div class="input-field-wrapper">
+          <i class="bi bi-lock-fill input-icon"></i>
+          {{ form.nova_senha }}
+        </div>
+        {% if form.nova_senha.errors %}
+          <div class="text-danger mt-1 ms-1" style="font-size:0.78rem; color:#fca5a5 !important;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.nova_senha.errors.0 }}
+          </div>
+        {% endif %}
       </div>
+
       <div class="mb-4">
         <label class="form-label">Confirmar nova senha</label>
-        {{ form.confirmar_senha }}
-        {% if form.non_field_errors %}<div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.non_field_errors.0 }}</div>{% endif %}
+        <div class="input-field-wrapper">
+          <i class="bi bi-shield-lock-fill input-icon"></i>
+          {{ form.confirmar_senha }}
+        </div>
+        {% if form.confirmar_senha.errors %}
+          <div class="text-danger mt-1 ms-1" style="font-size:0.78rem; color:#fca5a5 !important;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.confirmar_senha.errors.0 }}
+          </div>
+        {% endif %}
+        {% if form.non_field_errors %}
+          <div class="text-danger mt-1 ms-1" style="font-size:0.78rem; color:#fca5a5 !important;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.non_field_errors.0 }}
+          </div>
+        {% endif %}
       </div>
+
       <button type="submit" class="login-btn">
-        <i class="bi bi-check2-circle"></i> Redefinir Senha
+        <i class="bi bi-check2-circle me-1"></i> Redefinir Senha
       </button>
     </form>
   </div>

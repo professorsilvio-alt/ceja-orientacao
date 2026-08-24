@@ -11,6 +11,7 @@ class LoginForm(forms.Form):
         label='CPF',
         max_length=14,
         widget=forms.TextInput(attrs={
+            'class': 'form-control',
             'placeholder': '000.000.000-00',
             'autocomplete': 'username',
             'id': 'id_cpf',
@@ -19,6 +20,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(
         label='Senha',
         widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
             'placeholder': '••••••••',
             'autocomplete': 'current-password',
             'id': 'id_password',
@@ -37,11 +39,19 @@ class TrocaSenhaForm(forms.Form):
     nova_senha = forms.CharField(
         label='Nova senha',
         min_length=8,
-        widget=forms.PasswordInput(attrs={'placeholder': 'Mínimo 8 caracteres', 'id': 'id_nova_senha'})
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Mínimo 8 caracteres',
+            'id': 'id_nova_senha'
+        })
     )
     confirmar_senha = forms.CharField(
         label='Confirmar nova senha',
-        widget=forms.PasswordInput(attrs={'placeholder': 'Repita a senha', 'id': 'id_confirmar_senha'})
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Repita a senha',
+            'id': 'id_confirmar_senha'
+        })
     )
 
     def clean(self):
@@ -57,7 +67,11 @@ class RecuperarSenhaForm(forms.Form):
     """Solicita recuperação de senha por e-mail."""
     email = forms.EmailField(
         label='E-mail cadastrado',
-        widget=forms.EmailInput(attrs={'placeholder': 'seu@email.com', 'id': 'id_email'})
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'seu@email.com',
+            'id': 'id_email'
+        })
     )
 
 
@@ -66,11 +80,19 @@ class RedefinirSenhaForm(forms.Form):
     nova_senha = forms.CharField(
         label='Nova senha',
         min_length=8,
-        widget=forms.PasswordInput(attrs={'placeholder': 'Mínimo 8 caracteres', 'id': 'id_nova_senha'})
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Mínimo 8 caracteres',
+            'id': 'id_nova_senha'
+        })
     )
     confirmar_senha = forms.CharField(
         label='Confirmar nova senha',
-        widget=forms.PasswordInput(attrs={'placeholder': 'Repita a senha', 'id': 'id_confirmar_senha'})
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Repita a senha',
+            'id': 'id_confirmar_senha'
+        })
     )
 
     def clean(self):

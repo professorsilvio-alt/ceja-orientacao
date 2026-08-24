@@ -12,21 +12,30 @@
 </head>
 <body class="painel-body">
 <div class="login-page">
+  <div class="login-bg-glow-1"></div>
+  <div class="login-bg-glow-2"></div>
+
   <div class="login-card">
 
     <div class="login-logo-wrap">
-      <img src="{% static 'logo.png' %}" alt="Logo CEJA" class="login-logo">
+      <div class="login-logo-badge">
+        <img src="{% static 'logo.png' %}" alt="Logo CEJA" class="login-logo">
+      </div>
       <div class="login-school">CEJA Profa Rosa Soares</div>
-      <div class="login-sub">📍 Mesquita — RJ</div>
+      <div class="login-sub">
+        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Mesquita — RJ
+      </div>
     </div>
 
-    <div class="login-title">Bem-vindo ao Painel</div>
-    <div class="login-desc">Digite seu CPF e senha para acessar o sistema.</div>
+    <div class="login-header-text">
+      <div class="login-title">Bem-vindo ao Painel</div>
+      <div class="login-desc">Digite seu CPF e senha para acessar o sistema.</div>
+    </div>
 
     {% if messages %}
       {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'danger' }} mb-3" style="border-radius:8px; font-size:0.85rem;">
-        <i class="bi bi-exclamation-circle-fill me-2"></i>{{ message }}
+      <div class="alert alert-{{ message.tags|default:'danger' }} mb-3" style="border-radius:12px; font-size:0.85rem; background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#fca5a5; padding: 10px 14px; display:flex; align-items:center;">
+        <i class="bi bi-exclamation-circle-fill me-2" style="font-size:1.1rem;"></i>{{ message }}
       </div>
       {% endfor %}
     {% endif %}
@@ -38,9 +47,14 @@
         <label class="form-label" for="id_cpf">
           <i class="bi bi-person-badge me-1"></i>CPF
         </label>
-        {{ form.cpf }}
+        <div class="input-field-wrapper">
+          <i class="bi bi-card-heading input-icon"></i>
+          {{ form.cpf }}
+        </div>
         {% if form.cpf.errors %}
-          <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.cpf.errors.0 }}</div>
+          <div class="text-danger mt-1 ms-1" style="font-size:0.78rem; color:#fca5a5 !important;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.cpf.errors.0 }}
+          </div>
         {% endif %}
       </div>
 
@@ -48,14 +62,17 @@
         <label class="form-label" for="id_password">
           <i class="bi bi-lock-fill me-1"></i>Senha
         </label>
-        <div class="position-relative">
+        <div class="input-field-wrapper">
+          <i class="bi bi-key-fill input-icon"></i>
           {{ form.password }}
-          <button type="button" id="toggle-senha" class="btn-toggle-senha" title="Mostrar/ocultar senha">
+          <button type="button" id="toggle-senha" class="btn-toggle-senha" title="Mostrar/ocultar senha" tabindex="-1">
             <i class="bi bi-eye-fill" id="icone-senha"></i>
           </button>
         </div>
         {% if form.password.errors %}
-          <div class="text-danger mt-1" style="font-size:0.78rem;">{{ form.password.errors.0 }}</div>
+          <div class="text-danger mt-1 ms-1" style="font-size:0.78rem; color:#fca5a5 !important;">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ form.password.errors.0 }}
+          </div>
         {% endif %}
       </div>
 
@@ -64,62 +81,47 @@
       </button>
 
       <div class="text-center mt-3">
-        <a href="{% url 'recuperar_senha' %}" style="font-size:0.82rem; color:#64748b; text-decoration:none;">
+        <a href="{% url 'recuperar_senha' %}" class="login-forgot-link">
           <i class="bi bi-question-circle me-1"></i>Esqueci minha senha
         </a>
       </div>
     </form>
 
-    <hr style="border-color:rgba(255,255,255,0.06); margin:24px 0 16px;">
-    <p style="text-align:center; font-size:0.75rem; color:#475569;">
-      Primeiro acesso? Use seu CPF como senha.<br>
-      Você será solicitado a criar uma nova senha.
-    </p>
+    <div class="login-info-box">
+      <i class="bi bi-info-circle-fill"></i>
+      <div>
+        <strong>Primeiro acesso?</strong> Use seu CPF como senha inicial. Você será solicitado a criar uma nova senha.
+      </div>
+    </div>
+
   </div>
 </div>
-
-<style>
-  .btn-toggle-senha {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 4px;
-    transition: color 0.2s;
-  }
-  .btn-toggle-senha:hover { color: #94a3b8; }
-  #id_password { padding-right: 44px; }
-
-  /* Máscara do CPF */
-  .form-control { width: 100%; }
-</style>
 
 <script>
   // Toggle mostrar/ocultar senha
   const toggleSenha = document.getElementById('toggle-senha');
   const campoSenha = document.getElementById('id_password');
   const iconeSenha = document.getElementById('icone-senha');
-  toggleSenha.addEventListener('click', () => {
-    const visivel = campoSenha.type === 'text';
-    campoSenha.type = visivel ? 'password' : 'text';
-    iconeSenha.className = visivel ? 'bi bi-eye-fill' : 'bi bi-eye-slash-fill';
-  });
+  if (toggleSenha && campoSenha && iconeSenha) {
+    toggleSenha.addEventListener('click', () => {
+      const visivel = campoSenha.type === 'text';
+      campoSenha.type = visivel ? 'password' : 'text';
+      iconeSenha.className = visivel ? 'bi bi-eye-fill' : 'bi bi-eye-slash-fill';
+    });
+  }
 
   // Máscara simples de CPF
   const campoCPF = document.getElementById('id_cpf');
-  campoCPF.addEventListener('input', (e) => {
-    let v = e.target.value.replace(/\D/g, '');
-    if (v.length > 11) v = v.slice(0, 11);
-    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    e.target.value = v;
-  });
+  if (campoCPF) {
+    campoCPF.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      e.target.value = v;
+    });
+  }
 </script>
 </body>
 </html>
