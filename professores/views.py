@@ -230,6 +230,14 @@ def view_listar_quadro_horarios(request):
     unidades = UnidadeEscolar.objects.filter(ativo=True).order_by('tipo', 'nome')
     sede_padrao = unidades.filter(tipo='sede').first() or unidades.first()
 
+    if not sede_padrao:
+        sede_padrao = UnidadeEscolar.objects.create(
+            nome="CEJA Professora Rosa Soares - Sede",
+            tipo="sede",
+            codigo="SEDE"
+        )
+        unidades = UnidadeEscolar.objects.filter(ativo=True).order_by('tipo', 'nome')
+
     unidade_id = request.GET.get('unidade') or request.POST.get('unidade_id')
     if unidade_id:
         unidade_atual = get_object_or_404(UnidadeEscolar, pk=unidade_id)

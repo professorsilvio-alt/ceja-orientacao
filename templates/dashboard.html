@@ -13,51 +13,51 @@
 
 {% if usuario.perfil == 'diretor' or usuario.is_superuser %}
 <!-- ── CARDS DE ESTATÍSTICAS ────────────────────────────── -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-4 col-lg-2">
-    <div class="stat-card">
+<div class="row row-cols-2 row-cols-sm-3 row-cols-xl-5 g-3 mb-4">
+  <div class="col">
+    <a href="{% url 'listar_professores' %}" class="stat-card">
       <div class="stat-icon blue"><i class="bi bi-person-video3"></i></div>
-      <div>
+      <div class="stat-info">
         <div class="stat-value">{{ total_professores }}</div>
-        <div class="stat-label">Professores</div>
+        <div class="stat-label" title="Professores">Professores</div>
       </div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-4 col-lg-2">
-    <div class="stat-card">
+  <div class="col">
+    <a href="{% url 'listar_administrativos' %}" class="stat-card">
       <div class="stat-icon green"><i class="bi bi-briefcase-fill"></i></div>
-      <div>
+      <div class="stat-info">
         <div class="stat-value">{{ total_administrativos }}</div>
-        <div class="stat-label">Administrativos</div>
+        <div class="stat-label" title="Administrativos">Administrativos</div>
       </div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-4 col-lg-2">
-    <div class="stat-card">
+  <div class="col">
+    <a href="{% url 'listar_terceirizados' %}" class="stat-card">
       <div class="stat-icon purple"><i class="bi bi-people-fill"></i></div>
-      <div>
+      <div class="stat-info">
         <div class="stat-value">{{ total_terceirizados }}</div>
-        <div class="stat-label">Terceirizados</div>
+        <div class="stat-label" title="Terceirizados">Terceirizados</div>
       </div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-4 col-lg-2">
-    <div class="stat-card">
+  <div class="col">
+    <a href="{% url 'listar_usuarios' %}" class="stat-card">
       <div class="stat-icon cyan"><i class="bi bi-person-gear"></i></div>
-      <div>
+      <div class="stat-info">
         <div class="stat-value">{{ total_usuarios }}</div>
-        <div class="stat-label">Usuários</div>
+        <div class="stat-label" title="Usuários">Usuários</div>
       </div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-4 col-lg-2">
-    <div class="stat-card">
+  <div class="col">
+    <a href="{% url 'listar_presencas' %}" class="stat-card">
       <div class="stat-icon red"><i class="bi bi-clipboard-x-fill"></i></div>
-      <div>
+      <div class="stat-info">
         <div class="stat-value">{{ ausencias_hoje }}</div>
-        <div class="stat-label">Ocorrências hoje</div>
+        <div class="stat-label" title="Ocorrências hoje">Ocorrências hoje</div>
       </div>
-    </div>
+    </a>
   </div>
 </div>
 
