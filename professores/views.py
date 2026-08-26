@@ -4,8 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from usuarios.views import diretor_required, verificar_primeiro_acesso
-from .models import Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, Disciplina
-from .forms import ProfessorForm, HorarioProfessorForm, ConfiguracaoEscolaForm
+from .models import Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, Disciplina, UnidadeEscolar
+from .forms import ProfessorForm, HorarioProfessorForm, ConfiguracaoEscolaForm, UnidadeEscolarForm
 
 
 @login_required
