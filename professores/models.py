@@ -406,3 +406,112 @@ class DisciplinaOfertada(models.Model):
     def local_display(self):
         if self.local == 'outro' and self.local_descricao:
             return self.local_descricao
+        return self.get_local_display() if hasattr(self, 'get_local_display') else ''
+
+
+class TurmaComponente(models.Model):
+    """
+    Turma ou Componente Curricular ofertado no Ano Letivo e Unidade Escolar.
+    Ex: TURMA/TEMPOS: CEJAS-C1L-080 (8 tempos) ou CEJAS-E32-100 (10 tempos).
+    """
+    configuracao = models.ForeignKey(
+        ConfiguracaoEscola, on_delete=models.CASCADE,
+        related_name='turmas', verbose_name='Ano Letivo / Unidade'
+    )
+    codigo_turma = models.CharField(
+        max_length=50, verbose_name='Código da Turma / Componente',
+        help_text='Ex: CEJAS-C1L-080, CEJAS-E32-100'
+    )
+    disciplina_ofertada = models.ForeignKey(
+        DisciplinaOfertada, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='turmas', verbose_name='Disciplina Ofertada Relacionada'
+    )
+    area = models.CharField(
+        max_length=150, blank=True, verbose_name='Área do Conhecimento',
+        help_text='Ex: Linguagens, Ciências da Natureza, Matemática, Ciências Humanas'
+    )
+    trilha_nucleo = models.CharField(
+        max_length=200, blank=True, verbose_name='Trilha de Aprofundamento / Núcleo Integrador',
+        help_text='Ex: TRILHA DE APROFUNDAMENTO, NÚCLEO INTEGRADOR, ELETIVA 3 CATÁLOGO 2'
+    )
+    disciplina_nome = models.CharField(
+        max_length=200, verbose_name='Nome da Disciplina / Componente',
+        help_text='Ex: COMPONENTE DE ÁREA 1 LINGUAGENS, CLUBE DA LEITURA'
+    )
+    tempos_requeridos = models.PositiveIntegerField(
+        default=8, verbose_name='Carga Horária Exigida (em Tempos de 50 min)',
+        help_text='Quantidade de tempos a alocar no quadro (ex: 8 ou 10)'
+    )
+    observacoes = models.TextField(blank=True, verbose_name='Observações')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Turma / Componente Curricular'
+        verbose_name_plural = 'Turmas / Componentes Curriculares'
+        ordering = ['codigo_turma', 'disciplina_nome']
+
+    def __str__(self):
+        return f'{self.codigo_turma} — {self.disciplina_nome} ({self.configuracao.ano_letivo})'
+
+    @property
+    def tempos_alocados(self):
+        return self.alocacoes.filter(professor__isnull=False).count()
+
+    @property
+    def status_ok(self):
+        return self.tempos_alocados == self.tempos_requeridos
+
+    @property
+    def status_display(self):
+        alocados = self.tempos_alocados
+        if alocados == self.tempos_requeridos:
+            return 'OK'
+        elif alocados > self.tempos_requeridos:
+            return f'Excesso ({alocados}/{self.tempos_requeridos})'
+        return f'Pendente ({alocados}/{self.tempos_requeridos})'
+
+    @property
+    def professores_alocados_nomes(self):
+        alocacoes = self.alocacoes.filter(professor__isnull=False).select_related('professor')
+        nomes = []
+        for al in alocacoes:
+            nome = al.rotulo_exibicao or al.professor.nome_curto
+            if nome not in nomes:
+                nomes.append(nome)
+        return ', '.join(nomes) if nomes else 'Nenhum alocado'
+
+
+class AlocacaoHorarioTurma(models.Model):
+    """
+    Alocação de um professor em um slot de tempo e dia da semana para uma Turma.
+    """
+    turma = models.ForeignKey(
+        TurmaComponente, on_delete=models.CASCADE,
+        related_name='alocacoes', verbose_name='Turma'
+    )
+    dia_semana = models.CharField(
+        max_length=10, choices=DIA_SEMANA_CHOICES, verbose_name='Dia da Semana'
+    )
+    hora_inicio = models.TimeField(verbose_name='Horário de Início')
+    hora_fim = models.TimeField(verbose_name='Horário de Fim')
+    professor = models.ForeignKey(
+        Professor, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='alocacoes_horario', verbose_name='Professor Alocado'
+    )
+    rotulo_exibicao = models.CharField(
+        max_length=100, blank=True, verbose_name='Rótulo de Exibição',
+        help_text='Nome customizado para exibição no quadro (ex: SANDRA, LUCIANA 1, DANIELA 2)'
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Alocação de Horário'
+        verbose_name_plural = 'Alocações de Horários'
+        ordering = ['dia_semana', 'hora_inicio']
+        unique_together = ['turma', 'dia_semana', 'hora_inicio']
+
+    def __str__(self):
+        prof = self.rotulo_exibicao or (self.professor.nome_curto if self.professor else 'Vazio')
+        return f'{self.turma.codigo_turma} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}: {prof}'

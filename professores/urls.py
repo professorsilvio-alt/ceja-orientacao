@@ -11,4 +11,10 @@ urlpatterns = [
     path('<int:pk>/horarios/', views.view_horarios_professor, name='horarios_professor'),
     path('horarios/<int:horario_pk>/aprovar/', views.view_aprovar_horario, name='aprovar_horario'),
     path('horarios/<int:horario_pk>/remover/', views.view_remover_horario, name='remover_horario'),
+
+    # Módulo Quadro de Horários & Alocação
+    path('horarios/quadro/', views.view_listar_quadro_horarios, name='quadro_horarios'),
+    path('horarios/quadro/turma/<int:pk>/', views.view_grade_turma, name='grade_turma'),
+    path('horarios/quadro/turma/<int:pk>/alocar/', views.view_salvar_alocacao_slot, name='salvar_alocacao_slot'),
+    path('horarios/quadro/turma/<int:pk>/excluir/', views.view_excluir_turma, name='excluir_turma'),
 ]

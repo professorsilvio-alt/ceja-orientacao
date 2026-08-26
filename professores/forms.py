@@ -1,6 +1,6 @@
 """Formulários do app professores"""
 from django import forms
-from .models import Professor, HorarioProfessor, ConfiguracaoEscola, UnidadeEscolar
+from .models import Professor, HorarioProfessor, ConfiguracaoEscola, UnidadeEscolar, TurmaComponente, AlocacaoHorarioTurma
 
 
 class UnidadeEscolarForm(forms.ModelForm):
@@ -155,3 +155,21 @@ class HorarioProfessorForm(forms.ModelForm):
         if inicio and fim and inicio >= fim:
             raise forms.ValidationError('O horário de início deve ser anterior ao horário de fim.')
         return cleaned
+
+
+class TurmaComponenteForm(forms.ModelForm):
+    class Meta:
+        model = TurmaComponente
+        fields = ['codigo_turma', 'area', 'trilha_nucleo', 'disciplina_nome', 'tempos_requeridos', 'observacoes']
+        widgets = {
+            'codigo_turma': forms.TextInput(attrs={'placeholder': 'Ex: CEJAS-C1L-080', 'id': 'id_codigo_turma'}),
+            'area': forms.TextInput(attrs={'placeholder': 'Ex: Linguagens, Ciências da Natureza', 'id': 'id_area_turma'}),
+            'trilha_nucleo': forms.TextInput(attrs={'placeholder': 'Ex: TRILHA DE APROFUNDAMENTO, NÚCLEO INTEGRADOR', 'id': 'id_trilha_turma'}),
+            'disciplina_nome': forms.TextInput(attrs={'placeholder': 'Ex: COMPONENTE DE ÁREA 1 LINGUAGENS', 'id': 'id_disc_nome_turma'}),
+            'tempos_requeridos': forms.NumberInput(attrs={'min': 1, 'max': 40, 'id': 'id_tempos_turma'}),
+            'observacoes': forms.Textarea(attrs={'rows': 2, 'id': 'id_obs_turma'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        aplicar_estilo_campos(self)

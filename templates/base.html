@@ -86,6 +86,11 @@
 
       <li class="sidebar-section">Escola</li>
       <li>
+        <a href="{% url 'quadro_horarios' %}" class="sidebar-link {% block nav_quadro_horarios %}{% endblock %}">
+          <i class="bi bi-grid-3x3-gap-fill"></i> Quadro de Horários
+        </a>
+      </li>
+      <li>
         <a href="{% url 'configuracao_escola' %}" class="sidebar-link {% block nav_configuracao %}{% endblock %}">
           <i class="bi bi-gear-fill"></i> Configuração da Escola
         </a>

@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+{% block title %}Grade Horária — {{ turma.codigo_turma }}{% endblock %}
+{% block nav_quadro_horarios %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Estilos específicos para replicar a estética da planilha oficial do CEJA */
+  .sheet-header-box {
+    background: #e2efda;
+    border: 2px solid #385723;
+    border-radius: 8px;
+    color: #1e4620;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .sheet-header-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .sheet-turma-badge {
+    background: #ffffff;
+    border: 1.5px solid #385723;
+    color: #c00000;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+
+  .sheet-status-badge-ok {
+    background: #2e7d32;
+    color: #ffffff;
+    font-weight: 900;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  .sheet-status-badge-pending {
+    background: #ed6c02;
+    color: #ffffff;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .sheet-info-row {
+    background: #f2f9f1;
+    border: 1.5px solid #a8d08d;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    color: #1e3a1e;
+    font-size: 0.9rem;
+  }
+
+  /* Tabela de Grade Interativa */
+  .sheet-table {
+    border-collapse: collapse;
+    width: 100%;
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #385723;
+  }
+
+  .sheet-table th, .sheet-table td {
+    border: 1px solid #a6a6a6;
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+
+  .sheet-table th {
+    background: #fff2cc; /* Tom suave de amarelado/bege de cabeçalho */
+    color: #000000;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .sheet-table th.col-horario {
+    background: #e2efda;
+    color: #1e4620;
+    width: 130px;
+  }
+
+  /* Células Fechadas */
+  .cell-fechada {
+    background-color: #fce4d6 !important; /* Tom salmão/pêssego da planilha */
+    color: #c65911 !important;
+    font-weight: 800 !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    user-select: none;
+  }
+
+  /* Célula Livre */
+  .cell-livre {
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+  }
+  .cell-livre:hover {
+    background-color: #e8f5e9 !important;
+  }
+
+  /* Célula Alocada */
+  .cell-alocada {
+    background-color: #ffffff;
+    color: #2e7d32 !important; /* Texto verde em destaque como nas imagens */
+    font-weight: 900 !important;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+  }
+  .cell-alocada:hover {
+    background-color: #c8e6c9 !important;
+  }
+
+  @media print {
+    body * { visibility: hidden; }
+    #printable-grid, #printable-grid * { visibility: visible; }
+    #printable-grid { position: absolute; left: 0; top: 0; width: 100%; }
+    .no-print { display: none !important; }
+  }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+  <a href="{% url 'quadro_horarios' %}?unidade={{ unidade.pk }}&ano={{ config.ano_letivo }}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-grid-3x3-gap-fill me-1"></i>Quadro de Horários
+  </a>
+  <span class="mx-2" style="color:var(--text-muted);">/</span>
+  <span style="color:var(--text-main); font-weight:700;">{{ turma.codigo_turma }}</span>
+{% endblock %}
+
+{% block content %}
+<!-- Barra Superior de Navegação -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 no-print gap-2">
+  <div>
+    <a href="{% url 'quadro_horarios' %}?unidade={{ unidade.pk }}&ano={{ config.ano_letivo }}" class="btn-gestao btn-gestao-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Voltar ao Quadro Geral
+    </a>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn-gestao btn-gestao-secondary btn-sm" onclick="window.print();">
+      <i class="bi bi-printer me-1"></i> Imprimir Grade
+    </button>
+  </div>
+</div>
+
+<div id="printable-grid">
+  <!-- Banner de Cabeçalho da Planilha Oficial -->
+  <div class="sheet-header-box d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <div class="sheet-header-title">
+        {{ unidade.nome }} - HORÁRIO {{ config.ano_letivo }}
+      </div>
+      <div style="font-size:0.85rem; font-weight:600; opacity:0.9;">
+        Unidade: {{ unidade.nome }} {% if unidade.tipo == 'sede' %}(Sede Principal){% else %}(Vinculada){% endif %}
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-weight:800; font-size:0.9rem;">TURMA / TEMPOS:</span>
+        <span class="sheet-turma-badge">{{ turma.codigo_turma }}</span>
+        <span class="sheet-turma-badge" style="color:#2e7d32;" id="turma-tempos-target">{{ turma.tempos_requeridos }}</span>
+      </div>
+
+      <div id="status-badge-container">
+        {% if turma.status_ok %}
+        <span class="sheet-status-badge-ok" id="status-badge">OK</span>
+        {% else %}
+        <span class="sheet-status-badge-pending" id="status-badge">{{ turma.status_display }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-cabeçalho de Informações do Componente -->
+  <div class="sheet-info-row">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <strong>ÁREA:</strong> <span style="color:#1b5e20; font-weight:700;">{{ turma.area|default:"GERAL" }}</span>
+      </div>
+      <div class="col-md-3">
+        <strong>TRILHA / NÚCLEO:</strong> <span style="color:#1b5e20; font-weight:700;">{{ turma.trilha_nucleo|default:"-" }}</span>
+      </div>
+      <div class="col-md-3">
+        <strong>DISCIPLINA:</strong> <span style="color:#c00000; font-weight:800;">{{ turma.disciplina_nome }}</span>
+      </div>
+      <div class="col-md-3 text-md-end">
+        <strong>PROFESSOR(ES):</strong> <span id="professores-alocados-label" style="color:#2e7d32; font-weight:800;">{{ turma.professores_alocados_nomes }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela de Grade de Tempos (Planilha) -->
+  <div class="table-responsive shadow-sm rounded border">
+    <table class="sheet-table">
+      <thead>
+        <tr>
+          <th class="col-horario">HORÁRIO</th>
+          {% for dia_code, dia_nome, func_dia, abert, fech in dias_map %}
+          <th>{{ dia_nome }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in grid %}
+        <tr>
+          <td class="col-horario font-monospace" style="font-weight:700;">
+            {{ row.label_horario }}
+          </td>
+
+          {% for cell in row.cells %}
+            {% if cell.is_fechada %}
+            <td class="cell-fechada">FECHADA</td>
+            {% else %}
+              {% if cell.alocacao %}
+              <td class="cell-alocada" 
+                  onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '{{ cell.alocacao.professor.pk }}', '{{ cell.professor_nome }}')"
+                  title="Clique para alterar/remover alocação">
+                {{ cell.professor_nome }}
+              </td>
+              {% else %}
+              <td class="cell-livre" 
+                  onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '', '')"
+                  title="Clique para alocar um professor neste horário">
+                &nbsp;
+              </td>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Interativo de Alocação de Slot -->
+<div class="modal fade no-print" id="modalAlocarSlot" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border-color);">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title font-weight-bold" id="modalSlotTitle">
+          <i class="bi bi-person-plus-fill text-primary me-2"></i>Alocar Professor
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="formAlocarSlot" method="post" action="{% url 'salvar_alocacao_slot' turma.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="dia_semana" id="input_dia_semana">
+        <input type="hidden" name="hora_inicio" id="input_hora_inicio">
+        <input type="hidden" name="hora_fim" id="input_hora_fim">
+        <input type="hidden" name="format" value="json">
+
+        <div class="modal-body">
+          <div class="alert alert-info py-2 font-weight-bold mb-3" style="font-size:0.9rem;">
+            <i class="bi bi-clock me-1"></i> Dia & Horário: <span id="slotInfoLabel" class="text-primary"></span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Selecione o Professor</label>
+            <select class="form-select" name="professor_id" id="select_professor" onchange="atualizarRotuloSugerido(this)">
+              <option value="">-- Limpar / Nenhum Professor --</option>
+              {% for p in professores %}
+              <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}Sem disc.{% endif %})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Rótulo de Exibição na Grade (Nome/Sufixo)</label>
+            <input type="text" class="form-control" name="rotulo_exibicao" id="input_rotulo_exibicao" placeholder="Ex: SANDRA, LUCIANA 1, DANIELA 2">
+            <small style="color:var(--text-muted); font-size:0.78rem;">
+              É o nome em texto maiúsculo que aparecerá na célula da planilha (ex: <code>LUCIANA 1</code> para 1ª matrícula ou <code>DANIELA 2</code> para 2ª).
+            </small>
+          </div>
+        </div>
+
+        <div class="modal-footer border-top border-secondary justify-content-between">
+          <button type="button" class="btn btn-outline-danger btn-sm" onclick="limparSlotAtual()"><i class="bi bi-eraser me-1"></i> Limpar Horário</button>
+          <div>
+            <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Horário</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let modalInstance = null;
+
+  function abrirModalAlocacao(diaCode, diaNome, horaInicio, horaFim, profId, rotulo) {
+    document.getElementById('input_dia_semana').value = diaCode;
+    document.getElementById('input_hora_inicio').value = horaInicio;
+    document.getElementById('input_hora_fim').value = horaFim;
+    document.getElementById('slotInfoLabel').textContent = diaNome + ' (' + horaInicio + ' / ' + horaFim + ')';
+    
+    const selectProf = document.getElementById('select_professor');
+    selectProf.value = profId || '';
+    document.getElementById('input_rotulo_exibicao').value = rotulo || '';
+
+    if (!modalInstance) {
+      modalInstance = new bootstrap.Modal(document.getElementById('modalAlocarSlot'));
+    }
+    modalInstance.show();
+  }
+
+  function atualizarRotuloSugerido(selectElem) {
+    const selectedOpt = selectElem.options[selectElem.selectedIndex];
+    const rotuloInput = document.getElementById('input_rotulo_exibicao');
+    if (selectedOpt && selectedOpt.dataset.nomecurto && !rotuloInput.value) {
+      rotuloInput.value = selectedOpt.dataset.nomecurto;
+    }
+  }
+
+  function limparSlotAtual() {
+    document.getElementById('select_professor').value = '';
+    document.getElementById('input_rotulo_exibicao').value = '';
+    document.getElementById('formAlocarSlot').dispatchEvent(new Event('submit'));
+  }
+
+  document.getElementById('formAlocarSlot').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        if (modalInstance) modalInstance.hide();
+
+        // Atualiza a badge de status e rótulos sem recarregar a página
+        const statusContainer = document.getElementById('status-badge-container');
+        if (data.status_ok) {
+          statusContainer.innerHTML = '<span class="sheet-status-badge-ok">OK</span>';
+        } else {
+          statusContainer.innerHTML = '<span class="sheet-status-badge-pending">' + data.status_display + '</span>';
+        }
+
+        const profLabel = document.getElementById('professores-alocados-label');
+        if (profLabel) profLabel.textContent = data.professores_nomes;
+
+        // Recarrega a página para atualizar o grid com feedback limpo
+        window.location.reload();
+      } else {
+        alert('Erro ao salvar: ' + (data.error || 'Erro desconhecido.'));
+      }
+    })
+    .catch(err => {
+      window.location.reload();
+    });
+  });
+</script>
+{% endblock %}
