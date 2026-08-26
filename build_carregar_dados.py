@@ -135,7 +135,7 @@ def executar():
 
     for d_nome, ha, ch_tot in DISCIPLINAS_MATRIZ:
         disc, _ = Disciplina.objects.get_or_create(nome=d_nome)
-        DisciplinaOfertada.objects.update_or_create(
+        DisciplinaOfertada.objects.get_or_create(
             configuracao=config,
             disciplina=disc,
             defaults={
