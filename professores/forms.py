@@ -24,7 +24,7 @@ class ConfiguracaoEscolaForm(forms.ModelForm):
     class Meta:
         model = ConfiguracaoEscola
         fields = [
-            'unidade', 'ano_letivo', 'ativo', 'duracao_hora_aula',
+            'ano_letivo', 'ativo', 'duracao_hora_aula',
             'horario_abertura', 'horario_fechamento',
             'func_segunda', 'seg_abertura', 'seg_fechamento',
             'func_terca', 'ter_abertura', 'ter_fechamento',
@@ -59,6 +59,12 @@ class ConfiguracaoEscolaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for fname in ['seg_abertura', 'seg_fechamento', 'ter_abertura', 'ter_fechamento',
+                      'qua_abertura', 'qua_fechamento', 'qui_abertura', 'qui_fechamento',
+                      'sex_abertura', 'sex_fechamento', 'sab_abertura', 'sab_fechamento',
+                      'dom_abertura', 'dom_fechamento']:
+            if fname in self.fields:
+                self.fields[fname].required = False
         aplicar_estilo_campos(self)
 import re
 

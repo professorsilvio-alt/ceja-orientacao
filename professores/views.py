@@ -183,7 +183,9 @@ def view_configuracao_escola(request):
 
     if request.method == 'POST' and (request.POST.get('action') == 'salvar_config' or not request.POST.get('action')):
         if form.is_valid():
-            form.save()
+            config = form.save(commit=False)
+            config.unidade = unidade_atual
+            config.save()
             
             ofertas = DisciplinaOfertada.objects.filter(configuracao=config)
             for of in ofertas:
@@ -204,7 +206,10 @@ def view_configuracao_escola(request):
                         pass
                 of.save()
 
-            messages.success(request, f'Configurações de {unidade_atual.nome} ({config.ano_letivo}) salvas!')
+                # Sincroniza os tempos requeridos nas turmas atreladas a esta disciplina ofertada
+                TurmaComponente.objects.filter(configuracao=config, disciplina_ofertada=of).update(tempos_requeridos=of.horas_aula_semanais)
+
+            messages.success(request, f'Configurações de {unidade_atual.nome} ({config.ano_letivo}) salvas com sucesso!')
             return redirect(f'/professores/configuracao/?unidade={unidade_atual.pk}&ano={config.ano_letivo}')
 
     ofertas = DisciplinaOfertada.objects.filter(configuracao=config).select_related('disciplina').order_by('disciplina__nome')
