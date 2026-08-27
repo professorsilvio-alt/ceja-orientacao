@@ -16,6 +16,8 @@ urlpatterns = [
 
     # Controle de Ponto (RH Terceirizados)
     path('ponto/', views.view_terminal_ponto, name='terminal_ponto'),
+    path('ponto/api/terceirizados/', views.api_listar_terceirizados_totem, name='api_listar_terceirizados_totem'),
+    path('ponto/api/validar_pin/', views.api_validar_pin, name='api_validar_pin'),
     path('ponto/api/registrar/', views.api_registrar_ponto, name='api_registrar_ponto'),
     path('ponto/espelho/', views.view_espelho_ponto, name='espelho_ponto'),
     path('ponto/senhas/', views.view_gerenciar_senhas_ponto, name='gerenciar_senhas_ponto'),

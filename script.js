@@ -846,8 +846,247 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // ==========================================================================
+  // PONTO ELETRÔNICO (TOTEM PÚBLICO) MODAL
+  // ==========================================================================
+  const btnPontoModal       = document.getElementById('btn-ponto-modal');
+  const pontoModal          = document.getElementById('ponto-modal');
+  const pontoModalBackdrop  = document.getElementById('ponto-modal-backdrop');
+  const btnClosePontoPin    = document.getElementById('btn-close-ponto-pin');
+  const btnClosePontoCamera = document.getElementById('btn-close-ponto-camera');
+
+  const pontoScreenPin      = document.getElementById('ponto-screen-pin');
+  const pontoScreenCamera   = document.getElementById('ponto-screen-camera');
+  const pontoScreenSuccess  = document.getElementById('ponto-screen-success');
+
+  const pontoFuncSelect     = document.getElementById('ponto-func-select');
+  const pontoPinInput       = document.getElementById('ponto-pin-input');
+  const pontoPinError       = document.getElementById('ponto-pin-error');
+  const btnPontoPinBackspace= document.getElementById('btn-ponto-pin-backspace');
+  const btnPontoPinClear    = document.getElementById('btn-ponto-pin-clear');
+  const btnPontoPinSubmit   = document.getElementById('btn-ponto-pin-submit');
+
+  const pontoFuncName       = document.getElementById('ponto-func-name');
+  const pontoFuncInfo       = document.getElementById('ponto-func-info');
+  const pontoWebcam         = document.getElementById('ponto-webcam');
+  const pontoCanvas         = document.getElementById('ponto-canvas');
+  const pontoCameraStatus   = document.getElementById('ponto-camera-status');
+
+  const pontoResTipo        = document.getElementById('ponto-res-tipo');
+  const pontoResNome        = document.getElementById('ponto-res-nome');
+  const pontoResDataHora    = document.getElementById('ponto-res-data-hora');
+  const pontoResEmail       = document.getElementById('ponto-res-email');
+  const pontoSuccessCountdown = document.getElementById('ponto-success-countdown');
+  const btnPontoFinish      = document.getElementById('btn-ponto-finish');
+
+  let selectedFuncionarioId = null;
+  let webcamStream = null;
+  let pontoAutoCloseTimer = null;
+  let pontoAutoCloseSecs = 5;
+
+  async function carregarTerceirizadosTotem() {
+    try {
+      const resp = await fetch('/funcionarios/ponto/api/terceirizados/');
+      const data = await resp.json();
+      if (data.success && data.terceirizados) {
+        pontoFuncSelect.innerHTML = '<option value="" selected disabled>-- Selecione seu Nome --</option>';
+        data.terceirizados.forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f.id;
+          opt.textContent = `${f.nome} — ${f.cargo} (${f.empresa})`;
+          pontoFuncSelect.appendChild(opt);
+        });
+      }
+    } catch (e) {
+      console.warn("Erro ao carregar terceirizados:", e);
+      pontoFuncSelect.innerHTML = '<option value="" selected disabled>Erro ao carregar lista de funcionários</option>';
+    }
+  }
+
+  if (btnPontoModal) {
+    btnPontoModal.addEventListener('click', () => {
+      pontoModal.classList.remove('hidden');
+      pontoScreenPin.classList.remove('hidden');
+      pontoScreenCamera.classList.add('hidden');
+      pontoScreenSuccess.classList.add('hidden');
+      pontoPinError.classList.add('hidden');
+      pontoPinInput.value = '';
+      carregarTerceirizadosTotem();
+    });
+  }
+
+  function fecharPontoModal() {
+    pontoModal.classList.add('hidden');
+    pararWebcamPonto();
+    if (pontoAutoCloseTimer) clearInterval(pontoAutoCloseTimer);
+  }
+
+  [btnClosePontoPin, btnClosePontoCamera, pontoModalBackdrop, btnPontoFinish].forEach(el => {
+    if (el) el.addEventListener('click', fecharPontoModal);
+  });
+
+  document.querySelectorAll('.btn-ponto-key[data-key]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (pontoPinInput.value.length < 12) {
+        pontoPinInput.value += btn.getAttribute('data-key');
+      }
+    });
+  });
+
+  if (btnPontoPinBackspace) {
+    btnPontoPinBackspace.addEventListener('click', () => {
+      pontoPinInput.value = pontoPinInput.value.slice(0, -1);
+    });
+  }
+
+  if (btnPontoPinClear) {
+    btnPontoPinClear.addEventListener('click', () => {
+      pontoPinInput.value = '';
+    });
+  }
+
+  async function validarPinTotem() {
+    const funcId = pontoFuncSelect.value;
+    const pin = pontoPinInput.value;
+
+    if (!funcId) {
+      pontoPinError.textContent = '⚠️ Por favor, selecione o seu nome na lista.';
+      pontoPinError.classList.remove('hidden');
+      return;
+    }
+    if (!pin) {
+      pontoPinError.textContent = '⚠️ Por favor, digite a sua senha de ponto (PIN).';
+      pontoPinError.classList.remove('hidden');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('funcionario_id', funcId);
+    formData.append('pin', pin);
+
+    try {
+      const resp = await fetch('/funcionarios/ponto/api/validar_pin/', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await resp.json();
+
+      if (data.success) {
+        pontoPinError.classList.add('hidden');
+        selectedFuncionarioId = data.funcionario_id;
+        pontoFuncName.textContent = `👤 ${data.nome}`;
+        pontoFuncInfo.textContent = `${data.cargo} — ${data.empresa}`;
+
+        pontoScreenPin.classList.add('hidden');
+        pontoScreenCamera.classList.remove('hidden');
+        iniciarWebcamPonto();
+      } else {
+        pontoPinError.textContent = `⚠️ ${data.error}`;
+        pontoPinError.classList.remove('hidden');
+      }
+    } catch (err) {
+      console.error(err);
+      pontoPinError.textContent = '⚠️ Erro ao conectar ao servidor. Tente novamente.';
+      pontoPinError.classList.remove('hidden');
+    }
+  }
+
+  if (btnPontoPinSubmit) {
+    btnPontoPinSubmit.addEventListener('click', validarPinTotem);
+  }
+
+  async function iniciarWebcamPonto() {
+    try {
+      webcamStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' },
+        audio: false
+      });
+      pontoWebcam.srcObject = webcamStream;
+      pontoCameraStatus.textContent = 'Câmera Ativa';
+      pontoCameraStatus.style.background = 'rgba(34,197,94,0.2)';
+      pontoCameraStatus.style.color = '#4ade80';
+    } catch (err) {
+      console.warn("Câmera indisponível no totem:", err);
+      pontoCameraStatus.textContent = 'Sem Câmera';
+      pontoCameraStatus.style.background = 'rgba(234,179,8,0.2)';
+      pontoCameraStatus.style.color = '#facc15';
+    }
+  }
+
+  function pararWebcamPonto() {
+    if (webcamStream) {
+      webcamStream.getTracks().forEach(track => track.stop());
+      webcamStream = null;
+    }
+  }
+
+  function capturarFotoPonto() {
+    if (!pontoWebcam.srcObject) return '';
+    try {
+      pontoCanvas.width = pontoWebcam.videoWidth || 640;
+      pontoCanvas.height = pontoWebcam.videoHeight || 480;
+      const ctx = pontoCanvas.getContext('2d');
+      ctx.drawImage(pontoWebcam, 0, 0, pontoCanvas.width, pontoCanvas.height);
+      return pontoCanvas.toDataURL('image/jpeg', 0.85);
+    } catch (e) {
+      return '';
+    }
+  }
+
+  document.querySelectorAll('.btn-ponto-action').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tipo = btn.getAttribute('data-tipo');
+      const pin = pontoPinInput.value;
+      const fotoBase64 = capturarFotoPonto();
+
+      const formData = new FormData();
+      formData.append('funcionario_id', selectedFuncionarioId);
+      formData.append('pin', pin);
+      formData.append('tipo', tipo);
+      formData.append('foto_base64', fotoBase64);
+
+      try {
+        const resp = await fetch('/funcionarios/ponto/api/registrar/', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+          pararWebcamPonto();
+          pontoResTipo.textContent = `${data.tipo.toUpperCase()} REGISTRADA`;
+          pontoResNome.textContent = data.funcionario;
+          pontoResDataHora.textContent = data.data_hora;
+          pontoResEmail.textContent = `Comprovante enviado para: ${data.email_destinatario}`;
+
+          pontoScreenCamera.classList.add('hidden');
+          pontoScreenSuccess.classList.remove('hidden');
+
+          pontoAutoCloseSecs = 5;
+          pontoSuccessCountdown.textContent = pontoAutoCloseSecs;
+          if (pontoAutoCloseTimer) clearInterval(pontoAutoCloseTimer);
+          pontoAutoCloseTimer = setInterval(() => {
+            pontoAutoCloseSecs--;
+            pontoSuccessCountdown.textContent = pontoAutoCloseSecs;
+            if (pontoAutoCloseSecs <= 0) {
+              fecharPontoModal();
+            }
+          }, 1000);
+
+        } else {
+          alert('ERRO: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao conectar ao servidor para registrar o ponto.');
+      }
+    });
+  });
+
+
+  // ==========================================================================
   // INICIALIZAÇÃO
   // ==========================================================================
   resetInactivityTimer();
 
 });
+

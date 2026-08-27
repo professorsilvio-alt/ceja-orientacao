@@ -2683,3 +2683,42 @@ input, select, textarea {
     font-size: 12px;
   }
 }
+
+/* ==========================================================================
+   11. PONTO ELETRÔNICO (TOTEM) STYLES
+   ========================================================================== */
+.btn-ponto-key {
+  padding: 14px 0;
+  font-size: 20px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-md);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.btn-ponto-key:hover, .btn-ponto-key:active {
+  background: var(--primary-light);
+  color: #fff;
+  border-color: var(--primary-light);
+  transform: scale(1.05);
+}
+.btn-ponto-action {
+  padding: 16px 12px;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-ponto-action:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.15);
+}

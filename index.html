@@ -117,6 +117,7 @@
             WhatsApp</a>
           <a href="https://instagram.com/ceja_mesquita" target="_blank"
             class="home-quick-link home-quick-link--insta">📸 Instagram</a>
+          <button id="btn-ponto-modal" class="home-quick-link home-quick-link--ponto" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-color: #38bdf8; font-weight: 700;">🖐️ Ponto Eletrônico</button>
           <button id="btn-admin-panel" class="home-quick-link home-quick-link--admin">⚙️ Admin</button>
           <button id="btn-fullscreen" class="home-quick-link"
             style="background: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.2);">🔲 Tela Cheia</button>
@@ -568,6 +569,129 @@
           <div id="no-feedbacks-msg" class="no-data-msg hidden">
             📭 Nenhuma mensagem registrada ainda.
           </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── MODAL PONTO ELETRÔNICO (TOTEM PÚBLICO) ── -->
+  <div id="ponto-modal" class="admin-modal hidden">
+    <div class="admin-modal-backdrop" id="ponto-modal-backdrop"></div>
+    <div class="admin-modal-container" style="max-width: 650px;">
+
+      <!-- PASSO 1: DIGITAR PIN E SELECIONAR FUNCIONÁRIO -->
+      <div id="ponto-screen-pin" class="admin-modal-content">
+        <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
+          <h2>🖐️ Registro de Ponto RH (Terceirizados)</h2>
+          <button type="button" class="btn-close-modal" id="btn-close-ponto-pin">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+            Selecione o seu nome e digite a sua senha de ponto (PIN) para continuar.
+          </p>
+
+          <div class="form-group-admin" style="margin-bottom: 16px;">
+            <label for="ponto-func-select" style="font-weight: 700; font-size: 14px; color: #38bdf8;">
+              👤 1. Selecione seu Nome:
+            </label>
+            <select id="ponto-func-select" class="form-control" style="width: 100%; padding: 12px; font-size: 15px; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+              <option value="" selected disabled>Carregando funcionários...</option>
+            </select>
+          </div>
+
+          <div class="form-group-admin" style="margin-bottom: 16px;">
+            <label style="font-weight: 700; font-size: 14px; color: #38bdf8;">
+              🔑 2. Digite sua Senha (PIN):
+            </label>
+            <div style="display: flex; gap: 8px;">
+              <input type="password" id="ponto-pin-input" readonly placeholder="••••" maxlength="12" style="width: 100%; padding: 12px; font-size: 24px; letter-spacing: 10px; font-weight: 800; text-align: center; border-radius: 8px; background: rgba(0,0,0,0.4); color: #38bdf8; border: 1px solid rgba(255,255,255,0.2);">
+              <button type="button" id="btn-ponto-pin-backspace" class="btn-kiosk btn-kiosk--secondary" style="padding: 0 18px; font-size: 18px;">⌫</button>
+            </div>
+
+            <!-- Teclado Numérico Visual -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 320px; margin: 16px auto 0 auto;">
+              <button type="button" class="btn-ponto-key" data-key="1">1</button>
+              <button type="button" class="btn-ponto-key" data-key="2">2</button>
+              <button type="button" class="btn-ponto-key" data-key="3">3</button>
+              <button type="button" class="btn-ponto-key" data-key="4">4</button>
+              <button type="button" class="btn-ponto-key" data-key="5">5</button>
+              <button type="button" class="btn-ponto-key" data-key="6">6</button>
+              <button type="button" class="btn-ponto-key" data-key="7">7</button>
+              <button type="button" class="btn-ponto-key" data-key="8">8</button>
+              <button type="button" class="btn-ponto-key" data-key="9">9</button>
+              <button type="button" class="btn-ponto-key btn-ponto-key-clear" id="btn-ponto-pin-clear" style="grid-column: span 1; background: rgba(239, 68, 68, 0.2); color: #f87171;">C</button>
+              <button type="button" class="btn-ponto-key" data-key="0">0</button>
+              <button type="button" class="btn-ponto-key btn-ponto-key-ok" id="btn-ponto-pin-submit" style="grid-column: span 1; background: #0284c7; color: #fff;">OK</button>
+            </div>
+          </div>
+
+          <div id="ponto-pin-error" class="error-msg hidden" style="margin-top: 12px; font-size: 14px;">⚠️ PIN incorreto. Tente novamente.</div>
+        </div>
+      </div>
+
+      <!-- PASSO 2: CÂMERA WEBCAM & SELEÇÃO DE BATIDA -->
+      <div id="ponto-screen-camera" class="admin-modal-content hidden">
+        <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
+          <div>
+            <h2 id="ponto-func-name">👤 Funcionário</h2>
+            <p id="ponto-func-info" class="modal-subtitle" style="color: rgba(255,255,255,0.8);">Cargo — Empresa</p>
+          </div>
+          <button type="button" class="btn-close-modal" id="btn-close-ponto-camera">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding: 20px; text-align: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-weight: 700; font-size: 13px; color: #38bdf8;">📷 Confirmação por Câmera</span>
+            <span id="ponto-camera-status" class="badge-table" style="background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid #22c55e;">Câmera Ativa</span>
+          </div>
+
+          <div style="position: relative; max-width: 360px; aspect-ratio: 4/3; margin: 0 auto 16px auto; background: #0f172a; border-radius: 12px; overflow: hidden; border: 2px solid rgba(56,189,248,0.4);">
+            <video id="ponto-webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+            <canvas id="ponto-canvas" style="display: none;"></canvas>
+            <div style="position: absolute; inset: 16px; border: 2px dashed rgba(56,189,248,0.5); border-radius: 50%; pointer-events: none; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 11px; color: #fff; background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;">Posicione seu rosto aqui</span>
+            </div>
+          </div>
+
+          <p style="font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 12px;">Selecione o tipo de registro:</p>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ENTRADA" style="background: linear-gradient(135deg, #16a34a, #15803d); color: #fff;">
+              🟢 ENTRADA
+            </button>
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ALMOCO_SAIDA" style="background: linear-gradient(135deg, #d97706, #b45309); color: #fff;">
+              🟡 SAÍDA ALMOÇO
+            </button>
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ALMOCO_RETORNO" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
+              🔵 RETORNO ALMOÇO
+            </button>
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="SAIDA" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff;">
+              🔴 SAÍDA (CASA)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASSO 3: RECIBO / SUCESSO -->
+      <div id="ponto-screen-success" class="admin-modal-content hidden">
+        <div class="modal-body" style="padding: 36px 24px; text-align: center;">
+          <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+          <h2 id="ponto-res-tipo" style="color: #4ade80; font-size: 22px; font-weight: 800; margin-bottom: 8px;">ENTRADA REGISTRADA</h2>
+          <p id="ponto-res-nome" style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px;">Nome do Funcionário</p>
+          <p id="ponto-res-data-hora" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">27/08/2026 às 17:50:00</p>
+
+          <div style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); padding: 14px; border-radius: 10px; margin-bottom: 24px; font-size: 13px; color: #38bdf8; text-align: left;">
+            ✉️ <strong id="ponto-res-email">Comprovante enviado por e-mail.</strong>
+          </div>
+
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
+            Voltando ao menu principal em <strong id="ponto-success-countdown">5</strong>s...
+          </p>
+
+          <button type="button" id="btn-ponto-finish" class="btn-kiosk btn-kiosk--primary w-100">
+            Concluir (Voltar ao Totem)
+          </button>
         </div>
       </div>
 

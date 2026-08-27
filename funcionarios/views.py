@@ -163,6 +163,49 @@ def api_registrar_ponto(request):
     })
 
 
+def api_listar_terceirizados_totem(request):
+    """API Endpoint para listar terceirizados ativos no Totem de autoatendimento."""
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
+    data = [{
+        'id': f.pk,
+        'nome': f.nome_completo,
+        'cargo': f.cargo_funcao,
+        'empresa': f.empresa_contratante,
+        'tem_pin': bool(f.senha_ponto)
+    } for f in terceirizados]
+    return JsonResponse({'success': True, 'terceirizados': data})
+
+
+def api_validar_pin(request):
+    """API Endpoint para validação do PIN do funcionário no Totem."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método não permitido.'}, status=405)
+
+    func_id = request.POST.get('funcionario_id')
+    pin = request.POST.get('pin', '').strip()
+
+    if not func_id or not pin:
+        return JsonResponse({'success': False, 'error': 'Selecione o funcionário e digite o PIN.'})
+
+    try:
+        func = FuncionarioTerceirizado.objects.get(pk=func_id, ativo=True)
+        if not func.senha_ponto:
+            return JsonResponse({'success': False, 'error': 'Funcionário não possui PIN cadastrado no RH.'})
+
+        if func.verificar_senha_ponto(pin):
+            return JsonResponse({
+                'success': True,
+                'funcionario_id': func.pk,
+                'nome': func.nome_completo,
+                'cargo': func.cargo_funcao,
+                'empresa': func.empresa_contratante
+            })
+        else:
+            return JsonResponse({'success': False, 'error': 'PIN incorreto. Tente novamente.'})
+    except FuncionarioTerceirizado.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Funcionário não encontrado.'})
+
+
 @login_required
 @verificar_primeiro_acesso
 def view_espelho_ponto(request):
