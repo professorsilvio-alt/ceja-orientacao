@@ -53,9 +53,9 @@
   <input type="hidden" name="unidade_id" value="{{ unidade_atual.pk }}">
 
   <div class="row g-4">
-    <!-- Card 1: Horários e Funcionamento da Unidade Selecionada -->
-    <div class="col-lg-6">
-      <div class="card-gestao h-100">
+    <!-- Card 1: Horários e Funcionamento da Unidade Selecionada (Linha 1) -->
+    <div class="col-12">
+      <div class="card-gestao">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
           <div>
             <h6 style="font-weight:700; color:var(--blue); margin:0;">
@@ -79,26 +79,26 @@
         </div>
 
         <div class="row g-3">
-          <div class="col-md-6">
+          <div class="col-md-3 col-sm-6">
             <label class="form-label" style="font-size:0.85rem; font-weight:600;">Ano Letivo</label>
             {{ form.ano_letivo }}
           </div>
-          <div class="col-md-6">
+          <div class="col-md-3 col-sm-6">
             <label class="form-label" style="font-size:0.85rem; font-weight:600;">Duração da Hora/Aula (Minutos)</label>
             {{ form.duracao_hora_aula }}
-            <small style="color:var(--text-muted); font-size:0.75rem;">Padrão estadual: 50 minutos</small>
+            <small style="color:var(--text-muted); font-size:0.75rem; display:block;">Padrão estadual: 50 minutos</small>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-3 col-sm-6">
             <label class="form-label" style="font-size:0.85rem; font-weight:600;">Horário de Abertura da Escola</label>
             {{ form.horario_abertura }}
           </div>
-          <div class="col-md-6">
+          <div class="col-md-3 col-sm-6">
             <label class="form-label" style="font-size:0.85rem; font-weight:600;">Horário de Fechamento da Escola</label>
             {{ form.horario_fechamento }}
           </div>
 
-          <div class="col-12 mt-2">
+          <div class="col-12 mt-3">
             <label class="form-label" style="font-size:0.85rem; font-weight:700; color:var(--blue);">
               <i class="bi bi-calendar-week me-1"></i> Horários e Dias de Funcionamento da Escola
             </label>
@@ -106,10 +106,10 @@
               <table class="table table-dark table-sm table-borderless align-middle mb-0" style="font-size:0.83rem;">
                 <thead>
                   <tr style="color:var(--text-muted); border-bottom:1px solid var(--card-border);">
-                    <th style="width:140px;">Dia da Semana</th>
-                    <th style="width:75px;" class="text-center">Aberto?</th>
-                    <th style="width:130px;" class="text-center">Abertura</th>
-                    <th style="width:130px;" class="text-center">Fechamento</th>
+                    <th style="width:200px;">Dia da Semana</th>
+                    <th style="width:100px;" class="text-center">Aberto?</th>
+                    <th style="width:180px;" class="text-center">Abertura</th>
+                    <th style="width:180px;" class="text-center">Fechamento</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -160,7 +160,7 @@
             </div>
           </div>
 
-          <div class="col-12">
+          <div class="col-12 mt-2">
             <label class="form-label" style="font-size:0.85rem; font-weight:600;">Observações do Ano Letivo</label>
             {{ form.observacoes }}
           </div>
@@ -168,9 +168,9 @@
       </div>
     </div>
 
-    <!-- Card 2: Disciplinas Ofertadas e Horas/Aula -->
-    <div class="col-lg-6">
-      <div class="card-gestao h-100">
+    <!-- Card 2: Disciplinas Ofertadas e Horas/Aula (Linha 2) -->
+    <div class="col-12">
+      <div class="card-gestao">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
           <h6 style="font-weight:700; color:#67e8f9; margin:0;">
             <i class="bi bi-journal-check me-1"></i> Disciplinas Ofertadas e Carga Horária (Ano {{ config.ano_letivo }})
@@ -178,14 +178,14 @@
           <span style="font-size:0.75rem; color:var(--text-muted);">Unidade de 50 min/aula</span>
         </div>
 
-        <div class="table-responsive" style="max-height:480px; overflow-y:auto;">
+        <div class="table-responsive" style="max-height:500px; overflow-y:auto;">
           <table class="table table-dark table-hover align-middle mb-0" style="font-size:0.85rem;">
             <thead>
               <tr style="color:var(--text-muted); border-bottom:1px solid var(--card-border);">
-                <th style="width:60px;" class="text-center">Ofertar</th>
+                <th style="width:100px;" class="text-center">Ofertar</th>
                 <th>Disciplina</th>
-                <th style="width:130px;" class="text-center">Horas/Aula (Sem.)</th>
-                <th style="width:130px;" class="text-center">C.H. Total (Horas)</th>
+                <th style="width:180px;" class="text-center">Horas/Aula (Sem.)</th>
+                <th style="width:180px;" class="text-center">C.H. Total (Horas)</th>
               </tr>
             </thead>
             <tbody>
@@ -198,10 +198,10 @@
                   {{ of.disciplina.nome }}
                 </td>
                 <td class="text-center">
-                  <input type="number" id="disc_ha_{{ of.pk }}" name="disc_ha_{{ of.pk }}" value="{{ of.horas_aula_semanais }}" min="1" max="40" class="form-control form-control-sm text-center" style="width:80px; margin:0 auto; font-weight:700;" oninput="calcularCH(this, '{{ of.pk }}')">
+                  <input type="number" id="disc_ha_{{ of.pk }}" name="disc_ha_{{ of.pk }}" value="{{ of.horas_aula_semanais }}" min="1" max="40" class="form-control form-control-sm text-center" style="width:90px; margin:0 auto; font-weight:700;" oninput="calcularCH(this, '{{ of.pk }}')">
                 </td>
                 <td class="text-center">
-                  <input type="number" id="disc_ch_{{ of.pk }}" name="disc_ch_{{ of.pk }}" value="{{ of.carga_horaria_total }}" min="10" max="500" class="form-control form-control-sm text-center" style="width:85px; margin:0 auto; font-weight:700; color:#fde047;">
+                  <input type="number" id="disc_ch_{{ of.pk }}" name="disc_ch_{{ of.pk }}" value="{{ of.carga_horaria_total }}" min="10" max="500" class="form-control form-control-sm text-center" style="width:95px; margin:0 auto; font-weight:700; color:#fde047;">
                 </td>
               </tr>
               {% empty %}
