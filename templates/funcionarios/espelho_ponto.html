@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Espelho de Ponto RH (Terceirizados){% endblock %}
+
+{% block breadcrumb %}
+  <span style="color:var(--text-secondary);"><i class="bi bi-clock-history me-1"></i>Espelho de Ponto RH</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <div class="page-title"><i class="bi bi-journal-text text-primary me-2"></i>Espelho de Ponto — Terceirizados</div>
+    <div style="color:var(--text-secondary); font-size:0.9rem;">
+      Consulte as batidas de ponto, horários registrados e fotos de verificação dos funcionários terceirizados.
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'terminal_ponto' %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-fingerprint me-1"></i> Abrir Terminal de Ponto
+    </a>
+    <a href="{% url 'gerenciar_senhas_ponto' %}" class="btn-gestao btn-gestao-secondary">
+      <i class="bi bi-key-fill me-1"></i> Gerenciar Senhas/PINs
+    </a>
+    <button onclick="window.print()" class="btn-gestao btn-gestao-secondary">
+      <i class="bi bi-printer me-1"></i> Imprimir Espelho
+    </button>
+  </div>
+</div>
+
+<!-- Filtros de Pesquisa -->
+<div class="card-gestao mb-4">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label" style="font-weight:600; font-size:0.85rem;">Funcionário Terceirizado</label>
+      <select name="funcionario" class="form-select form-select-sm">
+        <option value="">-- Todos os Funcionários --</option>
+        {% for f in terceirizados %}
+        <option value="{{ f.pk }}" {% if funcionario_selecionado == f.pk|stringformat:"i" %}selected{% endif %}>
+          {{ f.nome_completo }} ({{ f.empresa_contratante }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label" style="font-weight:600; font-size:0.85rem;">Tipo de Registro</label>
+      <select name="tipo" class="form-select form-select-sm">
+        <option value="">-- Todos os Tipos --</option>
+        <option value="ENTRADA" {% if tipo_selecionado == 'ENTRADA' %}selected{% endif %}>🟢 Entrada (Chegando)</option>
+        <option value="ALMOCO_SAIDA" {% if tipo_selecionado == 'ALMOCO_SAIDA' %}selected{% endif %}>🟡 Saída para Almoço</option>
+        <option value="ALMOCO_RETORNO" {% if tipo_selecionado == 'ALMOCO_RETORNO' %}selected{% endif %}>🔵 Retorno do Almoço</option>
+        <option value="SAIDA" {% if tipo_selecionado == 'SAIDA' %}selected{% endif %}>🔴 Saída para Casa</option>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label" style="font-weight:600; font-size:0.85rem;">Data Inicial</label>
+      <input type="date" name="data_inicio" value="{{ data_inicio }}" class="form-control form-control-sm">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label" style="font-weight:600; font-size:0.85rem;">Data Final</label>
+      <input type="date" name="data_fim" value="{{ data_fim }}" class="form-control form-control-sm">
+    </div>
+
+    <div class="col-md-1">
+      <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
+        <i class="bi bi-search me-1"></i> Filtrar
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Tabela de Registros de Ponto -->
+<div class="card-gestao">
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+    <h6 style="font-weight:700; color:var(--blue); margin:0;">
+      <i class="bi bi-clock-history me-1"></i> Histórico de Registros de Ponto
+    </h6>
+    <span class="badge bg-secondary">Total Hoje: {{ total_hoje }} batidas</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0" style="font-size:0.88rem;">
+      <thead>
+        <tr style="color:var(--text-muted); border-bottom:1px solid var(--card-border);">
+          <th>Data e Hora</th>
+          <th>Funcionário</th>
+          <th>Empresa</th>
+          <th class="text-center">Tipo de Ponto</th>
+          <th class="text-center">Foto Capturada</th>
+          <th class="text-center">E-mail Enviado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in registros %}
+        <tr>
+          <td style="font-weight:700; color:#38bdf8;">
+            <i class="bi bi-calendar-event me-1"></i> {{ r.data_hora|date:"d/m/Y H:i:s" }}
+          </td>
+          <td style="font-weight:600;">
+            {{ r.funcionario.nome_completo }}
+            <small style="display:block; color:var(--text-muted); font-size:0.75rem;">CPF: ***.{{ r.funcionario.cpf|slice:"3:6" }}.{{ r.funcionario.cpf|slice:"6:9" }}-**</small>
+          </td>
+          <td>
+            <span class="badge bg-dark border border-secondary">{{ r.funcionario.empresa_contratante }}</span>
+          </td>
+          <td class="text-center">
+            {% if r.tipo == 'ENTRADA' %}
+            <span class="badge bg-success py-2 px-3 fw-bold"><i class="bi bi-box-arrow-in-right me-1"></i> Entrada</span>
+            {% elif r.tipo == 'ALMOCO_SAIDA' %}
+            <span class="badge bg-warning text-dark py-2 px-3 fw-bold"><i class="bi bi-cup-hot-fill me-1"></i> Saída Almoço</span>
+            {% elif r.tipo == 'ALMOCO_RETORNO' %}
+            <span class="badge bg-info text-dark py-2 px-3 fw-bold"><i class="bi bi-arrow-return-left me-1"></i> Retorno Almoço</span>
+            {% else %}
+            <span class="badge bg-danger py-2 px-3 fw-bold"><i class="bi bi-house-door-fill me-1"></i> Saída (Casa)</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if r.foto %}
+            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalFoto{{ r.pk }}">
+              <i class="bi bi-camera-fill me-1"></i> Ver Foto
+            </button>
+
+            <!-- Modal Visualização da Foto -->
+            <div class="modal fade" id="modalFoto{{ r.pk }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background:#1e293b; color:#fff; border:1px solid #38bdf8;">
+                  <div class="modal-header border-secondary">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-camera-fill me-1"></i> Foto da Batida — {{ r.funcionario.nome_curto }}</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body text-center p-2">
+                    <img src="{{ r.foto.url }}" alt="Foto do Ponto" class="img-fluid rounded border border-secondary" style="max-height:400px; width:auto;">
+                    <div class="mt-2 text-muted" style="font-size:0.8rem;">
+                      Capturada em {{ r.data_hora|date:"d/m/Y H:i:s" }} | IP: {{ r.ip_origem|default:"Local" }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <span class="text-muted" style="font-size:0.8rem;">Sem Foto</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if r.email_enviado %}
+            <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Enviado</span>
+            {% else %}
+            <span class="text-muted"><i class="bi bi-dash-circle me-1"></i> Pendente</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">Nenhuma batida de ponto registrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

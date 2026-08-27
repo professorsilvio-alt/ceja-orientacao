@@ -205,7 +205,11 @@ class FuncionarioTerceirizado(models.Model):
     telefone = models.CharField(max_length=20, blank=True, verbose_name='Telefone')
     telefone_emergencia = models.CharField(max_length=20, blank=True, verbose_name='Telefone de emergência')
 
-    # ── Outros ─────────────────────────────────────────────
+    # ── Outros & Controle de Ponto ─────────────────────────
+    senha_ponto = models.CharField(
+        max_length=128, blank=True, verbose_name='Senha do Ponto',
+        help_text='PIN ou Senha individual para bater o ponto'
+    )
     foto = models.ImageField(upload_to='terceirizados/fotos/', blank=True, null=True, verbose_name='Foto')
     observacoes = models.TextField(blank=True, verbose_name='Observações')
     criado_em = models.DateTimeField(auto_now_add=True)
@@ -218,6 +222,18 @@ class FuncionarioTerceirizado(models.Model):
 
     def __str__(self):
         return f'{self.nome_completo} — {self.cargo_funcao} ({self.empresa_contratante})'
+
+    def definir_senha_ponto(self, raw_pin):
+        """Define e criptografa a senha/PIN de ponto do funcionário."""
+        from django.contrib.auth.hashers import make_password
+        self.senha_ponto = make_password(str(raw_pin).strip())
+
+    def verificar_senha_ponto(self, raw_pin):
+        """Verifica a senha/PIN de ponto digitada pelo funcionário."""
+        from django.contrib.auth.hashers import check_password
+        if not self.senha_ponto:
+            return False
+        return check_password(str(raw_pin).strip(), self.senha_ponto)
 
     @property
     def idade(self):
@@ -247,3 +263,58 @@ class FuncionarioTerceirizado(models.Model):
     def save(self, *args, **kwargs):
         self.cpf = re.sub(r'\D', '', self.cpf)
         super().save(*args, **kwargs)
+
+
+class RegistroPontoTerceirizado(models.Model):
+    """Registro de batida de ponto do funcionário terceirizado com foto e tipo."""
+
+    TIPO_PONTO_CHOICES = [
+        ('ENTRADA', 'Entrada (Chegando à escola)'),
+        ('ALMOCO_SAIDA', 'Saída para Almoço'),
+        ('ALMOCO_RETORNO', 'Retorno do Almoço'),
+        ('SAIDA', 'Saída para Casa (Fim de expediente)'),
+    ]
+
+    funcionario = models.ForeignKey(
+        FuncionarioTerceirizado,
+        on_delete=models.CASCADE,
+        related_name='registros_ponto',
+        verbose_name='Funcionário'
+    )
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPO_PONTO_CHOICES,
+        verbose_name='Tipo de Registro'
+    )
+    data_hora = models.DateTimeField(
+        default=timezone.now,
+        verbose_name='Data e Hora da Batida'
+    )
+    foto = models.ImageField(
+        upload_to='terceirizados/ponto/',
+        blank=True,
+        null=True,
+        verbose_name='Foto da Batida'
+    )
+    ip_origem = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        verbose_name='IP de Origem'
+    )
+    observacao = models.TextField(
+        blank=True,
+        verbose_name='Observação / Justificativa'
+    )
+    email_enviado = models.BooleanField(
+        default=False,
+        verbose_name='Confirmação por E-mail Enviada'
+    )
+
+    class Meta:
+        verbose_name = 'Registro de Ponto (Terceirizado)'
+        verbose_name_plural = 'Registros de Ponto (Terceirizados)'
+        ordering = ['-data_hora']
+
+    def __str__(self):
+        return f'{self.funcionario.nome_curto} - {self.get_tipo_display()} em {self.data_hora.strftime("%d/%m/%Y %H:%M:%S")}'
+

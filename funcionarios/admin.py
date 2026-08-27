@@ -1,6 +1,6 @@
 """Admin do app funcionarios"""
 from django.contrib import admin
-from .models import FuncionarioAdministrativo, FuncionarioTerceirizado
+from .models import FuncionarioAdministrativo, FuncionarioTerceirizado, RegistroPontoTerceirizado
 
 
 @admin.register(FuncionarioAdministrativo)
@@ -18,3 +18,12 @@ class FuncionarioTercAdmin(admin.ModelAdmin):
     list_filter = ['ativo', 'empresa_contratante']
     search_fields = ['nome_completo', 'cpf']
     readonly_fields = ['tempo_na_escola', 'idade', 'criado_em', 'atualizado_em']
+
+
+@admin.register(RegistroPontoTerceirizado)
+class RegistroPontoTerceirizadoAdmin(admin.ModelAdmin):
+    list_display = ['funcionario', 'tipo', 'data_hora', 'email_enviado', 'ip_origem']
+    list_filter = ['tipo', 'data_hora', 'email_enviado']
+    search_fields = ['funcionario__nome_completo', 'funcionario__cpf']
+    readonly_fields = ['data_hora']
+

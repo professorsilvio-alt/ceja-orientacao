@@ -82,14 +82,141 @@ def view_detalhe_terceirizado(request, pk):
     return render(request, 'funcionarios/detalhe_terc.html', {'funcionario': func})
 
 
-@diretor_required
-def view_editar_terceirizado(request, pk):
-    func = get_object_or_404(FuncionarioTerceirizado, pk=pk)
-    form = FuncionarioTercForm(request.POST or None, request.FILES or None, instance=func)
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, 'Dados atualizados com sucesso.')
-        return redirect('detalhe_terceirizado', pk=func.pk)
-    return render(request, 'funcionarios/form_terc.html', {
-        'form': form, 'titulo': f'Editar: {func.nome_completo}'
+# ── Controle de Ponto (Terceirizados) ──────────────────────────
+import base64
+import uuid
+from django.core.files.base import ContentFile
+from django.http import JsonResponse
+from django.utils import timezone
+from .models import FuncionarioAdministrativo, FuncionarioTerceirizado, RegistroPontoTerceirizado
+from .utils import enviar_email_confirmacao_ponto
+
+
+def view_terminal_ponto(request):
+    """Interface do Terminal para bater ponto (Totem / Computador da escola)."""
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
+    return render(request, 'funcionarios/bater_ponto.html', {
+        'terceirizados': terceirizados,
+        'agora': timezone.now(),
     })
+
+
+def api_registrar_ponto(request):
+    """API Endpoint para validação de PIN, foto da webcam e salvamento da batida de ponto."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método não permitido.'}, status=405)
+
+    funcionario_id = request.POST.get('funcionario_id')
+    pin = request.POST.get('pin', '').strip()
+    tipo = request.POST.get('tipo', '').strip()
+    foto_base64 = request.POST.get('foto_base64', '').strip()
+
+    if not funcionario_id or not pin or not tipo:
+        return JsonResponse({'success': False, 'error': 'Selecione o funcionário, digite a senha e informe o tipo de registro.'})
+
+    func = get_object_or_404(FuncionarioTerceirizado, pk=funcionario_id, ativo=True)
+
+    if not func.senha_ponto:
+        return JsonResponse({
+            'success': False,
+            'error': 'O funcionário ainda não possui uma senha de ponto cadastrada. Solucione com o RH.'
+        })
+
+    if not func.verificar_senha_ponto(pin):
+        return JsonResponse({'success': False, 'error': 'Senha / PIN incorreto.'})
+
+    tipos_validos = dict(RegistroPontoTerceirizado.TIPO_PONTO_CHOICES)
+    if tipo not in tipos_validos:
+        return JsonResponse({'success': False, 'error': 'Tipo de batida de ponto inválido.'})
+
+    # Instancia o registro de ponto
+    registro = RegistroPontoTerceirizado(
+        funcionario=func,
+        tipo=tipo,
+        data_hora=timezone.now(),
+        ip_origem=request.META.get('REMOTE_ADDR')
+    )
+
+    # Processa a foto enviada em base64 da webcam
+    if foto_base64 and 'base64,' in foto_base64:
+        try:
+            format, imgstr = foto_base64.split(';base64,')
+            ext = format.split('/')[-1] if '/' in format else 'jpg'
+            filename = f"ponto_{func.pk}_{uuid.uuid4().hex[:8]}.{ext}"
+            file_data = ContentFile(base64.b64decode(imgstr), name=filename)
+            registro.foto = file_data
+        except Exception as e:
+            print(f"[Ponto API] Erro ao decodificar foto: {e}")
+
+    registro.save()
+
+    # Dispara o envio de e-mail assíncrono
+    enviar_email_confirmacao_ponto(registro)
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Ponto registrado com sucesso!',
+        'funcionario': func.nome_completo,
+        'tipo': registro.get_tipo_display(),
+        'data_hora': registro.data_hora.strftime('%d/%m/%Y às %H:%M:%S'),
+        'email_destinatario': func.email or 'Nenhum e-mail cadastrado'
+    })
+
+
+@login_required
+@verificar_primeiro_acesso
+def view_espelho_ponto(request):
+    """Painel do RH para visualização do espelho de ponto dos terceirizados."""
+    registros = RegistroPontoTerceirizado.objects.select_related('funcionario').all()
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
+
+    # Filtros
+    funcionario_id = request.GET.get('funcionario')
+    tipo = request.GET.get('tipo')
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+
+    if funcionario_id:
+        registros = registros.filter(funcionario_id=funcionario_id)
+    if tipo:
+        registros = registros.filter(tipo=tipo)
+    if data_inicio:
+        registros = registros.filter(data_hora__date__gte=data_inicio)
+    if data_fim:
+        registros = registros.filter(data_hora__date__lte=data_fim)
+
+    hoje = timezone.now().date()
+    total_hoje = RegistroPontoTerceirizado.objects.filter(data_hora__date=hoje).count()
+
+    return render(request, 'funcionarios/espelho_ponto.html', {
+        'registros': registros[:200],  # Limita as 200 mais recentes
+        'terceirizados': terceirizados,
+        'total_hoje': total_hoje,
+        'funcionario_selecionado': funcionario_id,
+        'tipo_selecionado': tipo,
+        'data_inicio': data_inicio,
+        'data_fim': data_fim,
+    })
+
+
+@diretor_required
+def view_gerenciar_senhas_ponto(request):
+    """Interface para o RH cadastrar ou redefinir senhas/PINs dos funcionários terceirizados."""
+    if request.method == 'POST':
+        func_id = request.POST.get('funcionario_id')
+        nova_senha = request.POST.get('nova_senha', '').strip()
+
+        if func_id and nova_senha:
+            func = get_object_or_404(FuncionarioTerceirizado, pk=func_id)
+            func.definir_senha_ponto(nova_senha)
+            func.save()
+            messages.success(request, f'Senha de ponto do funcionário {func.nome_completo} atualizada com sucesso.')
+        else:
+            messages.error(request, 'Informe o funcionário e a nova senha/PIN.')
+        return redirect('gerenciar_senhas_ponto')
+
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
+    return render(request, 'funcionarios/gerenciar_senhas.html', {
+        'terceirizados': terceirizados,
+    })
+

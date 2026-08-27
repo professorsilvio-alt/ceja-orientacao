@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Gerenciar Senhas de Ponto (Terceirizados){% endblock %}
+
+{% block breadcrumb %}
+  <span style="color:var(--text-secondary);"><i class="bi bi-key-fill me-1"></i>Senhas de Ponto</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <div class="page-title"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Gerenciar Senhas e PINs de Ponto</div>
+    <div style="color:var(--text-secondary); font-size:0.9rem;">
+      Defina ou redefina as senhas/PINs individuais que os funcionários terceirizados utilizam para bater ponto.
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'espelho_ponto' %}" class="btn-gestao btn-gestao-secondary">
+      <i class="bi bi-journal-text me-1"></i> Voltar ao Espelho de Ponto
+    </a>
+    <a href="{% url 'terminal_ponto' %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-fingerprint me-1"></i> Ir para o Terminal
+    </a>
+  </div>
+</div>
+
+<div class="card-gestao">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0" style="font-size:0.88rem;">
+      <thead>
+        <tr style="color:var(--text-muted); border-bottom:1px solid var(--card-border);">
+          <th>Funcionário</th>
+          <th>Cargo / Função</th>
+          <th>Empresa Contratante</th>
+          <th>E-mail</th>
+          <th class="text-center">Status da Senha</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in terceirizados %}
+        <tr>
+          <td style="font-weight:700;">
+            <i class="bi bi-person-fill me-1 text-primary"></i> {{ f.nome_completo }}
+          </td>
+          <td>{{ f.cargo_funcao }}</td>
+          <td>
+            <span class="badge bg-dark border border-secondary">{{ f.empresa_contratante }}</span>
+          </td>
+          <td style="font-size:0.82rem;">
+            {% if f.email %}
+            <span class="text-info"><i class="bi bi-envelope me-1"></i> {{ f.email }}</span>
+            {% else %}
+            <span class="text-muted"><i class="bi bi-exclamation-circle me-1"></i> Não informado</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if f.senha_ponto %}
+            <span class="badge bg-success py-2 px-3 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Senha Cadastrada</span>
+            {% else %}
+            <span class="badge bg-warning text-dark py-2 px-3 fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> Sem Senha</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalSenha{{ f.pk }}">
+              <i class="bi bi-key-fill me-1"></i> Defina / Altere Senha
+            </button>
+
+            <!-- Modal Alterar Senha -->
+            <div class="modal fade text-start" id="modalSenha{{ f.pk }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background:#1e293b; color:#fff; border:1px solid var(--card-border);">
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="funcionario_id" value="{{ f.pk }}">
+                    
+                    <div class="modal-header border-secondary">
+                      <h6 class="modal-title fw-bold text-primary">
+                        <i class="bi bi-key-fill me-1"></i> Definir Senha/PIN de Ponto
+                      </h6>
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                      <p class="mb-2" style="font-size:0.9rem;">
+                        Funcionário: <strong>{{ f.nome_completo }}</strong>
+                      </p>
+                      
+                      <div class="mb-3">
+                        <label class="form-label fw-bold style-0.85rem">Nova Senha ou PIN de Ponto:</label>
+                        <input type="password" name="nova_senha" class="form-control form-control-lg text-center fw-bold" placeholder="Digite uma senha ou PIN numérico" required maxlength="20" style="letter-spacing:4px;">
+                        <small class="text-muted mt-1 d-block" style="font-size:0.75rem;">
+                          Dica: Recomenda-se usar um PIN numérico de 4 a 6 dígitos (ex: 1234, 5820).
+                        </small>
+                      </div>
+                    </div>
+
+                    <div class="modal-footer border-secondary">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-check-lg me-1"></i> Salvar Senha</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">Nenhum funcionário terceirizado cadastrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
