@@ -2801,25 +2801,31 @@ input, select, textarea {
 }
 
 .btn-ponto-key {
-  padding: 14px 0 !important;
-  font-size: 22px !important;
+  width: 70px !important;
+  height: 70px !important;
+  padding: 0 !important;
+  font-size: 24px !important;
   font-weight: 800 !important;
   background: #1e293b !important;
   border: 2px solid #334155 !important;
-  border-radius: 14px !important;
+  border-radius: 50% !important;
   color: #f8fafc !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
   user-select: none !important;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
 }
 
 .btn-ponto-key:hover, .btn-ponto-key:active {
   background: #0284c7 !important;
   color: #ffffff !important;
   border-color: #38bdf8 !important;
-  transform: scale(1.04) !important;
-  box-shadow: 0 6px 14px rgba(2, 132, 199, 0.4) !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5) !important;
 }
 
 #btn-ponto-pin-clear {
