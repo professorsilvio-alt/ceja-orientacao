@@ -186,6 +186,22 @@ document.addEventListener('DOMContentLoaded', () => {
     horariosContainer.innerHTML = '';
     const orderDias = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"];
 
+    function normKey(str) {
+      if (!str) return '';
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+    }
+
+    function findDiaCanonical(rawDia) {
+      const k = normKey(rawDia);
+      return orderDias.find(d => normKey(d) === k) || rawDia;
+    }
+
+    function getDiaIndex(rawDia) {
+      const k = normKey(rawDia);
+      const idx = orderDias.findIndex(d => normKey(d) === k);
+      return idx >= 0 ? idx : 99;
+    }
+
     function getClassesCount(horariosArr) {
       let totalMins = 0;
       horariosArr.forEach(h => {
@@ -195,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       return Math.round(totalMins / 50);
     }
-    
+
     const profsMap = {};
     profs.forEach(p => profsMap[p.nome] = getClassesCount(p.horarios));
 
@@ -230,8 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       profs.forEach(prof => {
         prof.horarios.forEach(h => {
-          if (!grouped[h.dia]) grouped[h.dia] = [];
-          grouped[h.dia].push({
+          const diaCanon = findDiaCanonical(h.dia);
+          if (!grouped[diaCanon]) grouped[diaCanon] = [];
+          grouped[diaCanon].push({
             profNome: prof.nome,
             disciplinas: prof.disciplinas.join(' • '),
             inicio: h.inicio,
@@ -284,8 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
           : `${initials}👩‍🏫`;
 
         const horariosSort = [...prof.horarios].sort((a, b) => {
-          const idxA = orderDias.indexOf(a.dia);
-          const idxB = orderDias.indexOf(b.dia);
+          const idxA = getDiaIndex(a.dia);
+          const idxB = getDiaIndex(b.dia);
           if (idxA !== idxB) return idxA - idxB;
           return a.inicio.localeCompare(b.inicio);
         });
@@ -306,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
               ${orderDias.map(dia => `
                 <div class="agenda-col">
                   <div class="agenda-col-header">${dia.split('-')[0]}</div>
-                  ${horariosSort.filter(h => h.dia === dia).map(h => `
+                  ${horariosSort.filter(h => normKey(h.dia) === normKey(dia)).map(h => `
                     <div class="agenda-card">
                       <div class="agenda-card-time">🕐 ${h.inicio} – ${h.fim}</div>
                       <div class="agenda-card-local" style="margin-top:2px;">📍 ${h.local}</div>
@@ -342,8 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
       orderDisc.forEach((disc, idx) => {
         const aulas = grouped[disc];
         aulas.sort((a, b) => {
-          const idxA = orderDias.indexOf(a.dia);
-          const idxB = orderDias.indexOf(b.dia);
+          const idxA = getDiaIndex(a.dia);
+          const idxB = getDiaIndex(b.dia);
           if (idxA !== idxB) return idxA - idxB;
           return a.inicio.localeCompare(b.inicio);
         });
@@ -364,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
               ${orderDias.map(dia => `
                 <div class="agenda-col">
                   <div class="agenda-col-header">${dia.split('-')[0]}</div>
-                  ${aulas.filter(a => a.dia === dia).map(a => `
+                  ${aulas.filter(a => normKey(a.dia) === normKey(dia)).map(a => `
                     <div class="agenda-card">
                       <div class="agenda-card-time">🕐 ${a.inicio} – ${a.fim}</div>
                       <div class="agenda-card-title" style="margin-top: 4px;">👩‍🏫 ${a.profNome} <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(${profsMap[a.profNome]}h/a)</span></div>
@@ -380,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+
 
 
 
