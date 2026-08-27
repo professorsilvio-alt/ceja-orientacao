@@ -906,6 +906,74 @@ body.login-body {
 }
 
 /* ── RESPONSIVO ─────────────────────────────────────────────── */
+/* ── FORMULÁRIOS E ALINHAMENTO DE CAMPOS ─────────────────────── */
+.card-gestao .form-label,
+form .form-label {
+  min-height: 2.5rem !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  margin-bottom: 6px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  color: var(--text-secondary, #94a3b8) !important;
+  line-height: 1.2 !important;
+}
+
+.card-gestao .form-control,
+.card-gestao .form-select,
+form .form-control,
+form .form-select {
+  height: 42px !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  border-radius: 8px !important;
+  font-size: 0.88rem !important;
+  padding: 8px 12px !important;
+}
+
+.card-gestao textarea.form-control,
+form textarea.form-control {
+  height: auto !important;
+  min-height: 80px !important;
+}
+
+/* Customização do Input de Foto / Arquivo para Dark Mode */
+form input[type="file"].form-control,
+.card-gestao input[type="file"].form-control {
+  padding: 5px 8px !important;
+  font-size: 0.8rem !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #94a3b8 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+form input[type="file"]::file-selector-button,
+.card-gestao input[type="file"]::file-selector-button {
+  background: #1e293b !important;
+  border: 1px solid #475569 !important;
+  color: #38bdf8 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  margin-right: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+form input[type="file"]::file-selector-button:hover,
+.card-gestao input[type="file"]::file-selector-button:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+}
+
 @media (max-width: 768px) {
   .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
   .sidebar.collapsed { transform: translateX(0); }
