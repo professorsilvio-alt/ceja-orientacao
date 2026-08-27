@@ -22,16 +22,15 @@
     <table class="table-gestao" id="tabela-adm">
       <thead>
         <tr>
-          <th>Classif.</th>
+          <th style="width:50px;">Classif.</th>
           <th>Nome</th>
           <th>ID / Vínculo</th>
           <th>Matrícula</th>
-          <th>Cargo</th>
+          <th>Cargo / Função</th>
           <th>Disc. Ingresso</th>
-          <th>Função Atual</th>
           <th>Data C.I.</th>
           <th>Tempo na Escola</th>
-          <th>Ações</th>
+          <th style="text-align:right;">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -43,15 +42,19 @@
             </span>
           </td>
           <td style="font-weight:600;">{{ func.nome_completo }}</td>
-          <td style="font-size:0.85rem; font-weight:600; color:#fde047;">{{ func.id_vinculo|default:"—" }}</td>
+          <td style="font-size:0.82rem; font-weight:600; color:#fde047;">{{ func.id_vinculo|default:"—" }}</td>
           <td style="font-family:monospace; font-size:0.82rem;">{{ func.matricula }}</td>
-          <td style="font-size:0.85rem;">{{ func.cargo }}</td>
-          <td style="color:var(--text-secondary); font-size:0.85rem;">{{ func.disciplina_ingresso|default:"—" }}</td>
-          <td style="color:#67e8f9; font-weight:600; font-size:0.85rem;">{{ func.funcao_atual|default:"—" }}</td>
-          <td>{{ func.data_ci_movimentacao|date:"d/m/Y" }}</td>
-          <td><span style="color:var(--green); font-size:0.82rem;">{{ func.tempo_na_escola }}</span></td>
           <td>
-            <div class="d-flex gap-1">
+            <div style="font-size:0.82rem; font-weight:600;">{{ func.cargo }}</div>
+            {% if func.funcao_atual and func.funcao_atual != func.cargo %}
+            <div style="color:#67e8f9; font-size:0.75rem; font-weight:600; margin-top:2px;">Função: {{ func.funcao_atual }}</div>
+            {% endif %}
+          </td>
+          <td style="color:var(--text-secondary); font-size:0.82rem;">{{ func.disciplina_ingresso|default:"—" }}</td>
+          <td style="font-size:0.82rem;">{{ func.data_ci_movimentacao|date:"d/m/Y"|default:"—" }}</td>
+          <td><span style="color:var(--green); font-size:0.82rem;">{{ func.tempo_na_escola }}</span></td>
+          <td style="text-align:right;">
+            <div class="d-flex gap-1 justify-content-end">
               <a href="{% url 'detalhe_administrativo' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
                 <i class="bi bi-eye"></i>
               </a>

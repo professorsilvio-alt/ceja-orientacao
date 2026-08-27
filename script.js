@@ -1103,11 +1103,23 @@ document.addEventListener('DOMContentLoaded', () => {
           }, 1000);
 
         } else {
-          alert('ERRO: ' + data.error);
+          const cameraErr = document.getElementById('ponto-camera-error');
+          if (cameraErr) {
+            cameraErr.textContent = `⚠️ ${data.error}`;
+            cameraErr.classList.remove('hidden');
+          } else {
+            alert(`⚠️ ${data.error}`);
+          }
         }
       } catch (err) {
         console.error(err);
-        alert('Erro ao conectar ao servidor para registrar o ponto.');
+        const cameraErr = document.getElementById('ponto-camera-error');
+        if (cameraErr) {
+          cameraErr.textContent = '⚠️ Erro ao conectar ao servidor para registrar o ponto.';
+          cameraErr.classList.remove('hidden');
+        } else {
+          alert('Erro ao conectar ao servidor para registrar o ponto.');
+        }
       }
     });
   });

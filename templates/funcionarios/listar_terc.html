@@ -28,7 +28,7 @@
           <th>Admissão</th>
           <th>Tempo</th>
           <th>Contato</th>
-          <th>Ações</th>
+          <th style="text-align:right;">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -46,8 +46,8 @@
             {% if func.telefone %}<div><i class="bi bi-phone me-1" style="color:var(--text-muted);"></i>{{ func.telefone }}</div>{% endif %}
             {% if func.email %}<div><i class="bi bi-envelope me-1" style="color:var(--text-muted);"></i>{{ func.email }}</div>{% endif %}
           </td>
-          <td>
-            <div class="d-flex gap-1">
+          <td style="text-align:right;">
+            <div class="d-flex gap-1 justify-content-end">
               <a href="{% url 'detalhe_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
                 <i class="bi bi-eye"></i>
               </a>

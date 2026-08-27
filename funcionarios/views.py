@@ -165,6 +165,22 @@ def api_registrar_ponto(request):
     if tipo not in tipos_validos:
         return _json_cors_response({'success': False, 'error': 'Tipo de batida de ponto inválido.'})
 
+    # Bloqueia registros duplicados do mesmo tipo no mesmo dia para o funcionário
+    hoje = timezone.now().date()
+    registro_existente = RegistroPontoTerceirizado.objects.filter(
+        funcionario=func,
+        tipo=tipo,
+        data_hora__date=hoje
+    ).first()
+
+    if registro_existente:
+        horario_str = registro_existente.data_hora.strftime("%H:%M:%S")
+        tipo_display = registro_existente.get_tipo_display()
+        return _json_cors_response({
+            'success': False,
+            'error': f'Você já registrou {tipo_display} hoje às {horario_str}. Cada tipo de ponto só é permitido uma vez ao dia.'
+        })
+
     # Instancia o registro de ponto
     registro = RegistroPontoTerceirizado(
         funcionario=func,
