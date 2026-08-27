@@ -1,0 +1,299 @@
+<!-- PASTA DIGITAL DO SERVIDOR -->
+<div class="card-gestao mt-4">
+  <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3" style="border-color:var(--card-border) !important;">
+    <h5 style="color:var(--blue); font-weight:700; margin:0;">
+      <i class="bi bi-folder-fill me-2" style="color:#facc15;"></i>Pasta Digital do Servidor
+    </h5>
+    <span class="badge-gestao badge-info">
+      <i class="bi bi-shield-check me-1"></i>Prontuário Digital
+    </span>
+  </div>
+
+  <!-- NAVEGAÇÃO POR ABAS -->
+  <ul class="nav nav-tabs border-bottom-0 mb-3" id="pastaTabs" role="tablist" style="gap:6px;">
+    <li class="nav-item">
+      <button class="nav-link active btn-gestao btn-gestao-secondary py-2 px-3" id="tab-docs" data-bs-toggle="tab" data-bs-target="#content-docs" type="button" role="tab" style="font-size:0.85rem;">
+        <i class="bi bi-file-earmark-text me-1"></i>Documentos e Atestados <span class="badge bg-dark ms-1">{{ documentos.count }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link btn-gestao btn-gestao-secondary py-2 px-3" id="tab-folgas" data-bs-toggle="tab" data-bs-target="#content-folgas" type="button" role="tab" style="font-size:0.85rem;">
+        <i class="bi bi-calendar-event me-1"></i>Banco de Folgas <span class="badge {% if saldo_folgas > 0 %}bg-success{% elif saldo_folgas < 0 %}bg-danger{% else %}bg-secondary{% endif %} ms-1">{{ saldo_folgas }} dia(s)</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link btn-gestao btn-gestao-secondary py-2 px-3" id="tab-anotacoes" data-bs-toggle="tab" data-bs-target="#content-anotacoes" type="button" role="tab" style="font-size:0.85rem;">
+        <i class="bi bi-journal-text me-1"></i>Anotações / Histórico <span class="badge bg-dark ms-1">{{ anotacoes.count }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="pastaTabsContent">
+    
+    <!-- ABA 1: DOCUMENTOS & ATESTADOS -->
+    <div class="tab-pane fade show active" id="content-docs" role="tabpanel">
+      {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+      <!-- Form Anexar Documento -->
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:20px;">
+        <h6 style="font-weight:700; color:var(--text-primary); margin-bottom:12px;">
+          <i class="bi bi-cloud-upload me-1" style="color:var(--blue);"></i>Anexar Novo Documento ou Atestado
+        </h6>
+        <form method="post" action="{% url 'adicionar_documento_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label" style="font-size:0.75rem;">Título / Descrição *</label>
+              <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Ex: Atestado Médico (3 dias)" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" style="font-size:0.75rem;">Categoria *</label>
+              <select name="categoria" class="form-select form-select-sm">
+                <option value="atestado">🏥 Atestado Médico / Licença</option>
+                <option value="ausencia">⚠️ Justificativa de Ausência</option>
+                <option value="folga">🏖️ Comprovante de Folga</option>
+                <option value="documento" selected>📄 Documento Pessoal / CI</option>
+                <option value="outro">📁 Outros Documentos</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label" style="font-size:0.75rem;">Data da Ocorrência *</label>
+              <input type="date" name="data_documento" class="form-control form-control-sm" value="{% now 'Y-m-d' %}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" style="font-size:0.75rem;">Arquivo (PDF/Imagem) *</label>
+              <input type="file" name="arquivo" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-12 mt-2">
+              <textarea name="observacoes" class="form-control form-control-sm" rows="2" placeholder="Observações adicionais (opcional)..."></textarea>
+            </div>
+            <div class="col-12 text-end mt-2">
+              <button type="submit" class="btn-gestao btn-gestao-primary" style="font-size:0.82rem; padding:6px 16px;">
+                <i class="bi bi-upload"></i> Salvar Documento na Pasta
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Lista de Documentos -->
+      {% if documentos %}
+      <div class="table-responsive">
+        <table class="table-gestao">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Categoria</th>
+              <th>Título / Descrição</th>
+              <th>Enviado Por</th>
+              <th>Arquivo</th>
+              <th style="text-align:right;">Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doc in documentos %}
+            <tr>
+              <td style="font-size:0.82rem;">{{ doc.data_documento|date:"d/m/Y" }}</td>
+              <td>
+                <span class="badge-gestao {% if doc.categoria == 'atestado' %}badge-warning{% elif doc.categoria == 'ausencia' %}badge-danger{% else %}badge-info{% endif %}">
+                  {{ doc.get_categoria_display }}
+                </span>
+              </td>
+              <td>
+                <div style="font-weight:600;">{{ doc.titulo }}</div>
+                {% if doc.observacoes %}
+                <small style="color:var(--text-muted);">{{ doc.observacoes }}</small>
+                {% endif %}
+              </td>
+              <td style="font-size:0.78rem; color:var(--text-secondary);">
+                {{ doc.criado_por.get_full_name|default:doc.criado_por.username|default:"Sistema" }}
+              </td>
+              <td>
+                <a href="{{ doc.arquivo.url }}" target="_blank" class="btn-gestao btn-gestao-secondary" style="padding:4px 10px; font-size:0.78rem;">
+                  <i class="bi bi-file-earmark-arrow-down"></i> Baixar / Visualizar
+                </a>
+              </td>
+              <td style="text-align:right;">
+                {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+                <a href="{% url 'excluir_documento_servidor' doc.pk %}" onclick="return confirm('Deseja excluir este documento da pasta?');" class="btn-gestao btn-gestao-danger" style="padding:4px 8px; font-size:0.75rem;">
+                  <i class="bi bi-trash"></i>
+                </a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="text-align:center; padding:32px; color:var(--text-muted);">
+        <i class="bi bi-folder-x" style="font-size:2.5rem; display:block; margin-bottom:8px;"></i>
+        Nenhum documento ou atestado anexado a esta pasta ainda.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ABA 2: BANCO DE FOLGAS & COMPENSAÇÕES -->
+    <div class="tab-pane fade" id="content-folgas" role="tabpanel">
+      
+      <!-- Resumo do Saldo -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:14px; text-align:center;">
+            <span style="font-size:0.78rem; color:#86efac; text-transform:uppercase; font-weight:700;">Direitos Adquiridos (Créditos)</span>
+            <div style="font-size:1.6rem; font-weight:800; color:#22c55e;">+{{ total_creditos }} dia(s)</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:14px; text-align:center;">
+            <span style="font-size:0.78rem; color:#fca5a5; text-transform:uppercase; font-weight:700;">Folgas Usufruídas (Gozo)</span>
+            <div style="font-size:1.6rem; font-weight:800; color:#ef4444;">-{{ total_usufruidos }} dia(s)</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:10px; padding:14px; text-align:center;">
+            <span style="font-size:0.78rem; color:#93c5fd; text-transform:uppercase; font-weight:700;">Saldo Atual Disponível</span>
+            <div style="font-size:1.6rem; font-weight:800; color:{% if saldo_folgas > 0 %}#38bdf8{% elif saldo_folgas < 0 %}#ef4444{% else %}#94a3b8{% endif %};">
+              {{ saldo_folgas }} dia(s)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+      <!-- Form Lançamento de Folga -->
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:20px;">
+        <h6 style="font-weight:700; color:var(--text-primary); margin-bottom:12px;">
+          <i class="bi bi-plus-circle me-1" style="color:var(--blue);"></i>Lançar Direito a Folga ou Gozo Usufruído
+        </h6>
+        <form method="post" action="{% url 'adicionar_folga_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}">
+          {% csrf_token %}
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label" style="font-size:0.75rem;">Tipo de Lançamento *</label>
+              <select name="tipo" class="form-select form-select-sm">
+                <option value="credito">➕ Crédito de Folga (Direito Adquirido)</option>
+                <option value="usufruido">➖ Gozo de Folga (Folga Usufruída)</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label" style="font-size:0.75rem;">Quantidade (Dias) *</label>
+              <input type="number" step="0.5" min="0.5" name="dias" class="form-control form-control-sm" value="1.0" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" style="font-size:0.75rem;">Motivo / Origem *</label>
+              <input type="text" name="motivo" class="form-control form-control-sm" placeholder="Ex: Trabalho na Eleição / Reunião de Sábado" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" style="font-size:0.75rem;">Data da Ocorrência *</label>
+              <input type="date" name="data_ocorrencia" class="form-control form-control-sm" value="{% now 'Y-m-d' %}">
+            </div>
+            <div class="col-12 mt-2">
+              <textarea name="observacoes" class="form-control form-control-sm" rows="2" placeholder="Observações/detalhes sobre a folga (opcional)..."></textarea>
+            </div>
+            <div class="col-12 text-end mt-2">
+              <button type="submit" class="btn-gestao btn-gestao-primary" style="font-size:0.82rem; padding:6px 16px;">
+                <i class="bi bi-check2-circle"></i> Registrar Lançamento de Folga
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Lista de Folgas -->
+      {% if folgas %}
+      <div class="table-responsive">
+        <table class="table-gestao">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Quantidade</th>
+              <th>Motivo / Origem</th>
+              <th>Registrado Por</th>
+              <th style="text-align:right;">Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in folgas %}
+            <tr>
+              <td style="font-size:0.82rem;">{{ f.data_ocorrencia|date:"d/m/Y" }}</td>
+              <td>
+                <span class="badge-gestao {% if f.tipo == 'credito' %}badge-success{% else %}badge-danger{% endif %}">
+                  {{ f.get_tipo_display }}
+                </span>
+              </td>
+              <td style="font-weight:700;">{{ f.dias }} dia(s)</td>
+              <td>
+                <div style="font-weight:600;">{{ f.motivo }}</div>
+                {% if f.observacoes %}
+                <small style="color:var(--text-muted);">{{ f.observacoes }}</small>
+                {% endif %}
+              </td>
+              <td style="font-size:0.78rem; color:var(--text-secondary);">
+                {{ f.criado_por.get_full_name|default:f.criado_por.username|default:"Sistema" }}
+              </td>
+              <td style="text-align:right;">
+                {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+                <a href="{% url 'excluir_folga_servidor' f.pk %}" onclick="return confirm('Deseja remover este lançamento de folga?');" class="btn-gestao btn-gestao-danger" style="padding:4px 8px; font-size:0.75rem;">
+                  <i class="bi bi-trash"></i>
+                </a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="text-align:center; padding:32px; color:var(--text-muted);">
+        <i class="bi bi-calendar-x" style="font-size:2.5rem; display:block; margin-bottom:8px;"></i>
+        Nenhum registro de folga ou compensação lançado para este servidor.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ABA 3: ANOTAÇÕES & OBSERVAÇÕES -->
+    <div class="tab-pane fade" id="content-anotacoes" role="tabpanel">
+      {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+      <!-- Form Adicionar Anotação -->
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:20px;">
+        <h6 style="font-weight:700; color:var(--text-primary); margin-bottom:12px;">
+          <i class="bi bi-pencil-square me-1" style="color:var(--blue);"></i>Adicionar Nova Anotação / Observação
+        </h6>
+        <form method="post" action="{% url 'adicionar_anotacao_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}">
+          {% csrf_token %}
+          <textarea name="texto" class="form-control form-control-sm" rows="3" placeholder="Digite uma observação, ocorrência ou registro importante sobre este servidor..." required></textarea>
+          <div class="text-end mt-2">
+            <button type="submit" class="btn-gestao btn-gestao-primary" style="font-size:0.82rem; padding:6px 16px;">
+              <i class="bi bi-send"></i> Registrar Anotação na Ficha
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Lista de Anotações -->
+      {% if anotacoes %}
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        {% for note in anotacoes %}
+        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-left:3px solid var(--blue); border-radius:8px; padding:12px 16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.78rem; color:var(--text-muted);">
+            <span><i class="bi bi-person me-1"></i>{{ note.criado_por.get_full_name|default:note.criado_por.username|default:"Sistema" }}</span>
+            <span><i class="bi bi-clock me-1"></i>{{ note.criado_em|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div style="font-size:0.9rem; color:var(--text-primary); white-space:pre-line;">{{ note.texto }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align:center; padding:32px; color:var(--text-muted);">
+        <i class="bi bi-journal-x" style="font-size:2.5rem; display:block; margin-bottom:8px;"></i>
+        Nenhuma anotação registrada nesta pasta.
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>

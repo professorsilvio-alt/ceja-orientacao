@@ -233,6 +233,9 @@
       <p style="color:var(--text-muted); font-size:0.85rem;">Nenhum horário cadastrado para este ano.</p>
       {% endif %}
     </div>
+
+    <!-- MÓDULO PASTA DIGITAL DO SERVIDOR -->
+    {% include "professores/_pasta_digital_componente.html" with funcionario_pk=professor.pk tipo_servidor='professor' %}
   </div>
 </div>
 {% endblock %}

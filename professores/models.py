@@ -4,6 +4,9 @@ Modelo completo do professor com cálculo automático de tempo na escola.
 """
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from dateutil.relativedelta import relativedelta
 
 
@@ -549,3 +552,85 @@ def recalcular_classificacao_professores():
         if p.classificacao != rank:
             p.classificacao = rank
             p.save(update_fields=['classificacao'])
+
+
+# ============================================================
+# PASTA DIGITAL DO SERVIDOR (DOCUMENTOS, FOLGAS, ANOTAÇÕES)
+# ============================================================
+
+class DocumentoServidor(models.Model):
+    """Documentos anexados à pasta digital do servidor (Atestados, CI, Licenças, etc)."""
+    CATEGORIA_CHOICES = [
+        ('atestado', 'Atestado Médico / Licença'),
+        ('ausencia', 'Justificativa de Ausência'),
+        ('folga', 'Comprovante de Folga / Compensação'),
+        ('documento', 'Documento Pessoal / CI / Contrato'),
+        ('outro', 'Outros Documentos'),
+    ]
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    servidor = GenericForeignKey('content_type', 'object_id')
+
+    titulo = models.CharField(max_length=200, verbose_name='Título / Descrição')
+    categoria = models.CharField(max_length=30, choices=CATEGORIA_CHOICES, default='documento', verbose_name='Categoria')
+    arquivo = models.FileField(upload_to='documentos_servidores/%Y/%m/', verbose_name='Arquivo')
+    data_documento = models.DateField(default=timezone.now, verbose_name='Data do Documento / Ocorrência')
+    observacoes = models.TextField(blank=True, verbose_name='Observações')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Documento do Servidor'
+        verbose_name_plural = 'Documentos do Servidor'
+        ordering = ['-data_documento', '-criado_em']
+
+    def __str__(self):
+        return f"{self.titulo} ({self.get_categoria_display()})"
+
+
+class OcorrenciaFolgaServidor(models.Model):
+    """Lançamento de direitos e uso de folgas/banco de horas do servidor."""
+    TIPO_CHOICES = [
+        ('credito', '➕ Crédito de Folga (Direito Adquirido)'),
+        ('usufruido', '➖ Gozo de Folga (Folga Usufruída)'),
+    ]
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    servidor = GenericForeignKey('content_type', 'object_id')
+
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='credito', verbose_name='Tipo de Lançamento')
+    dias = models.DecimalField(max_digits=5, decimal_places=1, default=1.0, verbose_name='Quantidade em Dias')
+    motivo = models.CharField(max_length=250, verbose_name='Motivo / Origem', help_text='Ex: Trabalho na Eleição, Reunião Extra, Gozo de Folga')
+    data_ocorrencia = models.DateField(default=timezone.now, verbose_name='Data da Ocorrência')
+    observacoes = models.TextField(blank=True, verbose_name='Observações')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Ocorrência de Folga do Servidor'
+        verbose_name_plural = 'Ocorrências de Folgas dos Servidores'
+        ordering = ['-data_ocorrencia', '-criado_em']
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.dias} dia(s) ({self.motivo})"
+
+
+class AnotacaoServidor(models.Model):
+    """Anotações e histórico de observações da pasta do servidor."""
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    servidor = GenericForeignKey('content_type', 'object_id')
+
+    texto = models.TextField(verbose_name='Anotação / Observação')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Anotação do Servidor'
+        verbose_name_plural = 'Anotações do Servidor'
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f"Anotação de {self.criado_em.strftime('%d/%m/%Y %H:%M')}"

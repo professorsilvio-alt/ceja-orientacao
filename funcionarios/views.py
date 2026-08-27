@@ -36,7 +36,29 @@ def view_criar_administrativo(request):
 @verificar_primeiro_acesso
 def view_detalhe_administrativo(request, pk):
     func = get_object_or_404(FuncionarioAdministrativo, pk=pk)
-    return render(request, 'funcionarios/detalhe_adm.html', {'funcionario': func})
+
+    from django.contrib.contenttypes.models import ContentType
+    from professores.models import DocumentoServidor, OcorrenciaFolgaServidor, AnotacaoServidor
+    ct = ContentType.objects.get_for_model(FuncionarioAdministrativo)
+
+    documentos = DocumentoServidor.objects.filter(content_type=ct, object_id=func.pk)
+    folgas = OcorrenciaFolgaServidor.objects.filter(content_type=ct, object_id=func.pk)
+    anotacoes = AnotacaoServidor.objects.filter(content_type=ct, object_id=func.pk)
+
+    total_creditos = sum(f.dias for f in folgas if f.tipo == 'credito')
+    total_usufruidos = sum(f.dias for f in folgas if f.tipo == 'usufruido')
+    saldo_folgas = total_creditos - total_usufruidos
+
+    return render(request, 'funcionarios/detalhe_adm.html', {
+        'funcionario': func,
+        'documentos': documentos,
+        'folgas': folgas,
+        'anotacoes': anotacoes,
+        'saldo_folgas': saldo_folgas,
+        'total_creditos': total_creditos,
+        'total_usufruidos': total_usufruidos,
+        'tipo_servidor': 'adm',
+    })
 
 
 @diretor_required
@@ -80,7 +102,29 @@ def view_criar_terceirizado(request):
 @verificar_primeiro_acesso
 def view_detalhe_terceirizado(request, pk):
     func = get_object_or_404(FuncionarioTerceirizado, pk=pk)
-    return render(request, 'funcionarios/detalhe_terc.html', {'funcionario': func})
+
+    from django.contrib.contenttypes.models import ContentType
+    from professores.models import DocumentoServidor, OcorrenciaFolgaServidor, AnotacaoServidor
+    ct = ContentType.objects.get_for_model(FuncionarioTerceirizado)
+
+    documentos = DocumentoServidor.objects.filter(content_type=ct, object_id=func.pk)
+    folgas = OcorrenciaFolgaServidor.objects.filter(content_type=ct, object_id=func.pk)
+    anotacoes = AnotacaoServidor.objects.filter(content_type=ct, object_id=func.pk)
+
+    total_creditos = sum(f.dias for f in folgas if f.tipo == 'credito')
+    total_usufruidos = sum(f.dias for f in folgas if f.tipo == 'usufruido')
+    saldo_folgas = total_creditos - total_usufruidos
+
+    return render(request, 'funcionarios/detalhe_terc.html', {
+        'funcionario': func,
+        'documentos': documentos,
+        'folgas': folgas,
+        'anotacoes': anotacoes,
+        'saldo_folgas': saldo_folgas,
+        'total_creditos': total_creditos,
+        'total_usufruidos': total_usufruidos,
+        'tipo_servidor': 'terc',
+    })
 
 
 @diretor_required

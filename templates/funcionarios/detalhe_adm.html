@@ -107,6 +107,9 @@
       {% endif %}
     </div>
     {% endif %}
+
+    <!-- MÓDULO PASTA DIGITAL DO SERVIDOR -->
+    {% include "professores/_pasta_digital_componente.html" with funcionario_pk=funcionario.pk tipo_servidor='adm' %}
   </div>
 </div>
 {% endblock %}

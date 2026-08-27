@@ -17,4 +17,11 @@ urlpatterns = [
     path('horarios/quadro/turma/<int:pk>/', views.view_grade_turma, name='grade_turma'),
     path('horarios/quadro/turma/<int:pk>/alocar/', views.view_salvar_alocacao_slot, name='salvar_alocacao_slot'),
     path('horarios/quadro/turma/<int:pk>/excluir/', views.view_excluir_turma, name='excluir_turma'),
+
+    # Módulo Pasta Digital do Servidor (Documentos, Folgas, Anotações)
+    path('pasta/<str:tipo_servidor>/<int:pk>/documentos/adicionar/', views.view_adicionar_documento_servidor, name='adicionar_documento_servidor'),
+    path('pasta/documentos/<int:pk>/excluir/', views.view_excluir_documento_servidor, name='excluir_documento_servidor'),
+    path('pasta/<str:tipo_servidor>/<int:pk>/folgas/adicionar/', views.view_adicionar_folga_servidor, name='adicionar_folga_servidor'),
+    path('pasta/folgas/<int:pk>/excluir/', views.view_excluir_folga_servidor, name='excluir_folga_servidor'),
+    path('pasta/<str:tipo_servidor>/<int:pk>/anotacoes/adicionar/', views.view_adicionar_anotacao_servidor, name='adicionar_anotacao_servidor'),
 ]

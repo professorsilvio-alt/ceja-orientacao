@@ -11,6 +11,10 @@ from .models import (
     Disciplina, UnidadeEscolar, TurmaComponente, AlocacaoHorarioTurma, 
     recalcular_classificacao_professores
 )
+from .forms import (
+    ProfessorForm, HorarioProfessorForm, ConfiguracaoEscolaForm, 
+    UnidadeEscolarForm, TurmaComponenteForm
+)
 
 
 @login_required
@@ -69,10 +73,178 @@ def view_detalhe_professor(request, pk):
     horarios = professor.horarios.filter(
         ano_letivo=timezone.now().year
     ).order_by('dia_semana', 'hora_inicio')
+
+    # Dados da Pasta Digital
+    from django.contrib.contenttypes.models import ContentType
+    from .models import DocumentoServidor, OcorrenciaFolgaServidor, AnotacaoServidor
+    ct = ContentType.objects.get_for_model(Professor)
+
+    documentos = DocumentoServidor.objects.filter(content_type=ct, object_id=professor.pk)
+    folgas = OcorrenciaFolgaServidor.objects.filter(content_type=ct, object_id=professor.pk)
+    anotacoes = AnotacaoServidor.objects.filter(content_type=ct, object_id=professor.pk)
+
+    total_creditos = sum(f.dias for f in folgas if f.tipo == 'credito')
+    total_usufruidos = sum(f.dias for f in folgas if f.tipo == 'usufruido')
+    saldo_folgas = total_creditos - total_usufruidos
+
     return render(request, 'professores/detalhe.html', {
         'professor': professor,
         'horarios': horarios,
+        'documentos': documentos,
+        'folgas': folgas,
+        'anotacoes': anotacoes,
+        'saldo_folgas': saldo_folgas,
+        'total_creditos': total_creditos,
+        'total_usufruidos': total_usufruidos,
+        'tipo_servidor': 'professor',
     })
+
+
+# ── VIEWS DA PASTA DIGITAL DO SERVIDOR (DOCUMENTOS, FOLGAS, ANOTAÇÕES) ──────
+
+@login_required
+def view_adicionar_documento_servidor(request, tipo_servidor, pk):
+    """Adiciona documento (atestado, licença, CI) à pasta digital do servidor."""
+    if request.method == 'POST':
+        titulo = request.POST.get('titulo', '').strip()
+        categoria = request.POST.get('categoria', 'documento')
+        data_documento = request.POST.get('data_documento') or timezone.now().date()
+        observacoes = request.POST.get('observacoes', '').strip()
+        arquivo = request.FILES.get('arquivo')
+
+        if not titulo or not arquivo:
+            messages.error(request, 'Por favor, informe o título e selecione o arquivo.')
+            return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+        if tipo_servidor == 'professor':
+            model_cls = Professor
+        elif tipo_servidor == 'adm':
+            from funcionarios.models import FuncionarioAdministrativo
+            model_cls = FuncionarioAdministrativo
+        elif tipo_servidor == 'terc':
+            from funcionarios.models import FuncionarioTerceirizado
+            model_cls = FuncionarioTerceirizado
+        else:
+            messages.error(request, 'Tipo de servidor inválido.')
+            return redirect('dashboard')
+
+        from django.contrib.contenttypes.models import ContentType
+        from .models import DocumentoServidor
+        servidor = get_object_or_404(model_cls, pk=pk)
+        ct = ContentType.objects.get_for_model(model_cls)
+
+        DocumentoServidor.objects.create(
+            content_type=ct,
+            object_id=servidor.pk,
+            titulo=titulo,
+            categoria=categoria,
+            arquivo=arquivo,
+            data_documento=data_documento,
+            observacoes=observacoes,
+            criado_por=request.user
+        )
+        messages.success(request, f'Documento "{titulo}" anexado à pasta com sucesso!')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_excluir_documento_servidor(request, pk):
+    from .models import DocumentoServidor
+    doc = get_object_or_404(DocumentoServidor, pk=pk)
+    titulo = doc.titulo
+    doc.delete()
+    messages.success(request, f'Documento "{titulo}" removido.')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_adicionar_folga_servidor(request, tipo_servidor, pk):
+    """Lança crédito ou uso de folga/banco de horas na pasta do servidor."""
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo', 'credito')
+        dias = request.POST.get('dias', '1.0')
+        motivo = request.POST.get('motivo', '').strip()
+        data_ocorrencia = request.POST.get('data_ocorrencia') or timezone.now().date()
+        observacoes = request.POST.get('observacoes', '').strip()
+
+        if not motivo:
+            messages.error(request, 'Por favor, informe o motivo/origem do lançamento de folga.')
+            return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+        if tipo_servidor == 'professor':
+            model_cls = Professor
+        elif tipo_servidor == 'adm':
+            from funcionarios.models import FuncionarioAdministrativo
+            model_cls = FuncionarioAdministrativo
+        elif tipo_servidor == 'terc':
+            from funcionarios.models import FuncionarioTerceirizado
+            model_cls = FuncionarioTerceirizado
+        else:
+            messages.error(request, 'Tipo de servidor inválido.')
+            return redirect('dashboard')
+
+        from django.contrib.contenttypes.models import ContentType
+        from .models import OcorrenciaFolgaServidor
+        servidor = get_object_or_404(model_cls, pk=pk)
+        ct = ContentType.objects.get_for_model(model_cls)
+
+        OcorrenciaFolgaServidor.objects.create(
+            content_type=ct,
+            object_id=servidor.pk,
+            tipo=tipo,
+            dias=dias,
+            motivo=motivo,
+            data_ocorrencia=data_ocorrencia,
+            observacoes=observacoes,
+            criado_por=request.user
+        )
+        messages.success(request, 'Lançamento de folga registrado com sucesso!')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_excluir_folga_servidor(request, pk):
+    from .models import OcorrenciaFolgaServidor
+    folga = get_object_or_404(OcorrenciaFolgaServidor, pk=pk)
+    folga.delete()
+    messages.success(request, 'Lançamento de folga removido.')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_adicionar_anotacao_servidor(request, tipo_servidor, pk):
+    """Adiciona uma anotação ao histórico da pasta do servidor."""
+    if request.method == 'POST':
+        texto = request.POST.get('texto', '').strip()
+        if not texto:
+            messages.error(request, 'Digite o texto da anotação.')
+            return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+        if tipo_servidor == 'professor':
+            model_cls = Professor
+        elif tipo_servidor == 'adm':
+            from funcionarios.models import FuncionarioAdministrativo
+            model_cls = FuncionarioAdministrativo
+        elif tipo_servidor == 'terc':
+            from funcionarios.models import FuncionarioTerceirizado
+            model_cls = FuncionarioTerceirizado
+        else:
+            messages.error(request, 'Tipo de servidor inválido.')
+            return redirect('dashboard')
+
+        from django.contrib.contenttypes.models import ContentType
+        from .models import AnotacaoServidor
+        servidor = get_object_or_404(model_cls, pk=pk)
+        ct = ContentType.objects.get_for_model(model_cls)
+
+        AnotacaoServidor.objects.create(
+            content_type=ct,
+            object_id=servidor.pk,
+            texto=texto,
+            criado_por=request.user
+        )
+        messages.success(request, 'Anotação salva na pasta do servidor.')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
 @diretor_required
