@@ -969,6 +969,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Base da API (direciona para o PythonAnywhere se acessado via GitHub Pages)
+  const API_PONTO_BASE = (window.location.hostname.includes('github.io') || window.location.protocol === 'file:')
+    ? 'https://cejarosasoares.pythonanywhere.com'
+    : '';
+
   async function validarPinTotem() {
     const pin = pontoPinInput ? pontoPinInput.value.trim() : '';
 
@@ -984,7 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('pin', pin);
 
     try {
-      const resp = await fetch('/funcionarios/ponto/api/validar_pin/', {
+      const resp = await fetch(`${API_PONTO_BASE}/funcionarios/ponto/api/validar_pin/`, {
         method: 'POST',
         body: formData
       });
@@ -1070,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('foto_base64', fotoBase64);
 
       try {
-        const resp = await fetch('/funcionarios/ponto/api/registrar/', {
+        const resp = await fetch(`${API_PONTO_BASE}/funcionarios/ponto/api/registrar/`, {
           method: 'POST',
           body: formData
         });

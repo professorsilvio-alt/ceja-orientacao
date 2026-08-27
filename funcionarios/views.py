@@ -115,11 +115,22 @@ def view_terminal_ponto(request):
     })
 
 
+def _json_cors_response(data, status=200):
+    response = JsonResponse(data, status=status)
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "*"
+    return response
+
+
 @csrf_exempt
 def api_registrar_ponto(request):
     """API Endpoint para validação de PIN, foto da webcam e salvamento da batida de ponto."""
+    if request.method == 'OPTIONS':
+        return _json_cors_response({'success': True})
+
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método não permitido.'}, status=405)
+        return _json_cors_response({'success': False, 'error': 'Método não permitido.'}, status=405)
 
     funcionario_id = request.POST.get('funcionario_id')
     pin = request.POST.get('pin', '').strip()
@@ -127,7 +138,7 @@ def api_registrar_ponto(request):
     foto_base64 = request.POST.get('foto_base64', '').strip()
 
     if not pin or not tipo:
-        return JsonResponse({'success': False, 'error': 'Digite a sua senha (PIN) e selecione a opção de batida.'})
+        return _json_cors_response({'success': False, 'error': 'Digite a sua senha (PIN) e selecione a opção de batida.'})
 
     func = None
     if funcionario_id:
@@ -145,14 +156,14 @@ def api_registrar_ponto(request):
                 break
 
     if not func:
-        return JsonResponse({'success': False, 'error': 'Funcionário não encontrado ou PIN incorreto.'})
+        return _json_cors_response({'success': False, 'error': 'Funcionário não encontrado ou PIN incorreto.'})
 
     if not func.senha_ponto or not func.verificar_senha_ponto(pin):
-        return JsonResponse({'success': False, 'error': 'Senha / PIN incorreto.'})
+        return _json_cors_response({'success': False, 'error': 'Senha / PIN incorreto.'})
 
     tipos_validos = dict(RegistroPontoTerceirizado.TIPO_PONTO_CHOICES)
     if tipo not in tipos_validos:
-        return JsonResponse({'success': False, 'error': 'Tipo de batida de ponto inválido.'})
+        return _json_cors_response({'success': False, 'error': 'Tipo de batida de ponto inválido.'})
 
     # Instancia o registro de ponto
     registro = RegistroPontoTerceirizado(
@@ -181,7 +192,7 @@ def api_registrar_ponto(request):
     except Exception as e:
         print(f"[Ponto API] Aviso no envio de e-mail de confirmação: {e}")
 
-    return JsonResponse({
+    return _json_cors_response({
         'success': True,
         'message': 'Ponto registrado com sucesso!',
         'funcionario': func.nome_completo,
@@ -194,6 +205,9 @@ def api_registrar_ponto(request):
 @csrf_exempt
 def api_listar_terceirizados_totem(request):
     """API Endpoint para listar terceirizados ativos no Totem de autoatendimento."""
+    if request.method == 'OPTIONS':
+        return _json_cors_response({'success': True})
+
     terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
     data = [{
         'id': f.pk,
@@ -202,7 +216,7 @@ def api_listar_terceirizados_totem(request):
         'empresa': f.empresa_contratante,
         'tem_pin': bool(f.senha_ponto)
     } for f in terceirizados]
-    return JsonResponse({'success': True, 'terceirizados': data})
+    return _json_cors_response({'success': True, 'terceirizados': data})
 
 
 @csrf_exempt
@@ -211,21 +225,24 @@ def api_validar_pin(request):
     API Endpoint para validação do PIN do funcionário no Totem.
     Identifica automaticamente o funcionário correspondente ao PIN digitado.
     """
+    if request.method == 'OPTIONS':
+        return _json_cors_response({'success': True})
+
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método não permitido.'}, status=405)
+        return _json_cors_response({'success': False, 'error': 'Método não permitido.'}, status=405)
 
     func_id = request.POST.get('funcionario_id')
     pin = request.POST.get('pin', '').strip()
 
     if not pin:
-        return JsonResponse({'success': False, 'error': 'Por favor, digite a sua senha de ponto (PIN).'})
+        return _json_cors_response({'success': False, 'error': 'Por favor, digite a sua senha de ponto (PIN).'})
 
     # Se um funcionário específico for informado
     if func_id:
         try:
             func = FuncionarioTerceirizado.objects.get(pk=func_id, ativo=True)
             if func.senha_ponto and func.verificar_senha_ponto(pin):
-                return JsonResponse({
+                return _json_cors_response({
                     'success': True,
                     'funcionario_id': func.pk,
                     'nome': func.nome_completo,
@@ -233,9 +250,9 @@ def api_validar_pin(request):
                     'empresa': func.empresa_contratante
                 })
             else:
-                return JsonResponse({'success': False, 'error': 'PIN incorreto. Tente novamente.'})
+                return _json_cors_response({'success': False, 'error': 'PIN incorreto. Tente novamente.'})
         except FuncionarioTerceirizado.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Funcionário não encontrado.'})
+            return _json_cors_response({'success': False, 'error': 'Funcionário não encontrado.'})
 
     # Busca automática pelo PIN entre todos os terceirizados ativos
     terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
@@ -247,7 +264,7 @@ def api_validar_pin(request):
             break
 
     if funcionario_encontrado:
-        return JsonResponse({
+        return _json_cors_response({
             'success': True,
             'funcionario_id': funcionario_encontrado.pk,
             'nome': funcionario_encontrado.nome_completo,
@@ -255,7 +272,7 @@ def api_validar_pin(request):
             'empresa': funcionario_encontrado.empresa_contratante
         })
 
-    return JsonResponse({'success': False, 'error': 'PIN incorreto ou não cadastrado. Tente novamente.'})
+    return _json_cors_response({'success': False, 'error': 'PIN incorreto ou não cadastrado. Tente novamente.'})
 
 
 @login_required
