@@ -15,7 +15,7 @@
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=2.1">
+  <link rel="stylesheet" href="style.css?v=20260827_v5">
 </head>
 
 <body>
@@ -117,7 +117,7 @@
             WhatsApp</a>
           <a href="https://instagram.com/ceja_mesquita" target="_blank"
             class="home-quick-link home-quick-link--insta">📸 Instagram</a>
-          <button id="btn-ponto-modal" class="home-quick-link home-quick-link--ponto" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-color: #38bdf8; font-weight: 700;">🖐️ Ponto Eletrônico</button>
+          <button id="btn-ponto-modal" type="button" onclick="abrirPontoModal(event)" class="home-quick-link home-quick-link--ponto" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-color: #38bdf8; font-weight: 700;">🖐️ Ponto Eletrônico</button>
           <button id="btn-admin-panel" class="home-quick-link home-quick-link--admin">⚙️ Admin</button>
           <button id="btn-fullscreen" class="home-quick-link"
             style="background: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.2);">🔲 Tela Cheia</button>
@@ -519,6 +519,11 @@
             </div>
             <div id="login-error-msg" class="error-msg hidden">⚠️ Senha incorreta. Tente novamente.</div>
             <button type="submit" class="btn-kiosk btn-kiosk--primary w-100">Entrar no Painel 🔑</button>
+            <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+              <button type="button" onclick="closeAdminModal(); abrirPontoModal(event);" class="btn-kiosk btn-kiosk--accent w-100" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
+                🖐️ Registro de Ponto RH (Terceirizados)
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -782,8 +787,8 @@
   </div>
 
   <!-- Scripts -->
-  <script src="dados_escola.js?v=2.0"></script>
-  <script src="script.js?v=2.0"></script>
+  <script src="dados_escola.js?v=20260827_v5"></script>
+  <script src="script.js?v=20260827_v5"></script>
 </body>
 
 </html>

@@ -902,26 +902,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  if (btnPontoModal) {
-    btnPontoModal.addEventListener('click', () => {
-      pontoModal.classList.remove('hidden');
-      pontoScreenPin.classList.remove('hidden');
-      pontoScreenCamera.classList.add('hidden');
-      pontoScreenSuccess.classList.add('hidden');
-      pontoPinError.classList.add('hidden');
-      pontoPinInput.value = '';
-      carregarTerceirizadosTotem();
-    });
-  }
+  window.abrirPontoModal = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (pontoModal) pontoModal.classList.remove('hidden');
+    if (pontoScreenPin) pontoScreenPin.classList.remove('hidden');
+    if (pontoScreenCamera) pontoScreenCamera.classList.add('hidden');
+    if (pontoScreenSuccess) pontoScreenSuccess.classList.add('hidden');
+    if (pontoPinError) pontoPinError.classList.add('hidden');
+    if (pontoPinInput) pontoPinInput.value = '';
+    carregarTerceirizadosTotem();
+  };
 
-  function fecharPontoModal() {
-    pontoModal.classList.add('hidden');
+  window.fecharPontoModal = function() {
+    if (pontoModal) pontoModal.classList.add('hidden');
     pararWebcamPonto();
     if (pontoAutoCloseTimer) clearInterval(pontoAutoCloseTimer);
+  };
+
+  if (btnPontoModal) {
+    btnPontoModal.addEventListener('click', window.abrirPontoModal);
+    btnPontoModal.addEventListener('touchend', window.abrirPontoModal);
   }
 
   [btnClosePontoPin, btnClosePontoCamera, pontoModalBackdrop, btnPontoFinish].forEach(el => {
-    if (el) el.addEventListener('click', fecharPontoModal);
+    if (el) {
+      el.addEventListener('click', window.fecharPontoModal);
+      el.addEventListener('touchend', window.fecharPontoModal);
+    }
   });
 
   document.querySelectorAll('.btn-ponto-key[data-key]').forEach(btn => {
