@@ -82,6 +82,19 @@ def view_detalhe_terceirizado(request, pk):
     return render(request, 'funcionarios/detalhe_terc.html', {'funcionario': func})
 
 
+@diretor_required
+def view_editar_terceirizado(request, pk):
+    func = get_object_or_404(FuncionarioTerceirizado, pk=pk)
+    form = FuncionarioTercForm(request.POST or None, request.FILES or None, instance=func)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, f'Dados de {func.nome_completo} atualizados com sucesso.')
+        return redirect('detalhe_terceirizado', pk=func.pk)
+    return render(request, 'funcionarios/form_terc.html', {
+        'form': form, 'titulo': f'Editar: {func.nome_completo}'
+    })
+
+
 # ── Controle de Ponto (Terceirizados) ──────────────────────────
 import base64
 import uuid

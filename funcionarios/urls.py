@@ -13,6 +13,7 @@ urlpatterns = [
     path('terceirizados/', views.view_listar_terceirizados, name='listar_terceirizados'),
     path('terceirizados/novo/', views.view_criar_terceirizado, name='criar_terceirizado'),
     path('terceirizados/<int:pk>/', views.view_detalhe_terceirizado, name='detalhe_terceirizado'),
+    path('terceirizados/<int:pk>/editar/', views.view_editar_terceirizado, name='editar_terceirizado'),
 
     # Controle de Ponto (RH Terceirizados)
     path('ponto/', views.view_terminal_ponto, name='terminal_ponto'),
