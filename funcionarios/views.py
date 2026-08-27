@@ -194,33 +194,55 @@ def api_listar_terceirizados_totem(request):
 
 @csrf_exempt
 def api_validar_pin(request):
-    """API Endpoint para validação do PIN do funcionário no Totem."""
+    """
+    API Endpoint para validação do PIN do funcionário no Totem.
+    Identifica automaticamente o funcionário correspondente ao PIN digitado.
+    """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método não permitido.'}, status=405)
 
     func_id = request.POST.get('funcionario_id')
     pin = request.POST.get('pin', '').strip()
 
-    if not func_id or not pin:
-        return JsonResponse({'success': False, 'error': 'Selecione o funcionário e digite o PIN.'})
+    if not pin:
+        return JsonResponse({'success': False, 'error': 'Por favor, digite a sua senha de ponto (PIN).'})
 
-    try:
-        func = FuncionarioTerceirizado.objects.get(pk=func_id, ativo=True)
-        if not func.senha_ponto:
-            return JsonResponse({'success': False, 'error': 'Funcionário não possui PIN cadastrado no RH.'})
+    # Se um funcionário específico for informado
+    if func_id:
+        try:
+            func = FuncionarioTerceirizado.objects.get(pk=func_id, ativo=True)
+            if func.senha_ponto and func.verificar_senha_ponto(pin):
+                return JsonResponse({
+                    'success': True,
+                    'funcionario_id': func.pk,
+                    'nome': func.nome_completo,
+                    'cargo': func.cargo_funcao,
+                    'empresa': func.empresa_contratante
+                })
+            else:
+                return JsonResponse({'success': False, 'error': 'PIN incorreto. Tente novamente.'})
+        except FuncionarioTerceirizado.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Funcionário não encontrado.'})
 
-        if func.verificar_senha_ponto(pin):
-            return JsonResponse({
-                'success': True,
-                'funcionario_id': func.pk,
-                'nome': func.nome_completo,
-                'cargo': func.cargo_funcao,
-                'empresa': func.empresa_contratante
-            })
-        else:
-            return JsonResponse({'success': False, 'error': 'PIN incorreto. Tente novamente.'})
-    except FuncionarioTerceirizado.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Funcionário não encontrado.'})
+    # Busca automática pelo PIN entre todos os terceirizados ativos
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
+    funcionario_encontrado = None
+
+    for func in terceirizados:
+        if func.senha_ponto and func.verificar_senha_ponto(pin):
+            funcionario_encontrado = func
+            break
+
+    if funcionario_encontrado:
+        return JsonResponse({
+            'success': True,
+            'funcionario_id': funcionario_encontrado.pk,
+            'nome': funcionario_encontrado.nome_completo,
+            'cargo': funcionario_encontrado.cargo_funcao,
+            'empresa': funcionario_encontrado.empresa_contratante
+        })
+
+    return JsonResponse({'success': False, 'error': 'PIN incorreto ou não cadastrado. Tente novamente.'})
 
 
 @login_required

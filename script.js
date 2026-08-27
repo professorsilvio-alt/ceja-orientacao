@@ -952,22 +952,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function validarPinTotem() {
-    const funcId = pontoFuncSelect.value;
-    const pin = pontoPinInput.value;
+    const pin = pontoPinInput ? pontoPinInput.value.trim() : '';
 
-    if (!funcId) {
-      pontoPinError.textContent = '⚠️ Por favor, selecione o seu nome na lista.';
-      pontoPinError.classList.remove('hidden');
-      return;
-    }
     if (!pin) {
-      pontoPinError.textContent = '⚠️ Por favor, digite a sua senha de ponto (PIN).';
-      pontoPinError.classList.remove('hidden');
+      if (pontoPinError) {
+        pontoPinError.textContent = '⚠️ Por favor, digite a sua senha de ponto (PIN).';
+        pontoPinError.classList.remove('hidden');
+      }
       return;
     }
 
     const formData = new FormData();
-    formData.append('funcionario_id', funcId);
     formData.append('pin', pin);
 
     try {
@@ -978,27 +973,32 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await resp.json();
 
       if (data.success) {
-        pontoPinError.classList.add('hidden');
+        if (pontoPinError) pontoPinError.classList.add('hidden');
         selectedFuncionarioId = data.funcionario_id;
-        pontoFuncName.textContent = `👤 ${data.nome}`;
-        pontoFuncInfo.textContent = `${data.cargo} — ${data.empresa}`;
+        if (pontoFuncName) pontoFuncName.textContent = `👤 ${data.nome}`;
+        if (pontoFuncInfo) pontoFuncInfo.textContent = `${data.cargo} — ${data.empresa}`;
 
-        pontoScreenPin.classList.add('hidden');
-        pontoScreenCamera.classList.remove('hidden');
+        if (pontoScreenPin) pontoScreenPin.classList.add('hidden');
+        if (pontoScreenCamera) pontoScreenCamera.classList.remove('hidden');
         iniciarWebcamPonto();
       } else {
-        pontoPinError.textContent = `⚠️ ${data.error}`;
-        pontoPinError.classList.remove('hidden');
+        if (pontoPinError) {
+          pontoPinError.textContent = `⚠️ ${data.error}`;
+          pontoPinError.classList.remove('hidden');
+        }
       }
     } catch (err) {
       console.error(err);
-      pontoPinError.textContent = '⚠️ Erro ao conectar ao servidor. Tente novamente.';
-      pontoPinError.classList.remove('hidden');
+      if (pontoPinError) {
+        pontoPinError.textContent = '⚠️ Erro ao conectar ao servidor. Tente novamente.';
+        pontoPinError.classList.remove('hidden');
+      }
     }
   }
 
   if (btnPontoPinSubmit) {
     btnPontoPinSubmit.addEventListener('click', validarPinTotem);
+    btnPontoPinSubmit.addEventListener('touchend', validarPinTotem);
   }
 
   async function iniciarWebcamPonto() {

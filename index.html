@@ -15,7 +15,7 @@
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=20260827_v6">
+  <link rel="stylesheet" href="style.css?v=20260827_v7">
 </head>
 
 <body>
@@ -585,37 +585,25 @@
     <div class="admin-modal-backdrop" id="ponto-modal-backdrop"></div>
     <div class="admin-modal-container" style="max-width: 650px;">
 
-      <!-- PASSO 1: DIGITAR PIN E SELECIONAR FUNCIONÁRIO -->
+      <!-- PASSO 1: DIGITAR PIN PARA IDENTIFICAÇÃO -->
       <div id="ponto-screen-pin" class="admin-modal-content">
         <div class="modal-header">
           <h2>🖐️ Registro de Ponto RH (Terceirizados)</h2>
           <button type="button" class="btn-close-modal" id="btn-close-ponto-pin">&times;</button>
         </div>
-        <div class="modal-body" style="padding: 10px 0;">
-          <p style="margin-bottom: 16px; color: #94a3b8; font-size: 14px;">
-            Selecione o seu nome e digite a sua senha de ponto (PIN) para continuar.
+        <div class="modal-body" style="padding: 10px 0; text-align: center;">
+          <p style="margin-bottom: 20px; color: #94a3b8; font-size: 15px; font-weight: 600;">
+            🔑 Digite a sua senha de ponto (PIN) para se identificar:
           </p>
 
-          <div class="form-group-admin" style="margin-bottom: 16px;">
-            <label for="ponto-func-select" class="ponto-label">
-              👤 1. Selecione seu Nome:
-            </label>
-            <select id="ponto-func-select">
-              <option value="" selected disabled>Carregando funcionários...</option>
-            </select>
-          </div>
-
-          <div class="form-group-admin" style="margin-bottom: 16px;">
-            <label class="ponto-label">
-              🔑 2. Digite sua Senha (PIN):
-            </label>
+          <div class="form-group-admin" style="margin-bottom: 16px; max-width: 360px; margin-left: auto; margin-right: auto;">
             <div style="display: flex; gap: 8px;">
               <input type="password" id="ponto-pin-input" readonly placeholder="••••" maxlength="12">
               <button type="button" id="btn-ponto-pin-backspace" title="Apagar caractere">⌫</button>
             </div>
 
             <!-- Teclado Numérico Visual -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 340px; margin: 18px auto 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 340px; margin: 20px auto 0 auto;">
               <button type="button" class="btn-ponto-key" data-key="1">1</button>
               <button type="button" class="btn-ponto-key" data-key="2">2</button>
               <button type="button" class="btn-ponto-key" data-key="3">3</button>
@@ -631,7 +619,7 @@
             </div>
           </div>
 
-          <div id="ponto-pin-error" class="error-msg hidden" style="margin-top: 12px; font-size: 14px;">⚠️ PIN incorreto. Tente novamente.</div>
+          <div id="ponto-pin-error" class="error-msg hidden" style="margin-top: 16px; font-size: 14px;">⚠️ PIN não reconhecido. Tente novamente.</div>
         </div>
       </div>
 
@@ -787,8 +775,8 @@
   </div>
 
   <!-- Scripts -->
-  <script src="dados_escola.js?v=20260827_v6"></script>
-  <script src="script.js?v=20260827_v6"></script>
+  <script src="dados_escola.js?v=20260827_v7"></script>
+  <script src="script.js?v=20260827_v7"></script>
 </body>
 
 </html>
