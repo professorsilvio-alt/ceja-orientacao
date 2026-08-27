@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 from usuarios.views import diretor_required, verificar_primeiro_acesso
 from .models import FuncionarioAdministrativo, FuncionarioTerceirizado
 from .forms import FuncionarioAdmForm, FuncionarioTercForm
@@ -114,6 +115,7 @@ def view_terminal_ponto(request):
     })
 
 
+@csrf_exempt
 def api_registrar_ponto(request):
     """API Endpoint para validação de PIN, foto da webcam e salvamento da batida de ponto."""
     if request.method != 'POST':
@@ -176,6 +178,7 @@ def api_registrar_ponto(request):
     })
 
 
+@csrf_exempt
 def api_listar_terceirizados_totem(request):
     """API Endpoint para listar terceirizados ativos no Totem de autoatendimento."""
     terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
@@ -189,6 +192,7 @@ def api_listar_terceirizados_totem(request):
     return JsonResponse({'success': True, 'terceirizados': data})
 
 
+@csrf_exempt
 def api_validar_pin(request):
     """API Endpoint para validação do PIN do funcionário no Totem."""
     if request.method != 'POST':
