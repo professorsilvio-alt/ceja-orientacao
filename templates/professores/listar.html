@@ -43,9 +43,6 @@
           </td>
           <td>
             <div style="font-weight:600;">{{ prof.nome_completo }}</div>
-            {% for disc in prof.disciplinas_lecionadas.all %}
-            <span class="badge-gestao badge-secondary" style="font-size:0.65rem; margin-top:3px;">{{ disc.nome }}</span>
-            {% endfor %}
           </td>
           <td style="font-size:0.82rem; font-weight:600; color:#fde047;">
             {{ prof.id_vinculo|default:"—" }}
