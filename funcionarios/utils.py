@@ -124,7 +124,12 @@ def enviar_email_confirmacao_ponto(registro):
     CEJA Professora Rosa Soares (2026)
     """
 
-    photo_path = registro.foto.path if registro.foto else None
+    photo_path = None
+    if registro.foto:
+        try:
+            photo_path = registro.foto.path
+        except Exception as e:
+            print(f"[Email Ponto] Aviso: não foi possível obter o caminho do arquivo de foto: {e}")
 
     # Thread para não travar a requisição do usuário
     thread = threading.Thread(

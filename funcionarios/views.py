@@ -126,18 +126,28 @@ def api_registrar_ponto(request):
     tipo = request.POST.get('tipo', '').strip()
     foto_base64 = request.POST.get('foto_base64', '').strip()
 
-    if not funcionario_id or not pin or not tipo:
-        return JsonResponse({'success': False, 'error': 'Selecione o funcionário, digite a senha e informe o tipo de registro.'})
+    if not pin or not tipo:
+        return JsonResponse({'success': False, 'error': 'Digite a sua senha (PIN) e selecione a opção de batida.'})
 
-    func = get_object_or_404(FuncionarioTerceirizado, pk=funcionario_id, ativo=True)
+    func = None
+    if funcionario_id:
+        try:
+            func = FuncionarioTerceirizado.objects.get(pk=funcionario_id, ativo=True)
+        except (FuncionarioTerceirizado.DoesNotExist, ValueError):
+            func = None
 
-    if not func.senha_ponto:
-        return JsonResponse({
-            'success': False,
-            'error': 'O funcionário ainda não possui uma senha de ponto cadastrada. Solucione com o RH.'
-        })
+    if not func:
+        # Busca automática pelo PIN caso funcionario_id esteja ausente ou nulo
+        terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
+        for f in terceirizados:
+            if f.senha_ponto and f.verificar_senha_ponto(pin):
+                func = f
+                break
 
-    if not func.verificar_senha_ponto(pin):
+    if not func:
+        return JsonResponse({'success': False, 'error': 'Funcionário não encontrado ou PIN incorreto.'})
+
+    if not func.senha_ponto or not func.verificar_senha_ponto(pin):
         return JsonResponse({'success': False, 'error': 'Senha / PIN incorreto.'})
 
     tipos_validos = dict(RegistroPontoTerceirizado.TIPO_PONTO_CHOICES)
@@ -165,8 +175,11 @@ def api_registrar_ponto(request):
 
     registro.save()
 
-    # Dispara o envio de e-mail assíncrono
-    enviar_email_confirmacao_ponto(registro)
+    # Dispara o envio de e-mail assíncrono (sem travar a resposta se o envio falhar)
+    try:
+        enviar_email_confirmacao_ponto(registro)
+    except Exception as e:
+        print(f"[Ponto API] Aviso no envio de e-mail de confirmação: {e}")
 
     return JsonResponse({
         'success': True,
