@@ -1,0 +1,79 @@
+name: Deploy Automático (PythonAnywhere / Servidor)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Executar Deploy em Produção
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      # Método 1: PythonAnywhere REST API (Recomendado)
+      - name: Deploy via PythonAnywhere API
+        if: ${{ secrets.PYTHONANYWHERE_TOKEN != '' }}
+        env:
+          PA_TOKEN: ${{ secrets.PYTHONANYWHERE_TOKEN }}
+          PA_USER: ${{ secrets.PYTHONANYWHERE_USERNAME }}
+          PA_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
+        run: |
+          echo "🚀 Iniciando Deploy via PythonAnywhere API..."
+          
+          # 1. Executa git pull via console API ou SSH no PythonAnywhere
+          CONSOLE_ID=$(curl -s -X POST "https://www.pythonanywhere.com/api/v0/user/${PA_USER}/consoles/" \
+            -H "Authorization: Token ${PA_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"executable": "bash"}' | jq -r '.id')
+            
+          if [ "$CONSOLE_ID" != "null" ] && [ -n "$CONSOLE_ID" ]; then
+            echo "Console criado (ID: $CONSOLE_ID). Enviando comandos de atualização..."
+            
+            # Envia comando de git pull, migrate e collectstatic
+            curl -s -X POST "https://www.pythonanywhere.com/api/v0/user/${PA_USER}/consoles/${CONSOLE_ID}/send_input/" \
+              -H "Authorization: Token ${PA_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"input\": \"cd ~/${PA_DOMAIN} || cd ~/ceja-orientacao || cd ~/ceja_orientacao; git pull origin main; python manage.py migrate --noinput; python manage.py collectstatic --noinput; exit\n\"}"
+          fi
+
+          # 2. Executa Reload da WebApp
+          echo "🔄 Solicitando Reload da WebApp (${PA_DOMAIN})..."
+          RELOAD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://www.pythonanywhere.com/api/v0/user/${PA_USER}/webapps/${PA_DOMAIN}/reload/" \
+            -H "Authorization: Token ${PA_TOKEN}")
+
+          if [ "$RELOAD_STATUS" -eq 200 ] || [ "$RELOAD_STATUS" -eq 201 ]; then
+            echo "✅ Deploy e Reload concluídos com sucesso no PythonAnywhere!"
+          else
+            echo "⚠️ Status do reload HTTP: $RELOAD_STATUS"
+          fi
+
+      # Método 2: Deploy via SSH (Caso prefira SSH Key)
+      - name: Deploy via SSH (Fallback)
+        if: ${{ secrets.PYTHONANYWHERE_TOKEN == '' && secrets.SSH_HOST != '' }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ~/ceja-orientacao || cd ~/ceja_orientacao || cd ~/${{ secrets.SSH_HOST }}
+            git pull origin main
+            source venv/bin/activate || true
+            pip install -r requirements.txt || true
+            python manage.py migrate --noinput || true
+            python manage.py collectstatic --noinput || true
+            touch /var/www/*_wsgi.py || true
+            echo "Deploy concluído via SSH!"
+
+      # Notificação Final
+      - name: Resumo do Deploy
+        run: |
+          echo "=================================================="
+          echo "🎉 Automação de Deploy executada com sucesso!"
+          echo "=================================================="
