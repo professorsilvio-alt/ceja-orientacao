@@ -1,5 +1,5 @@
 """
-Script para cadastrar e atualizar funcionários terceirizados iniciais
+Script para cadastrar e atualizar todos os funcionários terceirizados da escola
 com PIN padrão definido como os 4 primeiros dígitos do CPF.
 """
 import os
@@ -35,6 +35,72 @@ FUNCIONARIOS = [
         'data_nascimento': '1985-01-01',
         'data_admissao': '2026-01-01',
         'ativo': True,
+    },
+    {
+        'nome_completo': 'Jorge Luiz e Silva Cestari',
+        'cpf': '09930989757',
+        'cargo_funcao': 'Aux. Secretaria / Apoio Adm',
+        'empresa_contratante': 'Terceirizada',
+        'email': 'cestario_6@hotmail.com',
+        'rg': 'Sem RG',
+        'data_nascimento': '1985-01-01',
+        'data_admissao': '2026-01-01',
+        'ativo': True,
+    },
+    {
+        'nome_completo': 'Anderson Clayton Soares Costa',
+        'cpf': '01442077700',
+        'cargo_funcao': 'Servente',
+        'empresa_contratante': 'Terceirizada',
+        'email': 'andersonclaytonsoarescosta@gmail.com',
+        'rg': 'Sem RG',
+        'data_nascimento': '1985-01-01',
+        'data_admissao': '2026-01-01',
+        'ativo': True,
+    },
+    {
+        'nome_completo': 'Adriana dos Santos Lima',
+        'cpf': '07360655714',
+        'cargo_funcao': 'Servente',
+        'empresa_contratante': 'Terceirizada',
+        'email': 'adriendossantoslima881@gmail.com',
+        'rg': 'Sem RG',
+        'data_nascimento': '1985-01-01',
+        'data_admissao': '2026-01-01',
+        'ativo': True,
+    },
+    {
+        'nome_completo': 'Douglas Lima de Souza',
+        'cpf': '17180284742',
+        'cargo_funcao': 'Servente',
+        'empresa_contratante': 'Terceirizada',
+        'email': 'limasouzado23@gmail.com',
+        'rg': 'Sem RG',
+        'data_nascimento': '1985-01-01',
+        'data_admissao': '2026-01-01',
+        'ativo': True,
+    },
+    {
+        'nome_completo': 'Jorge Antonio Souza Dias',
+        'cpf': '59521732768',
+        'cargo_funcao': 'Servente',
+        'empresa_contratante': 'Terceirizada',
+        'email': 'jasd196015@gmail.com',
+        'rg': 'Sem RG',
+        'data_nascimento': '1985-01-01',
+        'data_admissao': '2026-01-01',
+        'ativo': True,
+    },
+    {
+        'nome_completo': 'Jovane da Paixão Monteiro Geraldo Mendes',
+        'cpf': '03651637751',
+        'cargo_funcao': 'Servente',
+        'empresa_contratante': 'Terceirizada',
+        'email': 'jovanedapaixao@gmail.com',
+        'rg': 'Sem RG',
+        'data_nascimento': '1985-01-01',
+        'data_admissao': '2026-01-01',
+        'ativo': True,
     }
 ]
 
@@ -44,7 +110,7 @@ def importar():
     print("==================================================")
 
     for item in FUNCIONARIOS:
-        cpf_limpo = item['cpf'].strip()
+        cpf_limpo = str(item['cpf']).strip().zfill(11)
         pin_padrao = cpf_limpo[:4]  # 4 primeiros dígitos do CPF
 
         func, created = FuncionarioTerceirizado.objects.get_or_create(
@@ -77,7 +143,7 @@ def importar():
         print(f"   Cargo: {func.cargo_funcao} | CPF: {func.cpf} | PIN Padrao: {pin_padrao} | E-mail: {func.email}")
 
     print("==================================================")
-    print("Concluido com sucesso!")
+    print(f"Concluido com sucesso! Total de {len(FUNCIONARIOS)} funcionarios cadastrados.")
     print("==================================================")
 
 if __name__ == '__main__':
