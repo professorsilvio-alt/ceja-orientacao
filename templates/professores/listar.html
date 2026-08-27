@@ -17,6 +17,19 @@
 </div>
 
 <div class="card-gestao">
+  <!-- Abas de Filtro por Status -->
+  <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:12px;">
+    <a href="?status=ativos" class="btn-gestao {% if status_filtro == 'ativos' or not status_filtro %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px;">
+      <i class="bi bi-person-check-fill"></i> Ativos na Escola <span class="badge bg-dark ms-1">{{ total_ativos }}</span>
+    </a>
+    <a href="?status=inativos" class="btn-gestao {% if status_filtro == 'inativos' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px;">
+      <i class="bi bi-person-slash"></i> Aposentados / Inativos <span class="badge bg-dark ms-1">{{ total_inativos }}</span>
+    </a>
+    <a href="?status=todos" class="btn-gestao {% if status_filtro == 'todos' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px;">
+      <i class="bi bi-people-fill"></i> Todos os Cadastros <span class="badge bg-dark ms-1">{{ total_geral }}</span>
+    </a>
+  </div>
+
   {% if professores %}
   <div class="table-responsive">
     <table class="table-gestao" id="tabela-professores">
@@ -30,16 +43,18 @@
           <th>Matrícula</th>
           <th>Ingresso na escola</th>
           <th>Tempo na escola</th>
-          <th>Ações</th>
+          <th style="text-align:right;">Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for prof in professores %}
         <tr>
           <td>
-            <span class="badge-gestao badge-primary">
-              {% if prof.classificacao %}{{ prof.classificacao }}º{% else %}—{% endif %}
-            </span>
+            {% if prof.classificacao %}
+            <span class="badge-gestao badge-primary">{{ prof.classificacao }}º</span>
+            {% else %}
+            <span class="badge-gestao badge-secondary" style="font-size:0.7rem;">{{ prof.get_situacao_matricula_1_display }}</span>
+            {% endif %}
           </td>
           <td>
             <div style="font-weight:600;">{{ prof.nome_completo }}</div>
@@ -66,16 +81,16 @@
             <span style="color:var(--text-muted); font-size:0.82rem;">—</span>
             {% endif %}
           </td>
-          <td>
-            <div class="d-flex gap-1">
-              <a href="{% url 'detalhe_professor' prof.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;">
+          <td style="text-align:right;">
+            <div class="d-flex gap-1 justify-content-end">
+              <a href="{% url 'detalhe_professor' prof.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
                 <i class="bi bi-eye"></i>
               </a>
               <a href="{% url 'horarios_professor' prof.pk %}" class="btn-gestao btn-gestao-success" style="padding:5px 10px; font-size:0.78rem;" title="Horários">
                 <i class="bi bi-clock"></i>
               </a>
               {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-              <a href="{% url 'editar_professor' prof.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;">
+              <a href="{% url 'editar_professor' prof.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;" title="Editar">
                 <i class="bi bi-pencil"></i>
               </a>
               {% endif %}

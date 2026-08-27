@@ -515,3 +515,37 @@ class AlocacaoHorarioTurma(models.Model):
     def __str__(self):
         prof = self.rotulo_exibicao or (self.professor.nome_curto if self.professor else 'Vazio')
         return f'{self.turma.codigo_turma} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}: {prof}'
+
+
+def recalcular_classificacao_professores():
+    """
+    Recalcula a classificação oficial dos professores ativos pela ordem da Data da C.I.
+    Professores aposentados, em licença ou inativos têm a classificação zerada (None)
+    e a numeração dos ativos se ajusta automaticamente.
+    """
+    from datetime import datetime
+    import unicodedata
+
+    def norm(text):
+        if not text: return ''
+        n = unicodedata.normalize('NFD', text)
+        return ''.join(c for c in n if unicodedata.category(c) != 'Mn').lower().strip()
+
+    # 1. Limpa a classificação de inativos / aposentados
+    Professor.objects.filter(
+        models.Q(ativo=False) | ~models.Q(situacao_matricula_1='ativo')
+    ).update(classificacao=None)
+
+    # 2. Busca ativos
+    ativos = list(Professor.objects.filter(ativo=True, situacao_matricula_1='ativo'))
+
+    def key_ordem(p):
+        d = p.data_ci_movimentacao or p.data_ingresso_unidade or p.data_admissao
+        return (d if d else datetime(2099, 1, 1).date(), norm(p.nome_completo))
+
+    ativos.sort(key=key_ordem)
+
+    for rank, p in enumerate(ativos, 1):
+        if p.classificacao != rank:
+            p.classificacao = rank
+            p.save(update_fields=['classificacao'])

@@ -5,18 +5,45 @@ from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
 from usuarios.views import diretor_required, verificar_primeiro_acesso
-from .models import Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, Disciplina, UnidadeEscolar, TurmaComponente, AlocacaoHorarioTurma
-from .forms import ProfessorForm, HorarioProfessorForm, ConfiguracaoEscolaForm, UnidadeEscolarForm, TurmaComponenteForm
+from .models import (
+    Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, 
+    Disciplina, UnidadeEscolar, TurmaComponente, AlocacaoHorarioTurma, 
+    recalcular_classificacao_professores
+)
 
 
 @login_required
 @verificar_primeiro_acesso
 def view_listar_professores(request):
-    professores = Professor.objects.filter(ativo=True).prefetch_related(
-        'disciplinas_lecionadas', 'horarios'
-    )
+    recalcular_classificacao_professores()
+
+    status_filtro = request.GET.get('status', 'ativos')
+
+    # Contadores
+    total_ativos = Professor.objects.filter(ativo=True, situacao_matricula_1='ativo').count()
+    total_inativos = Professor.objects.filter(
+        models.Q(ativo=False) | ~models.Q(situacao_matricula_1='ativo')
+    ).count()
+    total_geral = Professor.objects.count()
+
+    if status_filtro == 'inativos':
+        professores = Professor.objects.filter(
+            models.Q(ativo=False) | ~models.Q(situacao_matricula_1='ativo')
+        ).order_by('nome_completo')
+    elif status_filtro == 'todos':
+        professores = Professor.objects.all().order_by('nome_completo')
+    else:
+        # Padrão: Apenas ativos na escola
+        professores = Professor.objects.filter(
+            ativo=True, situacao_matricula_1='ativo'
+        ).order_by('classificacao')
+
     return render(request, 'professores/listar.html', {
         'professores': professores,
+        'status_filtro': status_filtro,
+        'total_ativos': total_ativos,
+        'total_inativos': total_inativos,
+        'total_geral': total_geral,
         'total': professores.count(),
     })
 
@@ -26,6 +53,7 @@ def view_criar_professor(request):
     form = ProfessorForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
         professor = form.save()
+        recalcular_classificacao_professores()
         messages.success(request, f'Professor {professor.nome_completo} cadastrado com sucesso!')
         return redirect('detalhe_professor', pk=professor.pk)
     return render(request, 'professores/form.html', {
@@ -52,6 +80,7 @@ def view_editar_professor(request, pk):
     form = ProfessorForm(request.POST or None, request.FILES or None, instance=professor)
     if request.method == 'POST' and form.is_valid():
         form.save()
+        recalcular_classificacao_professores()
         messages.success(request, 'Dados do professor atualizados.')
         return redirect('detalhe_professor', pk=professor.pk)
     return render(request, 'professores/form.html', {
