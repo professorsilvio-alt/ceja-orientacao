@@ -22,5 +22,7 @@ urlpatterns = [
     path('ponto/api/registrar/', views.api_registrar_ponto, name='api_registrar_ponto'),
     path('ponto/espelho/', views.view_espelho_ponto, name='espelho_ponto'),
     path('ponto/senhas/', views.view_gerenciar_senhas_ponto, name='gerenciar_senhas_ponto'),
+    path('terceirizados/folha-ponto/', views.view_folha_ponto_kratus, name='folha_ponto_kratus'),
+    path('terceirizados/<int:pk>/folha-ponto/', views.view_folha_ponto_kratus, name='folha_ponto_terceirizado'),
 ]
 

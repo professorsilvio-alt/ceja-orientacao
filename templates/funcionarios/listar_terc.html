@@ -9,11 +9,16 @@
     <div class="page-title">Funcionários Terceirizados</div>
     <div class="page-subtitle">{{ funcionarios.count }} funcionário{{ funcionarios.count|pluralize:"s" }} ativo{{ funcionarios.count|pluralize:"s" }}</div>
   </div>
-  {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-  <a href="{% url 'criar_terceirizado' %}" class="btn-gestao btn-gestao-primary">
-    <i class="bi bi-person-plus-fill"></i> Novo Terceirizado
-  </a>
-  {% endif %}
+  <div class="d-flex gap-2">
+    <a href="{% url 'folha_ponto_kratus' %}" class="btn-gestao btn-gestao-secondary" target="_blank">
+      <i class="bi bi-printer-fill me-1"></i> Folhas de Ponto (Kratus)
+    </a>
+    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+    <a href="{% url 'criar_terceirizado' %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-person-plus-fill"></i> Novo Terceirizado
+    </a>
+    {% endif %}
+  </div>
 </div>
 
 <div class="card-gestao">
@@ -48,6 +53,9 @@
           </td>
           <td style="text-align:right;">
             <div class="d-flex gap-1 justify-content-end">
+              <a href="{% url 'folha_ponto_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Folha de Ponto (Kratus)" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i>
+              </a>
               <a href="{% url 'detalhe_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
                 <i class="bi bi-eye"></i>
               </a>

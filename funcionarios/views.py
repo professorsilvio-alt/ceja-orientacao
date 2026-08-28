@@ -392,3 +392,83 @@ def view_gerenciar_senhas_ponto(request):
         'terceirizados': terceirizados,
     })
 
+
+import calendar
+import datetime
+
+@login_required
+@verificar_primeiro_acesso
+def view_folha_ponto_kratus(request, pk=None):
+    """
+    Gera a Folha Individual de Ponto padronizada (Modelo Kratus) em formato de impressão.
+    Pode gerar para um único funcionário terceirizado (se pk informado) ou em lote.
+    """
+    hoje = timezone.now().date()
+    try:
+        mes = int(request.GET.get('mes', 8 if hoje.year == 2026 and hoje.month == 8 else hoje.month))
+    except ValueError:
+        mes = hoje.month
+
+    try:
+        ano = int(request.GET.get('ano', hoje.year))
+    except ValueError:
+        ano = hoje.year
+
+    if pk:
+        funcionarios = FuncionarioTerceirizado.objects.filter(pk=pk)
+    else:
+        func_id = request.GET.get('funcionario')
+        if func_id:
+            funcionarios = FuncionarioTerceirizado.objects.filter(pk=func_id)
+        else:
+            funcionarios = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('codigo_terceirizado', 'nome_completo')
+
+    _, num_dias = calendar.monthrange(ano, mes)
+    dias_semana_str = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+
+    folhas = []
+    for func in funcionarios:
+        dias_mes = []
+        for dia in range(1, num_dias + 1):
+            dt = datetime.date(ano, mes, dia)
+            w = dt.weekday()
+            is_sabado = (w == 5)
+            is_domingo = (w == 6)
+
+            # Buscar registros de ponto do dia
+            regs = RegistroPontoTerceirizado.objects.filter(funcionario=func, data_hora__date=dt)
+            ponto_map = {r.tipo: r.data_hora.strftime("%H:%M") for r in regs}
+
+            dias_mes.append({
+                'dia_str': f"{dia:02d}",
+                'semana_str': dias_semana_str[w],
+                'is_sabado': is_sabado,
+                'is_domingo': is_domingo,
+                'entrada': ponto_map.get('ENTRADA', ''),
+                'almoco_saida': ponto_map.get('ALMOCO_SAIDA', ''),
+                'almoco_retorno': ponto_map.get('ALMOCO_RETORNO', ''),
+                'saida': ponto_map.get('SAIDA', ''),
+            })
+
+        folhas.append({
+            'funcionario': func,
+            'dias': dias_mes,
+        })
+
+    todos_terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
+
+    return render(request, 'funcionarios/folha_ponto_kratus.html', {
+        'folhas': folhas,
+        'mes': mes,
+        'ano': ano,
+        'periodo_str': f"{mes:02d}/{ano}",
+        'pk_selecionado': pk or request.GET.get('funcionario', ''),
+        'terceirizados': todos_terceirizados,
+        'meses': [
+            (1, 'Janeiro'), (2, 'Fevereiro'), (3, 'Março'), (4, 'Abril'),
+            (5, 'Maio'), (6, 'Junho'), (7, 'Julho'), (8, 'Agosto'),
+            (9, 'Setembro'), (10, 'Outubro'), (11, 'Novembro'), (12, 'Dezembro')
+        ],
+        'anos': range(hoje.year - 2, hoje.year + 3),
+    })
+

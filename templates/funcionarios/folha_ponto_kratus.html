@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Folha Individual de Ponto — Modelo Kratus (Período {{ periodo_str }})</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: #000;
+      padding: 20px;
+    }
+
+    /* Barra de Controle Topo (oculta na impressão) */
+    .no-print-bar {
+      max-width: 900px;
+      margin: 0 auto 20px auto;
+      background: #1e293b;
+      color: #fff;
+      padding: 16px 20px;
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .no-print-bar label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .no-print-bar select {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid #475569;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .btn-action {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+    }
+
+    .btn-primary-action {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .btn-primary-action:hover {
+      background: #0369a1;
+    }
+
+    .btn-secondary-action {
+      background: #475569;
+      color: #fff;
+    }
+
+    .btn-secondary-action:hover {
+      background: #334155;
+    }
+
+    /* Layout da Folha A4 */
+    .folha-container {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 30px auto;
+      background: #fff;
+      padding: 12mm 12mm 10mm 12mm;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .titulo-folha {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Tabelas de Dados Superior */
+    .table-info {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+
+    .table-info td {
+      border: 1px solid #000;
+      padding: 3px 6px;
+      vertical-align: middle;
+    }
+
+    .table-info .lbl {
+      font-weight: bold;
+    }
+
+    /* Tabela Principal de Ponto */
+    .table-ponto {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .table-ponto th, .table-ponto td {
+      border: 1px solid #000;
+      text-align: center;
+      padding: 2px 3px;
+      height: 18px;
+      vertical-align: middle;
+    }
+
+    .table-ponto th {
+      font-weight: bold;
+      background-color: #f8fafc;
+    }
+
+    .table-ponto tr.row-sabado td.cell-fimsemana,
+    .table-ponto tr.row-domingo td.cell-fimsemana {
+      color: #dc2626;
+      font-weight: bold;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .table-ponto td.col-dia {
+      font-weight: bold;
+      color: #1e3a8a;
+      width: 48px;
+      text-align: left;
+      padding-left: 4px;
+    }
+
+    /* Rodapé da Folha */
+    .rodapé-folha {
+      margin-top: 8px;
+      font-size: 9.5px;
+    }
+
+    .obs-legal {
+      font-size: 9px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .reconhecimento-data {
+      text-align: center;
+      font-size: 11px;
+      margin-bottom: 30px;
+    }
+
+    .assinaturas-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 40px;
+    }
+
+    .assinatura-box {
+      width: 240px;
+      text-align: center;
+    }
+
+    .linha-assinatura {
+      border-top: 1px solid #000;
+      margin-bottom: 4px;
+    }
+
+    .rotulo-assinatura {
+      font-size: 10.5px;
+    }
+
+    /* Estilos de Impressão */
+    @media print {
+      body {
+        background-color: #fff;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .folha-container {
+        width: 100%;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+      }
+      .folha-container:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de Ações (Oculta na Impressão) -->
+  <div class="no-print-bar">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <a href="{% url 'listar_terceirizados' %}" class="btn-action btn-secondary-action">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </a>
+      <div style="font-weight: bold; font-size: 15px;">
+        <i class="bi bi-file-earmark-pdf text-info me-1"></i> Folha de Ponto — Modelo Kratus
+      </div>
+    </div>
+
+    <form method="get" style="display: flex; align-items: flex-end; gap: 10px;">
+      {% if pk_selecionado %}
+      <input type="hidden" name="funcionario" value="{{ pk_selecionado }}">
+      {% else %}
+      <div>
+        <label>Funcionário Terceirizado</label>
+        <select name="funcionario" onchange="this.form.submit()">
+          <option value="">-- Todos os Terceirizados --</option>
+          {% for f in terceirizados %}
+          <option value="{{ f.pk }}" {% if pk_selecionado == f.pk|stringformat:"i" %}selected{% endif %}>
+            {{ f.nome_completo }} ({{ f.empresa_contratante }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <div>
+        <label>Mês</label>
+        <select name="mes" onchange="this.form.submit()">
+          {% for m_num, m_nome in meses %}
+          <option value="{{ m_num }}" {% if mes == m_num %}selected{% endif %}>{{ m_nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Ano</label>
+        <select name="ano" onchange="this.form.submit()">
+          {% for a in anos %}
+          <option value="{{ a }}" {% if ano == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="button" onclick="window.print()" class="btn-action btn-primary-action">
+        <i class="bi bi-printer-fill"></i> Imprimir / Salvar PDF
+      </button>
+    </form>
+  </div>
+
+  <!-- Loop por cada funcionário (Gera 1 página por folha de ponto) -->
+  {% for item in folhas %}
+  {% with f=item.funcionario %}
+  <div class="folha-container">
+
+    <div class="titulo-folha">FOLHA INDIVIDUAL DE PONTO</div>
+
+    <!-- Tabela 1: Empresa -->
+    <table class="table-info">
+      <tr>
+        <td style="width: 55%;"><span class="lbl">Empresa:</span> {{ f.empresa_contratante }}</td>
+        <td style="width: 25%;"><span class="lbl">CNPJ:</span> {{ f.empresa_cnpj }}</td>
+        <td style="width: 20%;"><span class="lbl">Período:</span> {{ periodo_str }}</td>
+      </tr>
+      <tr>
+        <td><span class="lbl">Endereço:</span> {{ f.empresa_endereco }}</td>
+        <td colspan="2"><span class="lbl">Bairro:</span> {{ f.empresa_bairro }}</td>
+      </tr>
+      <tr>
+        <td><span class="lbl">Cidade:</span> {{ f.empresa_cidade }}</td>
+        <td colspan="2"><span class="lbl">UF:</span> {{ f.empresa_uf }} &nbsp;&nbsp;&nbsp; <span class="lbl">CEP:</span> {{ f.empresa_cep }}</td>
+      </tr>
+    </table>
+
+    <!-- Tabela 2: Funcionário -->
+    <table class="table-info">
+      <tr>
+        <td style="width: 60%;"><span class="lbl">Nome:</span> {% if f.codigo_terceirizado %}{{ f.codigo_terceirizado }} - {% endif %}{{ f.nome_completo|upper }}</td>
+        <td style="width: 40%;"><span class="lbl">Horário:</span> {{ f.horario_trabalho }}</td>
+      </tr>
+      <tr>
+        <td><span class="lbl">Função:</span> {{ f.cargo_funcao|upper }}</td>
+        <td><span class="lbl">DPTO:</span> {{ f.departamento }}</td>
+      </tr>
+      <tr>
+        <td><span class="lbl">Admissão:</span> {{ f.data_admissao|date:"d/m/Y" }}</td>
+        <td><span class="lbl">C. Custo:</span> {{ f.centro_custo }}</td>
+      </tr>
+    </table>
+
+    <!-- Tabela 3: Registros Diários -->
+    <table class="table-ponto">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width: 50px;">Dia</th>
+          <th colspan="4">Intervalo</th>
+          <th colspan="3">Hora Extra</th>
+          <th rowspan="2" style="width: 32%;">Assinatura</th>
+        </tr>
+        <tr>
+          <th style="width: 8%;">Entrada</th>
+          <th style="width: 8%;">Saída</th>
+          <th style="width: 8%;">Entrada</th>
+          <th style="width: 8%;">Saída</th>
+          <th style="width: 8%;">Entrada</th>
+          <th style="width: 8%;">Saída</th>
+          <th style="width: 8%;">Nº Horas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in item.dias %}
+        <tr class="{% if d.is_sabado %}row-sabado{% elif d.is_domingo %}row-domingo{% endif %}">
+          <td class="col-dia">{{ d.dia_str }} {{ d.semana_str }}</td>
+
+          {% if d.is_sabado %}
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td class="cell-fimsemana">SÁBADO</td>
+          <td></td>
+          {% elif d.is_domingo %}
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td class="cell-fimsemana">DOMINGO</td>
+          <td></td>
+          {% else %}
+          <td>{{ d.entrada }}</td>
+          <td>{{ d.almoco_saida }}</td>
+          <td>{{ d.almoco_retorno }}</td>
+          <td>{{ d.saida }}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Rodapé da Folha -->
+    <div class="rodapé-folha">
+      <div class="obs-legal">
+        De conformidade com a PortaObs.: Substitui o Quadro de Horário de Trabalho, de acordo com o disposto na Portaria Ministerial nº 3162 de 08/09/1982
+      </div>
+
+      <div class="reconhecimento-data">
+        Reconheço a exatidão destas anotações. Data: _____/_____/_________
+      </div>
+
+      <div class="assinaturas-grid">
+        <div class="assinatura-box">
+          <div class="linha-assinatura"></div>
+          <div class="rotulo-assinatura">Visto chefia</div>
+        </div>
+
+        <div class="assinatura-box">
+          <div class="linha-assinatura"></div>
+          <div class="rotulo-assinatura">Visto funcionário</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endwith %}
+  {% endfor %}
+
+</body>
+</html>

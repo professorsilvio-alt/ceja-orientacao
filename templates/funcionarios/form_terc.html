@@ -73,13 +73,63 @@
         {{ form.ctps_uf }}
       </div>
 
+      <!-- DADOS DA EMPRESA TERCEIRIZADA -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados da Empresa Contratante</h6></div>
+
+      <div class="col-md-8">
+        <label class="form-label">Razão Social / Nome da Empresa *</label>
+        {{ form.empresa_contratante }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">CNPJ da Empresa</label>
+        {{ form.empresa_cnpj }}
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Endereço da Empresa</label>
+        {{ form.empresa_endereco }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Bairro</label>
+        {{ form.empresa_bairro }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Cidade</label>
+        {{ form.empresa_cidade }}
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">UF</label>
+        {{ form.empresa_uf }}
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">CEP</label>
+        {{ form.empresa_cep }}
+      </div>
+
+      <!-- DADOS DA FOLHA DE PONTO -->
+      <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados para Folha de Ponto</h6></div>
+
+      <div class="col-md-3">
+        <label class="form-label">Código / N° no Cartão</label>
+        {{ form.codigo_terceirizado }}
+        <small style="color:var(--text-muted);">Ex: 176, 26</small>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Horário de Trabalho</label>
+        {{ form.horario_trabalho }}
+        <small style="color:var(--text-muted);">Ex: 07:00 X 16:48</small>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Departamento (DPTO)</label>
+        {{ form.departamento }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Centro de Custo (C. Custo)</label>
+        {{ form.centro_custo }}
+      </div>
+
       <!-- CONTRATO CLT -->
       <div class="col-12 mt-2"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Contrato CLT</h6></div>
 
-      <div class="col-md-6">
-        <label class="form-label">Empresa Contratante *</label>
-        {{ form.empresa_contratante }}
-      </div>
       <div class="col-md-6">
         <label class="form-label">Cargo / Função *</label>
         {{ form.cargo_funcao }}

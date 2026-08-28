@@ -55,7 +55,9 @@ class FuncionarioTercForm(forms.ModelForm):
         fields = [
             'nome_completo', 'cpf', 'rg', 'data_nascimento', 'sexo', 'estado_civil', 'naturalidade',
             'pis_pasep', 'ctps_numero', 'ctps_serie', 'ctps_uf',
-            'empresa_contratante', 'cargo_funcao', 'salario',
+            'empresa_contratante', 'empresa_cnpj', 'empresa_endereco', 'empresa_bairro', 'empresa_cidade', 'empresa_uf', 'empresa_cep',
+            'codigo_terceirizado', 'horario_trabalho', 'departamento', 'centro_custo',
+            'cargo_funcao', 'salario',
             'data_admissao', 'data_demissao', 'ativo',
             'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
             'email', 'telefone', 'telefone_emergencia',

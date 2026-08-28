@@ -181,8 +181,45 @@ class FuncionarioTerceirizado(models.Model):
     ctps_serie = models.CharField(max_length=10, blank=True, verbose_name='CTPS — Série')
     ctps_uf = models.CharField(max_length=2, blank=True, verbose_name='CTPS — UF')
 
-    # ── Contrato ───────────────────────────────────────────
-    empresa_contratante = models.CharField(max_length=200, verbose_name='Empresa contratante')
+    # ── Contrato e Empresa Contratante ─────────────────────
+    empresa_contratante = models.CharField(
+        max_length=200, default='KRATUS TECNOLOGIA COMERCIO E SERVICOS LT', verbose_name='Empresa Contratante'
+    )
+    empresa_cnpj = models.CharField(
+        max_length=20, default='33.780.199/0001-77', blank=True, verbose_name='CNPJ da Empresa'
+    )
+    empresa_endereco = models.CharField(
+        max_length=250, default='ESTRADA DO GALEAO, 1285', blank=True, verbose_name='Endereço da Empresa'
+    )
+    empresa_bairro = models.CharField(
+        max_length=100, default='JARDIM GUANABARA', blank=True, verbose_name='Bairro da Empresa'
+    )
+    empresa_cidade = models.CharField(
+        max_length=100, default='RIO DE JANEIRO', blank=True, verbose_name='Cidade da Empresa'
+    )
+    empresa_uf = models.CharField(
+        max_length=2, default='RJ', blank=True, verbose_name='UF da Empresa'
+    )
+    empresa_cep = models.CharField(
+        max_length=10, default='21931-383', blank=True, verbose_name='CEP da Empresa'
+    )
+
+    # ── Dados para Folha de Ponto ──────────────────────────
+    codigo_terceirizado = models.CharField(
+        max_length=20, blank=True, verbose_name='Código / Matrícula na Empresa',
+        help_text='Ex: 176, 26'
+    )
+    horario_trabalho = models.CharField(
+        max_length=50, default='07:00 X 16:48', blank=True, verbose_name='Horário de Trabalho',
+        help_text='Ex: 07:00 X 16:48'
+    )
+    departamento = models.CharField(
+        max_length=100, default='CECIERJ', blank=True, verbose_name='Departamento (DPTO)'
+    )
+    centro_custo = models.CharField(
+        max_length=150, default='CEJA-MESQUITA - PROF ROSA SOARES', blank=True, verbose_name='Centro de Custo (C. Custo)'
+    )
+
     cargo_funcao = models.CharField(max_length=100, verbose_name='Cargo / Função')
     salario = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Salário (R$)'
