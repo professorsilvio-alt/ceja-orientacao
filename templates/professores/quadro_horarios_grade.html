@@ -501,12 +501,19 @@
             <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal" onclick="fecharModalManual()">Cancelar</button>
             <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModalEContinuar()"><i class="bi bi-clipboard-check me-1"></i> Copiar & Preencher Vários</button>
             <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
-          </div>
         </div>
       </form>
     </div>
   </div>
 </div>
+<style>
+  #modalAlocarSlot {
+    z-index: 1060 !important;
+  }
+  .modal-backdrop {
+    z-index: 1050 !important;
+  }
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -519,27 +526,22 @@
     window.location.href = window.location.pathname + '?t=' + Date.now();
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    // Garante que não haja resquício de backdrops de modal travando cliques
+  // Executa imediatamente para garantir inicialização limpa sem travas
+  (function inicializarPagina() {
+    try {
+      localStorage.removeItem('ceja_copied_prof_global');
+      localStorage.removeItem('ceja_copied_prof');
+    } catch(e){}
+    dadosCopiados = null;
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style.removeProperty('overflow');
     document.body.style.removeProperty('padding-right');
+  })();
 
-    const saved = localStorage.getItem('ceja_copied_prof_global');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && (parsed.profId || parsed.rotulo)) {
-          dadosCopiados = parsed;
-          exibirBadgeCopia(dadosCopiados.rotulo);
-        } else {
-          limparCopiaForcado();
-        }
-      } catch(e){
-        limparCopiaForcado();
-      }
-    }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
   });
 
   /* ── ATUALIZAÇÃO DINÂMICA DE CONTADORES DO CABEÇALHO ── */
