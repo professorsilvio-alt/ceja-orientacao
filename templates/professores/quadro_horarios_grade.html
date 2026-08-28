@@ -10,7 +10,7 @@
     border: 1px solid var(--card-border);
     border-radius: 12px;
     padding: 20px 24px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .grade-title {
@@ -42,6 +42,29 @@
     font-size: 0.95rem;
   }
 
+  /* Barra de Copiar e Colar Rápido (Ctrl+C / Ctrl+V) */
+  .copy-paste-bar {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .copy-status-badge {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
   /* Tabela de Grade Interativa Expandida a 100% da Largura */
   .grade-table-container {
     background: var(--card-bg);
@@ -65,6 +88,7 @@
     vertical-align: middle;
     font-size: 0.88rem;
     word-break: break-word;
+    position: relative;
   }
 
   .grade-table th {
@@ -82,6 +106,12 @@
     color: #67e8f9;
     font-size: 0.85rem;
     font-weight: 700;
+  }
+
+  /* Célula Selecionada */
+  .cell-selected {
+    outline: 2px solid #38bdf8 !important;
+    outline-offset: -2px;
   }
 
   /* Estado Célula FECHADA (Fora do expediente) */
@@ -121,7 +151,6 @@
   }
   .cell-alocada:hover {
     background-color: rgba(34, 197, 94, 0.3) !important;
-    transform: scale(1.02);
   }
 
   @media print {
@@ -196,10 +225,28 @@
     </div>
   </div>
 
+  <!-- Barra de Ferramentas: Copiar / Colar Rápido -->
+  <div class="copy-paste-bar no-print">
+    <div class="d-flex align-items-center gap-2">
+      <span style="font-size:0.88rem; font-weight:700; color:#60a5fa;">
+        <i class="bi bi-clipboard-plus me-1"></i>Alocação Rápida (Ctrl+C / Ctrl+V):
+      </span>
+      <span id="copy-status-text" class="text-muted" style="font-size:0.85rem;">
+        Clique em um horário para selecionar. Pressione <kbd>Ctrl+C</kbd> para copiar e <kbd>Ctrl+V</kbd> para colar em outro horário!
+      </span>
+    </div>
+    <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
+      <span id="copied-label-badge" class="copy-status-badge"></span>
+      <button type="button" class="btn-gestao btn-gestao-secondary py-1 px-2" style="font-size:0.78rem;" onclick="limparCopia()">
+        <i class="bi bi-x-circle me-1"></i> Limpar Cópia
+      </button>
+    </div>
+  </div>
+
   <!-- Tabela de Grade Interativa Expandida em 100% da Largura da Tela -->
   <div class="grade-table-container">
     <div class="table-responsive">
-      <table class="grade-table">
+      <table class="grade-table" id="tabela-grade">
         <thead>
           <tr>
             <th class="col-horario" style="width: 15%;">HORÁRIO</th>
@@ -220,15 +267,27 @@
               <td class="cell-fechada">FECHADA</td>
               {% else %}
                 {% if cell.alocacao %}
-                <td class="cell-alocada" 
-                    onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '{{ cell.alocacao.professor.pk }}', '{{ cell.professor_nome }}')"
-                    title="Clique para alterar ou remover professor">
+                <td class="cell-alocada grid-cell"
+                    data-diacode="{{ cell.dia_code }}"
+                    data-dianome="{{ cell.dia_nome }}"
+                    data-horainicio="{{ row.hora_inicio }}"
+                    data-horafim="{{ row.hora_fim }}"
+                    data-profid="{{ cell.alocacao.professor.pk }}"
+                    data-rotulo="{{ cell.professor_nome }}"
+                    onclick="clicarCelulaGrid(this)"
+                    title="Clique 1x para selecionar / copiar. Clique duplo para alterar no modal.">
                   <i class="bi bi-person-check-fill me-1"></i>{{ cell.professor_nome }}
                 </td>
                 {% else %}
-                <td class="cell-livre" 
-                    onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '', '')"
-                    title="Clique para alocar professor neste horário">
+                <td class="cell-livre grid-cell"
+                    data-diacode="{{ cell.dia_code }}"
+                    data-dianome="{{ cell.dia_nome }}"
+                    data-horainicio="{{ row.hora_inicio }}"
+                    data-horafim="{{ row.hora_fim }}"
+                    data-profid=""
+                    data-rotulo=""
+                    onclick="clicarCelulaGrid(this)"
+                    title="Clique para selecionar / alocar neste horário.">
                   <i class="bi bi-plus-circle opacity-50 me-1"></i>Alocar
                 </td>
                 {% endif %}
@@ -312,9 +371,18 @@
 </div>
 
 <script>
-  let modalInstance = null;
+  let celulaSelecionada = null;
+  let dadosCopiados = null; // { profId, rotulo }
 
-  function abrirModalAlocacao(diaCode, diaNome, horaInicio, horaFim, profId, rotulo) {
+  // Função para abrir o modal de forma limpa e confiável em qualquer clique
+  function abrirModalAlocacao(cellElem) {
+    const diaCode = cellElem.dataset.diacode;
+    const diaNome = cellElem.dataset.dianome;
+    const horaInicio = cellElem.dataset.horainicio;
+    const horaFim = cellElem.dataset.horafim;
+    const profId = cellElem.dataset.profid;
+    const rotulo = cellElem.dataset.rotulo;
+
     document.getElementById('input_dia_semana').value = diaCode;
     document.getElementById('input_hora_inicio').value = horaInicio;
     document.getElementById('input_hora_fim').value = horaFim;
@@ -324,11 +392,91 @@
     selectProf.value = profId || '';
     document.getElementById('input_rotulo_exibicao').value = rotulo || '';
 
-    if (!modalInstance) {
-      modalInstance = new bootstrap.Modal(document.getElementById('modalAlocarSlot'));
-    }
-    modalInstance.show();
+    const modalEl = document.getElementById('modalAlocarSlot');
+    const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modalObj.show();
   }
+
+  // Clique na célula da grade: seleciona, permite colar se houver cópia, ou abre modal
+  function clicarCelulaGrid(cellElem) {
+    // Remove destaque de seleção anterior
+    document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
+    cellElem.classList.add('cell-selected');
+    celulaSelecionada = cellElem;
+
+    const profId = cellElem.dataset.profid;
+    const rotulo = cellElem.dataset.rotulo;
+
+    // Se já tivermos dados copiados e clicarmos em uma célula livre, cola direto!
+    if (dadosCopiados && !profId) {
+      colarEmCelula(cellElem, dadosCopiados.profId, dadosCopiados.rotulo);
+      return;
+    }
+
+    // Se a célula tiver um professor, atualiza a cópia automática
+    if (profId) {
+      copiarDados(profId, rotulo);
+    }
+
+    // Abre o modal de alocação
+    abrirModalAlocacao(cellElem);
+  }
+
+  function copiarDados(profId, rotulo) {
+    if (!profId) return;
+    dadosCopiados = { profId, rotulo };
+    document.getElementById('copy-actions-container').style.display = 'flex';
+    document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + rotulo;
+  }
+
+  function limparCopia() {
+    dadosCopiados = null;
+    document.getElementById('copy-actions-container').style.display = 'none';
+  }
+
+  function colarEmCelula(cellElem, profId, rotulo) {
+    const diaCode = cellElem.dataset.diacode;
+    const horaInicio = cellElem.dataset.horainicio;
+    const horaFim = cellElem.dataset.horafim;
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('dia_semana', diaCode);
+    formData.append('hora_inicio', horaInicio);
+    formData.append('hora_fim', horaFim);
+    formData.append('professor_id', profId);
+    formData.append('rotulo_exibicao', rotulo);
+    formData.append('format', 'json');
+
+    fetch('{% url "salvar_alocacao_slot" turma.pk %}', {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert('Erro ao colar: ' + (data.error || 'Erro desconhecido.'));
+      }
+    })
+    .catch(() => window.location.reload());
+  }
+
+  // Atalhos Globais de Teclado (Ctrl+C e Ctrl+V)
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+      if (celulaSelecionada && celulaSelecionada.dataset.profid) {
+        copiarDados(celulaSelecionada.dataset.profid, celulaSelecionada.dataset.rotulo);
+      }
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+      if (celulaSelecionada && dadosCopiados) {
+        colarEmCelula(celulaSelecionada, dadosCopiados.profId, dadosCopiados.rotulo);
+      }
+    }
+  });
 
   function atualizarRotuloSugerido(selectElem) {
     const selectedOpt = selectElem.options[selectElem.selectedIndex];
@@ -358,7 +506,9 @@
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        if (modalInstance) modalInstance.hide();
+        const modalEl = document.getElementById('modalAlocarSlot');
+        const modalObj = bootstrap.Modal.getInstance(modalEl);
+        if (modalObj) modalObj.hide();
         window.location.reload();
       } else {
         alert('Erro ao salvar: ' + (data.error || 'Erro desconhecido.'));

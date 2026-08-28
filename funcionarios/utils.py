@@ -42,7 +42,8 @@ def enviar_email_confirmacao_ponto(registro):
         return False
 
     func = registro.funcionario
-    data_hora_str = registro.data_hora.strftime("%d/%m/%Y às %H:%M:%S")
+    data_hora_local = timezone.localtime(registro.data_hora)
+    data_hora_str = data_hora_local.strftime("%d/%m/%Y às %H:%M:%S")
     tipo_str = registro.get_tipo_display()
 
     subject = f"📋 Comprovante de Ponto — {tipo_str} — CEJA Profa Rosa Soares"

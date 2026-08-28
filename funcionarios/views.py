@@ -292,7 +292,7 @@ def api_registrar_ponto(request):
         'message': 'Ponto registrado com sucesso!',
         'funcionario': func.nome_completo,
         'tipo': registro.get_tipo_display(),
-        'data_hora': registro.data_hora.strftime('%d/%m/%Y às %H:%M:%S'),
+        'data_hora': timezone.localtime(registro.data_hora).strftime('%d/%m/%Y às %H:%M:%S'),
         'email_destinatario': func.email or 'Nenhum e-mail cadastrado'
     })
 
@@ -506,4 +506,42 @@ def view_folha_ponto_kratus(request, pk=None):
         ],
         'anos': range(hoje.year - 2, hoje.year + 3),
     })
+
+
+@diretor_required
+def view_editar_ponto_terceirizado(request, pk):
+    """Permite ao diretor fazer ajustes manuais nos registros de ponto do terceirizado."""
+    registro = get_object_or_404(RegistroPontoTerceirizado, pk=pk)
+    if request.method == 'POST':
+        data_hora_str = request.POST.get('data_hora')
+        tipo = request.POST.get('tipo')
+        observacao = request.POST.get('observacao', '').strip()
+
+        if data_hora_str:
+            from django.utils.dateparse import parse_datetime
+            dt = parse_datetime(data_hora_str)
+            if dt:
+                if timezone.is_naive(dt):
+                    dt = timezone.make_aware(dt)
+                registro.data_hora = dt
+
+        if tipo in dict(RegistroPontoTerceirizado.TIPO_PONTO_CHOICES):
+            registro.tipo = tipo
+
+        user_nome = getattr(request.user, 'nome_completo', None) or getattr(request.user, 'cpf', 'Direção')
+        registro.observacao = observacao or f"Ajuste manual realizado por {user_nome}"
+        registro.save()
+        messages.success(request, f'Batida de ponto de {registro.funcionario.nome_curto} ajustada com sucesso!')
+
+    return redirect(request.META.get('HTTP_REFERER', 'espelho_ponto'))
+
+
+@diretor_required
+def view_excluir_ponto_terceirizado(request, pk):
+    """Permite ao diretor excluir uma batida de ponto duplicada ou incorreta."""
+    registro = get_object_or_404(RegistroPontoTerceirizado, pk=pk)
+    nome = registro.funcionario.nome_curto
+    registro.delete()
+    messages.success(request, f'Batida de ponto de {nome} excluída com sucesso.')
+    return redirect(request.META.get('HTTP_REFERER', 'espelho_ponto'))
 

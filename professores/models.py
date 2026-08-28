@@ -477,9 +477,40 @@ class TurmaComponente(models.Model):
 
     @property
     def codigo_abrev(self):
+        nome_clean = (self.disciplina_nome or '').upper().strip()
+        area_clean = (self.area or '').upper().strip()
+        
         import re
-        clean = re.sub(r'-\d+$', '', self.codigo_turma)
-        return clean
+        m_comp = re.search(r'COMPONENTE.*?(\d+)', nome_clean) or re.search(r'ÁREA.*?(\d+)', nome_clean) or re.search(r'C(\d+)', nome_clean)
+        num = m_comp.group(1) if m_comp else ''
+        
+        if num:
+            if 'CIÊNCIAS' in nome_clean or 'NATUREZA' in nome_clean or 'BIOLOGIA' in nome_clean or 'CIÊNCIAS' in area_clean:
+                return f'CEJA-C{num}C'
+            elif 'HUMANAS' in nome_clean or 'HISTÓRIA' in nome_clean or 'GEOGRAFIA' in nome_clean or 'HUMANAS' in area_clean:
+                return f'CEJA-C{num}H'
+            elif 'LINGUAGENS' in nome_clean or 'PORTUGUÊS' in nome_clean or 'LINGUAGENS' in area_clean:
+                return f'CEJA-C{num}L'
+            elif 'MATEMÁTICA' in nome_clean or 'MATEMÁTICA' in area_clean:
+                return f'CEJA-C{num}M'
+
+        if 'ARTE' in nome_clean: return 'CEJA-ART'
+        if 'BIOLOG' in nome_clean: return 'CEJA-BIO'
+        if 'CIÊNCI' in nome_clean: return 'CEJA-CIÊ'
+        if 'EDUCAÇ' in nome_clean or ('FÍSICA' in nome_clean and 'EDUCA' in nome_clean): return 'CEJA-EDF'
+        if 'ESPANH' in nome_clean: return 'CEJA-ESP'
+        if 'FILOSOF' in nome_clean: return 'CEJA-FIL'
+        if 'FÍSIC' in nome_clean: return 'CEJA-FIS'
+        if 'GEOGRAF' in nome_clean: return 'CEJA-GEO'
+        if 'HISTÓR' in nome_clean: return 'CEJA-HIS'
+        if 'INGLÊ' in nome_clean: return 'CEJA-ING'
+        if 'PORTUG' in nome_clean: return 'CEJA-POR'
+        if 'QUÍMIC' in nome_clean: return 'CEJA-QUI'
+        if 'SOCIOL' in nome_clean: return 'CEJA-SOC'
+
+        clean = re.sub(r'^CEJAS?-?', '', self.codigo_turma)
+        clean = re.sub(r'-\d+$', '', clean)
+        return f'CEJA-{clean}'
 
     @property
     def total_professores_alocados_count(self):
