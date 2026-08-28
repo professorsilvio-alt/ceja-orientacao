@@ -519,6 +519,33 @@
     cellElem.classList.remove('cell-drag-over');
   }
 
+  function moverSlotAjax(origemDia, origemHora, destinoDia, destinoHora, callback) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('action', 'mover_slot');
+    formData.append('origem_dia', origemDia);
+    formData.append('origem_hora', origemHora);
+    formData.append('destino_dia', destinoDia);
+    formData.append('destino_hora', destinoHora);
+    formData.append('format', 'json');
+
+    fetch('{% url "salvar_alocacao_slot" turma.pk %}', {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        if (callback) callback();
+        else window.location.reload();
+      } else {
+        alert('⚠️ ' + (data.error || 'Erro ao mover horário.'));
+      }
+    })
+    .catch(() => window.location.reload());
+  }
+
   function soltarItem(e, targetElem) {
     e.preventDefault();
     targetElem.classList.remove('cell-drag-over');
@@ -532,17 +559,15 @@
       } catch(err){}
     }
 
-    if (!origem || !origem.profId) return;
+    if (!origem || !origem.diaCode) return;
 
     const destinoDia = targetElem.dataset.diacode;
     const destinoHoraInicio = targetElem.dataset.horainicio;
 
     if (origem.diaCode === destinoDia && origem.horaInicio === destinoHoraInicio) return;
 
-    salvarSlotAjax(destinoDia, destinoHoraInicio, targetElem.dataset.horafim, origem.profId, origem.rotulo, function() {
-      salvarSlotAjax(origem.diaCode, origem.horaInicio, origem.horaFim, 'limpar', '', function() {
-        window.location.reload();
-      });
+    moverSlotAjax(origem.diaCode, origem.horaInicio, destinoDia, destinoHoraInicio, function() {
+      window.location.reload();
     });
   }
 

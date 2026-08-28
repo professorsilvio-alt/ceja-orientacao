@@ -1,5 +1,6 @@
 from datetime import time
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
@@ -719,6 +720,45 @@ def view_salvar_alocacao_slot(request, pk):
     """Salva ou remove a alocação de um professor em um slot da grade."""
     turma = get_object_or_404(TurmaComponente, pk=pk)
     if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # Ação atômica de mover slot no Tabuleiro de Xadrez (Drag & Drop)
+        if action == 'mover_slot':
+            origem_dia = request.POST.get('origem_dia')
+            origem_hora = request.POST.get('origem_hora')
+            destino_dia = request.POST.get('destino_dia')
+            destino_hora = request.POST.get('destino_hora')
+            
+            if not origem_dia or not origem_hora or not destino_dia or not destino_hora:
+                return JsonResponse({'success': False, 'error': 'Parâmetros de movimentação inválidos.'}, status=400)
+            
+            aloc_origem = AlocacaoHorarioTurma.objects.filter(
+                turma=turma, dia_semana=origem_dia, hora_inicio=origem_hora
+            ).first()
+            
+            if not aloc_origem:
+                return JsonResponse({'success': False, 'error': 'Horário de origem não encontrado.'}, status=404)
+            
+            # Se o destino já tiver alocação nesta turma, remove ou substitui
+            AlocacaoHorarioTurma.objects.filter(
+                turma=turma, dia_semana=destino_dia, hora_inicio=destino_hora
+            ).delete()
+            
+            aloc_origem.dia_semana = destino_dia
+            aloc_origem.hora_inicio = destino_hora
+            aloc_origem.hora_fim = destino_hora
+            aloc_origem.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Horário movido com sucesso!',
+                'tempos_alocados': turma.tempos_alocados,
+                'tempos_requeridos': turma.tempos_requeridos,
+                'status_display': turma.status_display,
+                'status_ok': turma.status_ok,
+                'professores_nomes': turma.professores_alocados_nomes,
+            })
+
         dia_semana = request.POST.get('dia_semana')
         hora_inicio_str = request.POST.get('hora_inicio')
         hora_fim_str = request.POST.get('hora_fim')
