@@ -1,5 +1,36 @@
 <!-- PASTA DIGITAL DO SERVIDOR -->
-<div class="card-gestao mt-4">
+<style>
+  .pasta-digital-box .form-control,
+  .pasta-digital-box .form-select {
+    height: 44px !important;
+    font-size: 0.88rem !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    background-color: rgba(15, 23, 42, 0.7) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: none !important;
+  }
+  .pasta-digital-box textarea.form-control {
+    height: auto !important;
+    min-height: 80px !important;
+  }
+  .pasta-digital-box input[type="file"].form-control {
+    padding: 6px 12px !important;
+    cursor: pointer;
+  }
+  .pasta-digital-box .form-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: var(--text-muted) !important;
+    margin-bottom: 6px !important;
+    display: block;
+  }
+</style>
+
+<div class="card-gestao mt-4 pasta-digital-box">
   <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3" style="border-color:var(--card-border) !important;">
     <h5 style="color:var(--blue); font-weight:700; margin:0;">
       <i class="bi bi-folder-fill me-2" style="color:#facc15;"></i>Pasta Digital do Servidor
@@ -35,19 +66,19 @@
       {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
       <!-- Form Anexar Documento -->
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h6 style="font-weight:700; color:var(--blue); margin-bottom:14px;">
+        <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px;">
           <i class="bi bi-cloud-upload me-2"></i>Anexar Novo Documento ou Atestado
         </h6>
         <form method="post" action="{% url 'adicionar_documento_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="row g-3 align-items-start">
-            <div class="col-lg-4 col-md-6">
-              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Título / Descrição *</label>
-              <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Ex: Atestado Médico (3 dias)" required style="height:36px;">
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label">Título / Descrição *</label>
+              <input type="text" name="titulo" class="form-control" placeholder="Ex: Atestado Médico (3 dias)" required>
             </div>
             <div class="col-lg-3 col-md-6">
-              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Categoria *</label>
-              <select name="categoria" class="form-select form-select-sm" style="height:36px;">
+              <label class="form-label">Categoria *</label>
+              <select name="categoria" class="form-select">
                 <option value="atestado">🏥 Atestado Médico / Licença</option>
                 <option value="ausencia">⚠️ Justificativa de Ausência</option>
                 <option value="folga">🏖️ Comprovante de Folga</option>
@@ -56,19 +87,19 @@
               </select>
             </div>
             <div class="col-lg-2 col-md-6">
-              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Data Ocorrência *</label>
-              <input type="date" name="data_documento" class="form-control form-control-sm" value="{% now 'Y-m-d' %}" style="height:36px;">
+              <label class="form-label">Data Ocorrência *</label>
+              <input type="date" name="data_documento" class="form-control" value="{% now 'Y-m-d' %}">
             </div>
-            <div class="col-lg-3 col-md-6">
-              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Arquivo (PDF/Imagem) *</label>
-              <input type="file" name="arquivo" class="form-control form-control-sm" required style="height:36px; padding:4px 8px;">
+            <div class="col-lg-4 col-md-6">
+              <label class="form-label">Arquivo (PDF/Imagem) *</label>
+              <input type="file" name="arquivo" class="form-control" required>
             </div>
             <div class="col-12 mt-1">
-              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Observações Adicionais</label>
-              <textarea name="observacoes" class="form-control form-control-sm" rows="2" placeholder="Observações adicionais (opcional)..."></textarea>
+              <label class="form-label">Observações Adicionais</label>
+              <textarea name="observacoes" class="form-control" rows="2" placeholder="Observações adicionais (opcional)..."></textarea>
             </div>
-            <div class="col-12 text-end mt-2">
-              <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size:0.85rem; font-weight:700;">
+            <div class="col-12 text-end mt-3">
+              <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size:0.88rem; font-weight:700; min-height:44px;">
                 <i class="bi bi-cloud-arrow-up-fill me-1"></i> Salvar Documento na Pasta
               </button>
             </div>
@@ -163,38 +194,39 @@
 
       {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
       <!-- Form Lançamento de Folga -->
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:20px;">
-        <h6 style="font-weight:700; color:var(--text-primary); margin-bottom:12px;">
-          <i class="bi bi-plus-circle me-1" style="color:var(--blue);"></i>Lançar Direito a Folga ou Gozo Usufruído
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:12px; padding:20px; margin-bottom:20px;">
+        <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px;">
+          <i class="bi bi-plus-circle me-2"></i>Lançar Direito a Folga ou Gozo Usufruído
         </h6>
         <form method="post" action="{% url 'adicionar_folga_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}">
           {% csrf_token %}
-          <div class="row g-2">
-            <div class="col-md-3">
-              <label class="form-label" style="font-size:0.75rem;">Tipo de Lançamento *</label>
-              <select name="tipo" class="form-select form-select-sm">
+          <div class="row g-3 align-items-start">
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label">Tipo de Lançamento *</label>
+              <select name="tipo" class="form-select">
                 <option value="credito">➕ Crédito de Folga (Direito Adquirido)</option>
                 <option value="usufruido">➖ Gozo de Folga (Folga Usufruída)</option>
               </select>
             </div>
-            <div class="col-md-2">
-              <label class="form-label" style="font-size:0.75rem;">Quantidade (Dias) *</label>
-              <input type="number" step="0.5" min="0.5" name="dias" class="form-control form-control-sm" value="1.0" required>
+            <div class="col-lg-2 col-md-6">
+              <label class="form-label">Quantidade (Dias) *</label>
+              <input type="number" step="0.5" min="0.5" name="dias" class="form-control" value="1.0" required>
             </div>
-            <div class="col-md-4">
-              <label class="form-label" style="font-size:0.75rem;">Motivo / Origem *</label>
-              <input type="text" name="motivo" class="form-control form-control-sm" placeholder="Ex: Trabalho na Eleição / Reunião de Sábado" required>
+            <div class="col-lg-4 col-md-6">
+              <label class="form-label">Motivo / Origem *</label>
+              <input type="text" name="motivo" class="form-control" placeholder="Ex: Trabalho na Eleição / Reunião de Sábado" required>
             </div>
-            <div class="col-md-3">
-              <label class="form-label" style="font-size:0.75rem;">Data da Ocorrência *</label>
-              <input type="date" name="data_ocorrencia" class="form-control form-control-sm" value="{% now 'Y-m-d' %}">
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label">Data Ocorrência *</label>
+              <input type="date" name="data_ocorrencia" class="form-control" value="{% now 'Y-m-d' %}">
             </div>
-            <div class="col-12 mt-2">
-              <textarea name="observacoes" class="form-control form-control-sm" rows="2" placeholder="Observações/detalhes sobre a folga (opcional)..."></textarea>
+            <div class="col-12 mt-1">
+              <label class="form-label">Observações Adicionais</label>
+              <textarea name="observacoes" class="form-control" rows="2" placeholder="Observações/detalhes sobre a folga (opcional)..."></textarea>
             </div>
-            <div class="col-12 text-end mt-2">
-              <button type="submit" class="btn-gestao btn-gestao-primary" style="font-size:0.82rem; padding:6px 16px;">
-                <i class="bi bi-check2-circle"></i> Registrar Lançamento de Folga
+            <div class="col-12 text-end mt-3">
+              <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size:0.88rem; font-weight:700; min-height:44px;">
+                <i class="bi bi-check2-circle me-1"></i> Registrar Lançamento de Folga
               </button>
             </div>
           </div>
@@ -259,16 +291,17 @@
     <div class="tab-pane fade" id="content-anotacoes" role="tabpanel">
       {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
       <!-- Form Adicionar Anotação -->
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:20px;">
-        <h6 style="font-weight:700; color:var(--text-primary); margin-bottom:12px;">
-          <i class="bi bi-pencil-square me-1" style="color:var(--blue);"></i>Adicionar Nova Anotação / Observação
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:12px; padding:20px; margin-bottom:20px;">
+        <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px;">
+          <i class="bi bi-pencil-square me-2"></i>Adicionar Nova Anotação / Observação
         </h6>
         <form method="post" action="{% url 'adicionar_anotacao_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}">
           {% csrf_token %}
-          <textarea name="texto" class="form-control form-control-sm" rows="3" placeholder="Digite uma observação, ocorrência ou registro importante sobre este servidor..." required></textarea>
-          <div class="text-end mt-2">
-            <button type="submit" class="btn-gestao btn-gestao-primary" style="font-size:0.82rem; padding:6px 16px;">
-              <i class="bi bi-send"></i> Registrar Anotação na Ficha
+          <label class="form-label">Anotação / Registro na Ficha</label>
+          <textarea name="texto" class="form-control" rows="3" placeholder="Digite uma observação, ocorrência ou registro importante sobre este servidor..." required></textarea>
+          <div class="text-end mt-3">
+            <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size:0.88rem; font-weight:700; min-height:44px;">
+              <i class="bi bi-send me-1"></i> Registrar Anotação na Ficha
             </button>
           </div>
         </form>
