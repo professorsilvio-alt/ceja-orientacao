@@ -215,11 +215,11 @@
     <!-- Linha de Detalhes da Disciplina -->
     <div class="d-flex flex-wrap gap-3 align-items-center pt-2 border-top" style="border-color:var(--card-border) !important;">
       <div class="grade-chip">
-        <span style="color:var(--text-muted);">DISCIPLINA:</span>
+        <span style="color:#94a3b8; font-weight:700; font-size:0.8rem;">DISCIPLINA:</span>
         <strong style="color:#60a5fa; font-size:1rem;">{{ turma.disciplina_nome }}</strong>
       </div>
       <div class="grade-chip">
-        <span style="color:var(--text-muted);">PROFESSOR(ES) ALOCADO(S):</span>
+        <span style="color:#94a3b8; font-weight:700; font-size:0.8rem;">PROFESSOR(ES) ALOCADO(S):</span>
         <strong id="professores-alocados-label" style="color:#4ade80;">{{ turma.professores_alocados_nomes }}</strong>
       </div>
     </div>
@@ -227,17 +227,17 @@
 
   <!-- Barra de Ferramentas: Copiar / Colar Rápido -->
   <div class="copy-paste-bar no-print">
-    <div class="d-flex align-items-center gap-2">
-      <span style="font-size:0.88rem; font-weight:700; color:#60a5fa;">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <span style="font-size:0.88rem; font-weight:800; color:#38bdf8;">
         <i class="bi bi-clipboard-plus me-1"></i>Alocação Rápida (Ctrl+C / Ctrl+V):
       </span>
-      <span id="copy-status-text" class="text-muted" style="font-size:0.85rem;">
-        Clique em um horário para selecionar. Pressione <kbd>Ctrl+C</kbd> para copiar e <kbd>Ctrl+V</kbd> para colar em outro horário!
+      <span id="copy-status-text" style="font-size:0.85rem; color:#cbd5e1; font-weight:500;">
+        Clique em um horário para selecionar. Pressione <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> para copiar e <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd> para colar em outro horário!
       </span>
     </div>
     <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
       <span id="copied-label-badge" class="copy-status-badge"></span>
-      <button type="button" class="btn-gestao btn-gestao-secondary py-1 px-2" style="font-size:0.78rem;" onclick="limparCopia()">
+      <button type="button" class="btn-gestao btn-gestao-secondary py-1 px-2" style="font-size:0.78rem; background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);" onclick="limparCopia()">
         <i class="bi bi-x-circle me-1"></i> Limpar Cópia
       </button>
     </div>
