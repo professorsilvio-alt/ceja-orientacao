@@ -68,7 +68,7 @@
   /* Tabela de Grade Interativa com Linhas de Grade Perfeitamente Definidas */
   .grade-table-container {
     background: var(--card-bg);
-    border: 2px solid #38bdf8 !important;
+    border: 3px solid #38bdf8 !important;
     border-radius: 12px;
     overflow: hidden;
     width: 100%;
@@ -83,7 +83,7 @@
   }
 
   .grade-table th, .grade-table td {
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border: 2px solid rgba(255, 255, 255, 0.35) !important;
     padding: 10px 6px;
     text-align: center !important;
     vertical-align: middle !important;
@@ -121,7 +121,7 @@
   /* Efeito de Drag over (Arrastar e soltar) */
   .cell-drag-over {
     outline: 3px dashed #4ade80 !important;
-    background-color: rgba(34, 197, 94, 0.3) !important;
+    background-color: rgba(34, 197, 94, 0.35) !important;
   }
 
   /* Estado Célula FECHADA (Fora do expediente) */
@@ -158,6 +158,7 @@
     cursor: grab;
     transition: all 0.15s ease-in-out;
     text-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+    user-select: none;
   }
   .cell-alocada:active {
     cursor: grabbing;
@@ -168,17 +169,16 @@
 
   /* Botão de Excluir Direto na Célula */
   .btn-deletar-slot {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.25);
     color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.5);
+    border: 1px solid rgba(239, 68, 68, 0.6);
     border-radius: 4px;
     padding: 2px 6px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.15s;
-    margin-left: 4px;
-
-    opacity: 0.4;
+    margin-left: 6px;
+    opacity: 0.5;
   }
   .cell-alocada:hover .btn-deletar-slot {
     opacity: 1;
@@ -235,7 +235,7 @@
 
       <div class="d-flex align-items-center gap-2">
         <span class="badge-code">{{ turma.codigo_abrev }}</span>
-        <span class="tempos-pill" style="font-size:0.9rem; padding:6px 14px;">{{ turma.tempos_requeridos }} tempos exigidos</span>
+        <span class="tempos-pill" style="font-size:0.9rem; padding:6px 14px;">{{ turma.tempos_alocados }}/{{ turma.tempos_requeridos }} tempos preenchidos</span>
         
         <div id="status-badge-container">
           {% if turma.status_ok %}
@@ -260,19 +260,19 @@
     </div>
   </div>
 
-  <!-- Barra de Ferramentas: Arrastar e Soltar (Tabuleiro) / Copiar e Colar -->
+  <!-- Barra de Ferramentas: Tabuleiro Interativo & Copiar/Colar -->
   <div class="copy-paste-bar no-print">
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <span style="font-size:0.88rem; font-weight:800; color:#38bdf8;">
         <i class="bi bi-arrows-move me-1"></i>Tabuleiro Interativo:
       </span>
       <span id="copy-status-text" style="font-size:0.85rem; color:#cbd5e1; font-weight:500;">
-        💡 <strong>Arraste e solte</strong> um professor de um horário para outro como no xadrez, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> / <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd>!
+        💡 <strong>Arraste o nome do professor</strong> para outro horário como no xadrez, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> / <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd>!
       </span>
     </div>
     <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
       <span id="copied-label-badge" class="copy-status-badge"></span>
-      <button type="button" class="btn btn-sm btn-danger py-1 px-2 font-weight-bold" style="font-size:0.8rem;" onclick="limparCopia(event)">
+      <button type="button" class="btn btn-sm btn-danger py-1 px-2 font-weight-bold" style="font-size:0.8rem;" onclick="limparCopiaForcado(); return false;">
         <i class="bi bi-x-circle me-1"></i> Limpar Cópia
       </button>
     </div>
@@ -424,6 +424,18 @@
   let dadosCopiados = null; // { profId, rotulo }
   let itemArrastado = null; // Dados da célula sendo arrastada
 
+  const totalAlocados = {{ turma.tempos_alocados|default:0 }};
+  const totalRequeridos = {{ turma.tempos_requeridos|default:12 }};
+
+  // Trava de Alocação Máxima no Frontend
+  function podeAlocarNovoSlot() {
+    if (totalAlocados >= totalRequeridos) {
+      alert('⚠️ Limite de ' + totalRequeridos + ' tempos exigidos atingido para ' + '{{ turma.codigo_abrev }}' + '!\n\nVocê não pode alocar um ' + (totalAlocados + 1) + 'º tempo. Exclua um horário existente antes de alocar outro.');
+      return false;
+    }
+    return true;
+  }
+
   // Carrega a cópia persistente ao carregar a página
   document.addEventListener('DOMContentLoaded', function() {
     const saved = localStorage.getItem('ceja_copied_prof_global');
@@ -446,12 +458,14 @@
       profId: cellElem.dataset.profid,
       rotulo: cellElem.dataset.rotulo
     };
+    e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', JSON.stringify(itemArrastado));
     cellElem.style.opacity = '0.4';
   }
 
   function arrastarSobre(e, cellElem) {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
     cellElem.classList.add('cell-drag-over');
   }
 
@@ -473,9 +487,9 @@
     // Se for o mesmo slot, ignora
     if (origem.diaCode === destinoDia && origem.horaInicio === destinoHoraInicio) return;
 
-    // Move para o novo slot e libera o slot de origem
+    // Se a célula de destino for livre, verifica se não ultrapassa limite se não for uma movimentação direta
     salvarSlotAjax(destinoDia, destinoHoraInicio, targetElem.dataset.horafim, origem.profId, origem.rotulo, function() {
-      // Libera origem
+      // Libera o slot de origem
       salvarSlotAjax(origem.diaCode, origem.horaInicio, origem.horaFim, 'limpar', '', function() {
         window.location.reload();
       });
@@ -487,7 +501,7 @@
     e.preventDefault();
     e.stopPropagation();
 
-    if (confirm('Deseja excluir a alocação deste horário?')) {
+    if (confirm('Deseja realmente excluir a alocação deste horário?')) {
       salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', function() {
         window.location.reload();
       });
@@ -530,6 +544,11 @@
     const profId = cellElem.dataset.profid;
     const rotulo = cellElem.dataset.rotulo;
 
+    // Se for um slot livre e já tivermos atingido o limite máximo, bloqueia!
+    if (!profId && !podeAlocarNovoSlot()) {
+      return;
+    }
+
     document.getElementById('input_dia_semana').value = diaCode;
     document.getElementById('input_hora_inicio').value = horaInicio;
     document.getElementById('input_hora_fim').value = horaFim;
@@ -553,6 +572,7 @@
 
     // Se já tivermos dados COPIADOS explicitamente e clicarmos em uma célula LIVRE, cola!
     if (dadosCopiados && !profId) {
+      if (!podeAlocarNovoSlot()) return;
       salvarSlotAjax(cellElem.dataset.diacode, cellElem.dataset.horainicio, cellElem.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
       return;
     }
@@ -587,14 +607,9 @@
     document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + rotulo;
   }
 
-  function limparCopia(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  function limparCopiaForcado() {
     dadosCopiados = null;
-    localStorage.removeItem('ceja_copied_prof_global');
-    localStorage.removeItem('ceja_copied_prof_{{ turma.pk }}');
+    localStorage.clear();
     const container = document.getElementById('copy-actions-container');
     if (container) container.style.display = 'none';
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
@@ -609,6 +624,7 @@
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
       if (celulaSelecionada && dadosCopiados) {
+        if (!celulaSelecionada.dataset.profid && !podeAlocarNovoSlot()) return;
         salvarSlotAjax(celulaSelecionada.dataset.diacode, celulaSelecionada.dataset.horainicio, celulaSelecionada.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
       }
     }
