@@ -7,7 +7,7 @@
   /* Cabeçalho da Grade em Tema Dark Oficial Premium */
   .grade-header-card {
     background: #0f172a;
-    border: 1px solid #334155;
+    border: 2px solid #334155;
     border-radius: 12px;
     padding: 20px 24px;
     margin-bottom: 16px;
@@ -45,7 +45,7 @@
   /* Barra de Ferramentas e Instruções */
   .copy-paste-bar {
     background: #0f172a;
-    border: 1px solid #3b82f6;
+    border: 2px solid #3b82f6;
     border-radius: 10px;
     padding: 12px 18px;
     margin-bottom: 16px;
@@ -65,32 +65,32 @@
     font-size: 0.88rem;
   }
 
-  /* MATRIZ DE GRADE COM LINHAS DE GRADE (BORDERS) DE ALTO CONTRASTE */
+  /* MATRIZ DE GRADE COM BORDAS BRANCAS/CIANO DE ALTÍSSIMO CONTRASTE */
   .grade-table-container {
-    background: #090d16;
-    border: 3px solid #38bdf8 !important;
+    background: #020617;
+    border: 4px solid #38bdf8 !important;
     border-radius: 12px;
     overflow: hidden;
     width: 100%;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   }
 
   table.grid-matrix {
     width: 100% !important;
     table-layout: fixed !important;
     border-collapse: collapse !important;
-    color: #f8fafc !important;
+    color: #ffffff !important;
     margin: 0 !important;
-    background-color: #0f172a !important;
+    background-color: #020617 !important;
   }
 
-  /* LINHAS DE GRADE HORIZONTAIS E VERTICAIS 100% VISÍVEIS E DEFINIDAS (2px SOLID SLATE) */
+  /* LINHAS DE GRADE (BORDERS) BRANCAS E CIANO 100% VISÍVEIS EM CADA CÉLULA */
   table.grid-matrix th, 
   table.grid-matrix td {
-    border: 2px solid #64748b !important;
+    border: 2px solid #38bdf8 !important; /* Linha de grade Ciano super visível! */
     padding: 10px 4px !important;
-    height: 54px !important;
-    min-height: 54px !important;
+    height: 56px !important;
+    min-height: 56px !important;
     vertical-align: middle !important;
     text-align: center !important;
     overflow: hidden !important;
@@ -101,88 +101,96 @@
 
   /* Cabeçalho da Tabela */
   table.grid-matrix th {
-    background: #1e293b !important;
-    color: #f8fafc !important;
-    font-weight: 800 !important;
+    background: #0f172a !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.88rem;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
     padding: 14px 6px !important;
-    border-bottom: 3px solid #38bdf8 !important;
+    border-bottom: 4px solid #38bdf8 !important;
+    text-align: center !important;
   }
 
   /* Coluna de Horários */
   table.grid-matrix th.col-horario, 
   table.grid-matrix td.col-horario {
-    background: #020617 !important;
-    color: #38bdf8 !important;
-    font-size: 0.88rem;
+    background: #0f172a !important;
+    color: #67e8f9 !important;
+    font-size: 0.9rem;
     font-weight: 800;
-    border-right: 3px solid #38bdf8 !important;
+    border-right: 4px solid #38bdf8 !important;
+    text-align: center !important;
   }
 
   /* Estado Célula FECHADA (Fora do expediente) */
   .cell-fechada {
-    background-color: #020617 !important;
+    background-color: #090d16 !important;
     color: #64748b !important;
     font-weight: 700 !important;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     letter-spacing: 0.5px;
     user-select: none;
+    text-align: center !important;
   }
 
-  /* Estado Célula LIVRE (Clicável com ícone de +) */
+  /* Estado Célula LIVRE (Clicável com ícone de + centralizado) */
   .cell-livre {
-    background-color: rgba(255, 255, 255, 0.02) !important;
+    background-color: rgba(15, 23, 42, 0.6) !important;
     cursor: pointer;
-    color: #94a3b8;
-    font-size: 0.9rem;
+    color: #38bdf8;
+    font-size: 1rem;
     font-weight: 600;
     transition: all 0.15s ease-in-out;
+    text-align: center !important;
   }
   .cell-livre:hover {
-    background-color: rgba(59, 130, 246, 0.25) !important;
+    background-color: rgba(59, 130, 246, 0.3) !important;
     color: #60a5fa !important;
   }
 
-  /* Estado Célula ALOCADA (Sleek Green Card) */
+  /* Estado Célula ALOCADA (Sleek Green Card Centralizado) */
   .cell-alocada {
-    background-color: rgba(34, 197, 94, 0.18) !important;
+    background-color: rgba(34, 197, 94, 0.22) !important;
     color: #4ade80 !important;
     font-weight: 800 !important;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     cursor: grab;
     transition: all 0.15s ease-in-out;
     user-select: none;
+    text-align: center !important;
   }
   .cell-alocada:active {
     cursor: grabbing;
   }
   .cell-alocada:hover {
-    background-color: rgba(34, 197, 94, 0.32) !important;
+    background-color: rgba(34, 197, 94, 0.4) !important;
   }
 
-  /* Wrapper flexível dentro da célula alocada */
+  /* Wrapper flexível perfeitamente centralizado */
   .cell-content-wrapper {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    gap: 4px;
+    gap: 6px;
+    margin: 0 auto;
+    text-align: center;
   }
   .cell-content-wrapper span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
+    text-align: center;
   }
 
-  /* Ícone Botão de Excluir Redondo */
+  /* Ícone Botão de Excluir Redondo Liso */
   .btn-trash-clean {
     background: rgba(239, 68, 68, 0.25) !important;
-    color: #ef4444 !important;
+    color: #f87171 !important;
     border: 1px solid rgba(239, 68, 68, 0.6) !important;
     border-radius: 50% !important;
     width: 22px !important;
@@ -200,20 +208,20 @@
   .btn-trash-clean:hover {
     background: #ef4444 !important;
     color: #ffffff !important;
-    transform: scale(1.15);
+    transform: scale(1.2);
   }
 
   /* Célula Selecionada */
   .cell-selected {
     outline: 3px solid #38bdf8 !important;
     outline-offset: -3px;
-    background-color: rgba(56, 189, 248, 0.25) !important;
+    background-color: rgba(56, 189, 248, 0.3) !important;
   }
 
   /* Efeito de Drag over (Arrastar e soltar) */
   .cell-drag-over {
     outline: 3px dashed #4ade80 !important;
-    background-color: rgba(34, 197, 94, 0.35) !important;
+    background-color: rgba(34, 197, 94, 0.4) !important;
   }
 
   @media print {
@@ -308,10 +316,10 @@
     </div>
   </div>
 
-  <!-- MATRIZ DE GRADE COM COLGROUP E BORDAS SLATE 100% VISÍVEIS -->
+  <!-- MATRIZ DE GRADE COM COLGROUP E BORDAS CIANO/BRANCA 100% VISÍVEIS -->
   <div class="grade-table-container">
     <div class="table-responsive">
-      <table class="grid-matrix" id="tabela-grade" style="width:100% !important; table-layout:fixed !important; border-collapse:collapse !important;">
+      <table class="grid-matrix" id="tabela-grade">
         <colgroup>
           <col style="width: 15%;">
           <col style="width: 17%;">
@@ -374,8 +382,8 @@
                     ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
                     title="Solte um professor arrastado ou clique para alocar">
-                  <div class="d-flex align-items-center justify-content-center h-100">
-                    <i class="bi bi-plus-lg opacity-75 text-info" style="font-size:1.1rem;"></i>
+                  <div class="cell-content-wrapper">
+                    <i class="bi bi-plus-lg opacity-75 text-info" style="font-size:1.2rem;"></i>
                   </div>
                 </td>
                 {% endif %}
