@@ -288,7 +288,7 @@
                     data-rotulo=""
                     onclick="clicarCelulaGrid(this)"
                     title="Clique para selecionar / alocar neste horário.">
-                  <i class="bi bi-plus-circle opacity-50 me-1"></i>Alocar
+                  <i class="bi bi-plus-lg opacity-50" style="font-size:1.1rem;"></i>
                 </td>
                 {% endif %}
               {% endif %}
@@ -374,6 +374,19 @@
   let celulaSelecionada = null;
   let dadosCopiados = null; // { profId, rotulo }
 
+  // Carrega a cópia persistente ao carregar a página
+  document.addEventListener('DOMContentLoaded', function() {
+    const saved = localStorage.getItem('ceja_copied_prof_global');
+    if (saved) {
+      try {
+        dadosCopiados = JSON.parse(saved);
+        if (dadosCopiados && dadosCopiados.profId) {
+          exibirBadgeCopia(dadosCopiados.rotulo);
+        }
+      } catch(e){}
+    }
+  });
+
   // Função para abrir o modal de forma limpa e confiável em qualquer clique
   function abrirModalAlocacao(cellElem) {
     const diaCode = cellElem.dataset.diacode;
@@ -407,7 +420,7 @@
     const profId = cellElem.dataset.profid;
     const rotulo = cellElem.dataset.rotulo;
 
-    // Se já tivermos dados copiados e clicarmos em uma célula livre, cola direto!
+    // Se já tivermos dados copiados (persistentes) e clicarmos em uma célula livre, cola direto!
     if (dadosCopiados && !profId) {
       colarEmCelula(cellElem, dadosCopiados.profId, dadosCopiados.rotulo);
       return;
@@ -425,12 +438,18 @@
   function copiarDados(profId, rotulo) {
     if (!profId) return;
     dadosCopiados = { profId, rotulo };
+    localStorage.setItem('ceja_copied_prof_global', JSON.stringify(dadosCopiados));
+    exibirBadgeCopia(rotulo);
+  }
+
+  function exibirBadgeCopia(rotulo) {
     document.getElementById('copy-actions-container').style.display = 'flex';
-    document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + rotulo;
+    document.getElementById('copied-label-badge').textContent = '📋 Copiado (Persistente): ' + rotulo;
   }
 
   function limparCopia() {
     dadosCopiados = null;
+    localStorage.removeItem('ceja_copied_prof_global');
     document.getElementById('copy-actions-container').style.display = 'none';
   }
 
