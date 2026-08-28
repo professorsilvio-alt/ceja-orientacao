@@ -119,7 +119,7 @@
               <th>Título / Descrição</th>
               <th>Enviado Por</th>
               <th>Arquivo</th>
-              <th style="text-align:right;">Ação</th>
+              <th style="text-align:right;">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -147,9 +147,66 @@
               </td>
               <td style="text-align:right;">
                 {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-                <a href="{% url 'excluir_documento_servidor' doc.pk %}" onclick="return confirm('Deseja excluir este documento da pasta?');" class="btn-gestao btn-gestao-danger" style="padding:4px 8px; font-size:0.75rem;">
-                  <i class="bi bi-trash"></i>
-                </a>
+                <div class="d-flex gap-1 justify-content-end">
+                  <button type="button" class="btn-gestao btn-gestao-primary" style="padding:4px 8px; font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#modalEditarDoc{{ doc.pk }}" title="Editar Documento">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <a href="{% url 'excluir_documento_servidor' doc.pk %}" onclick="return confirm('Deseja excluir este documento da pasta?');" class="btn-gestao btn-gestao-danger" style="padding:4px 8px; font-size:0.75rem;" title="Excluir Documento">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+
+                <!-- Modal Editar Documento -->
+                <div class="modal fade" id="modalEditarDoc{{ doc.pk }}" tabindex="-1" aria-hidden="true" style="text-align:left;">
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+                      <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                        <h5 class="modal-title" style="font-weight:700; color:var(--blue);">
+                          <i class="bi bi-pencil-square me-2"></i>Editar Documento / Atestado
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <form method="post" action="{% url 'editar_documento_servidor' doc.pk %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                          <div class="row g-3">
+                            <div class="col-md-6">
+                              <label class="form-label">Título / Descrição *</label>
+                              <input type="text" name="titulo" class="form-control" value="{{ doc.titulo }}" required>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Categoria *</label>
+                              <select name="categoria" class="form-select">
+                                <option value="atestado" {% if doc.categoria == 'atestado' %}selected{% endif %}>🏥 Atestado Médico / Licença</option>
+                                <option value="ausencia" {% if doc.categoria == 'ausencia' %}selected{% endif %}>⚠️ Justificativa de Ausência</option>
+                                <option value="folga" {% if doc.categoria == 'folga' %}selected{% endif %}>🏖️ Comprovante de Folga</option>
+                                <option value="documento" {% if doc.categoria == 'documento' %}selected{% endif %}>📄 Documento Pessoal / CI</option>
+                                <option value="outro" {% if doc.categoria == 'outro' %}selected{% endif %}>📁 Outros Documentos</option>
+                              </select>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Data da Ocorrência *</label>
+                              <input type="date" name="data_documento" class="form-control" value="{{ doc.data_documento|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Substituir Arquivo (Opcional)</label>
+                              <input type="file" name="arquivo" class="form-control">
+                              <small style="color:var(--text-muted); font-size:0.75rem;">Atual: <a href="{{ doc.arquivo.url }}" target="_blank" style="color:var(--cyan);">Visualizar arquivo</a></small>
+                            </div>
+                            <div class="col-12">
+                              <label class="form-label">Observações</label>
+                              <textarea name="observacoes" class="form-control" rows="3">{{ doc.observacoes }}</textarea>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                          <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn-gestao btn-gestao-primary">Salvar Alterações</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
                 {% endif %}
               </td>
             </tr>
@@ -245,7 +302,7 @@
               <th>Quantidade</th>
               <th>Motivo / Origem</th>
               <th>Registrado Por</th>
-              <th style="text-align:right;">Ação</th>
+              <th style="text-align:right;">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -269,9 +326,62 @@
               </td>
               <td style="text-align:right;">
                 {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-                <a href="{% url 'excluir_folga_servidor' f.pk %}" onclick="return confirm('Deseja remover este lançamento de folga?');" class="btn-gestao btn-gestao-danger" style="padding:4px 8px; font-size:0.75rem;">
-                  <i class="bi bi-trash"></i>
-                </a>
+                <div class="d-flex gap-1 justify-content-end">
+                  <button type="button" class="btn-gestao btn-gestao-primary" style="padding:4px 8px; font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#modalEditarFolga{{ f.pk }}" title="Editar Lançamento">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <a href="{% url 'excluir_folga_servidor' f.pk %}" onclick="return confirm('Deseja remover este lançamento de folga?');" class="btn-gestao btn-gestao-danger" style="padding:4px 8px; font-size:0.75rem;" title="Excluir Lançamento">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+
+                <!-- Modal Editar Folga -->
+                <div class="modal fade" id="modalEditarFolga{{ f.pk }}" tabindex="-1" aria-hidden="true" style="text-align:left;">
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+                      <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                        <h5 class="modal-title" style="font-weight:700; color:var(--blue);">
+                          <i class="bi bi-pencil-square me-2"></i>Editar Lançamento de Folga / Compensação
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <form method="post" action="{% url 'editar_folga_servidor' f.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                          <div class="row g-3">
+                            <div class="col-md-6">
+                              <label class="form-label">Tipo de Lançamento *</label>
+                              <select name="tipo" class="form-select">
+                                <option value="credito" {% if f.tipo == 'credito' %}selected{% endif %}>➕ Crédito de Folga (Direito Adquirido)</option>
+                                <option value="usufruido" {% if f.tipo == 'usufruido' %}selected{% endif %}>➖ Gozo de Folga (Folga Usufruída)</option>
+                              </select>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Quantidade (Dias) *</label>
+                              <input type="number" step="0.5" min="0.5" name="dias" class="form-control" value="{{ f.dias }}" required>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Motivo / Origem *</label>
+                              <input type="text" name="motivo" class="form-control" value="{{ f.motivo }}" required>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Data da Ocorrência *</label>
+                              <input type="date" name="data_ocorrencia" class="form-control" value="{{ f.data_ocorrencia|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-12">
+                              <label class="form-label">Observações</label>
+                              <textarea name="observacoes" class="form-control" rows="3">{{ f.observacoes }}</textarea>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                          <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn-gestao btn-gestao-primary">Salvar Alterações</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
                 {% endif %}
               </td>
             </tr>
@@ -313,9 +423,43 @@
       <div style="display:flex; flex-direction:column; gap:12px;">
         {% for note in anotacoes %}
         <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-left:3px solid var(--blue); border-radius:8px; padding:12px 16px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.78rem; color:var(--text-muted);">
-            <span><i class="bi bi-person me-1"></i>{{ note.criado_por.nome_completo|default:note.criado_por.cpf|default:"Sistema" }}</span>
-            <span><i class="bi bi-clock me-1"></i>{{ note.criado_em|date:"d/m/Y H:i" }}</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.78rem; color:var(--text-muted);">
+            <span><i class="bi bi-person me-1"></i>{{ note.criado_por.nome_completo|default:note.criado_por.cpf|default:"Sistema" }} — {{ note.criado_em|date:"d/m/Y H:i" }}</span>
+            {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+            <div class="d-flex gap-1">
+              <button type="button" class="btn-gestao btn-gestao-primary" style="padding:2px 6px; font-size:0.7rem;" data-bs-toggle="modal" data-bs-target="#modalEditarAnotacao{{ note.pk }}" title="Editar Anotação">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <a href="{% url 'excluir_anotacao_servidor' note.pk %}" onclick="return confirm('Deseja remover esta anotação da pasta?');" class="btn-gestao btn-gestao-danger" style="padding:2px 6px; font-size:0.7rem;" title="Excluir Anotação">
+                <i class="bi bi-trash"></i>
+              </a>
+            </div>
+
+            <!-- Modal Editar Anotação -->
+            <div class="modal fade" id="modalEditarAnotacao{{ note.pk }}" tabindex="-1" aria-hidden="true" style="text-align:left;">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+                  <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                    <h5 class="modal-title" style="font-weight:700; color:var(--blue);">
+                      <i class="bi bi-pencil-square me-2"></i>Editar Anotação / Registro
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <form method="post" action="{% url 'editar_anotacao_servidor' note.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                      <label class="form-label">Anotação / Texto do Registro</label>
+                      <textarea name="texto" class="form-control" rows="4" required>{{ note.texto }}</textarea>
+                    </div>
+                    <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                      <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn-gestao btn-gestao-primary">Salvar Alterações</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endif %}
           </div>
           <div style="font-size:0.9rem; color:var(--text-primary); white-space:pre-line;">{{ note.texto }}</div>
         </div>

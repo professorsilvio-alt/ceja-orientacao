@@ -263,6 +263,82 @@ def view_adicionar_anotacao_servidor(request, tipo_servidor, pk):
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
+@login_required
+def view_editar_documento_servidor(request, pk):
+    """Edita os dados de um documento/atestado na pasta digital do servidor."""
+    from .models import DocumentoServidor
+    doc = get_object_or_404(DocumentoServidor, pk=pk)
+    if request.method == 'POST':
+        titulo = request.POST.get('titulo', '').strip()
+        categoria = request.POST.get('categoria', doc.categoria)
+        data_documento = request.POST.get('data_documento') or doc.data_documento
+        observacoes = request.POST.get('observacoes', '').strip()
+        arquivo = request.FILES.get('arquivo')
+
+        if not titulo:
+            messages.error(request, 'O título não pode ficar em branco.')
+            return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+        doc.titulo = titulo
+        doc.categoria = categoria
+        doc.data_documento = data_documento
+        doc.observacoes = observacoes
+        if arquivo:
+            doc.arquivo = arquivo
+        doc.save()
+        messages.success(request, f'Documento "{titulo}" atualizado com sucesso!')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_editar_folga_servidor(request, pk):
+    """Edita os dados de um lançamento de folga/compensação."""
+    from .models import OcorrenciaFolgaServidor
+    folga = get_object_or_404(OcorrenciaFolgaServidor, pk=pk)
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo', folga.tipo)
+        dias = request.POST.get('dias', folga.dias)
+        motivo = request.POST.get('motivo', '').strip() or folga.motivo
+        data_ocorrencia = request.POST.get('data_ocorrencia') or folga.data_ocorrencia
+        observacoes = request.POST.get('observacoes', '').strip()
+
+        folga.tipo = tipo
+        folga.dias = dias
+        folga.motivo = motivo
+        folga.data_ocorrencia = data_ocorrencia
+        folga.observacoes = observacoes
+        folga.save()
+        messages.success(request, 'Lançamento de folga atualizado com sucesso!')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_editar_anotacao_servidor(request, pk):
+    """Edita o texto de uma anotação na pasta do servidor."""
+    from .models import AnotacaoServidor
+    note = get_object_or_404(AnotacaoServidor, pk=pk)
+    if request.method == 'POST':
+        texto = request.POST.get('texto', '').strip()
+        if not texto:
+            messages.error(request, 'A anotação não pode ficar em branco.')
+            return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+        note.texto = texto
+        note.save()
+        messages.success(request, 'Anotação atualizada com sucesso!')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_excluir_anotacao_servidor(request, pk):
+    """Remove uma anotação da pasta do servidor."""
+    from .models import AnotacaoServidor
+    note = get_object_or_404(AnotacaoServidor, pk=pk)
+    note.delete()
+    messages.success(request, 'Anotação removida da pasta.')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
 @diretor_required
 def view_editar_professor(request, pk):
     professor = get_object_or_404(Professor, pk=pk)

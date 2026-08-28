@@ -20,8 +20,12 @@ urlpatterns = [
 
     # Módulo Pasta Digital do Servidor (Documentos, Folgas, Anotações)
     path('pasta/<str:tipo_servidor>/<int:pk>/documentos/adicionar/', views.view_adicionar_documento_servidor, name='adicionar_documento_servidor'),
+    path('pasta/documentos/<int:pk>/editar/', views.view_editar_documento_servidor, name='editar_documento_servidor'),
     path('pasta/documentos/<int:pk>/excluir/', views.view_excluir_documento_servidor, name='excluir_documento_servidor'),
     path('pasta/<str:tipo_servidor>/<int:pk>/folgas/adicionar/', views.view_adicionar_folga_servidor, name='adicionar_folga_servidor'),
+    path('pasta/folgas/<int:pk>/editar/', views.view_editar_folga_servidor, name='editar_folga_servidor'),
     path('pasta/folgas/<int:pk>/excluir/', views.view_excluir_folga_servidor, name='excluir_folga_servidor'),
     path('pasta/<str:tipo_servidor>/<int:pk>/anotacoes/adicionar/', views.view_adicionar_anotacao_servidor, name='adicionar_anotacao_servidor'),
+    path('pasta/anotacoes/<int:pk>/editar/', views.view_editar_anotacao_servidor, name='editar_anotacao_servidor'),
+    path('pasta/anotacoes/<int:pk>/excluir/', views.view_excluir_anotacao_servidor, name='excluir_anotacao_servidor'),
 ]
