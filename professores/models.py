@@ -460,7 +460,8 @@ class TurmaComponente(models.Model):
 
     @property
     def tempos_alocados(self):
-        return self.alocacoes.filter(professor__isnull=False).count()
+        from django.db.models import Q
+        return self.alocacoes.filter(Q(professor__isnull=False) | Q(professor_2__isnull=False)).count()
 
     @property
     def status_ok(self):
@@ -514,7 +515,9 @@ class TurmaComponente(models.Model):
 
     @property
     def total_professores_alocados_count(self):
-        prof_ids = set(self.alocacoes.filter(professor__isnull=False).values_list('professor_id', flat=True))
+        p1 = set(self.alocacoes.filter(professor__isnull=False).values_list('professor_id', flat=True))
+        p2 = set(self.alocacoes.filter(professor_2__isnull=False).values_list('professor_2_id', flat=True))
+        prof_ids = p1.union(p2)
         count = len(prof_ids)
         if count == 0:
             return "0 alocados"
@@ -524,18 +527,29 @@ class TurmaComponente(models.Model):
 
     @property
     def professores_alocados_nomes(self):
-        alocacoes = self.alocacoes.filter(professor__isnull=False).select_related('professor')
+        from django.db.models import Q
+        alocacoes = self.alocacoes.filter(
+            Q(professor__isnull=False) | Q(professor_2__isnull=False)
+        ).select_related('professor', 'professor_2')
         nomes = []
         for al in alocacoes:
-            nome = al.rotulo_exibicao or al.professor.nome_curto
-            if nome not in nomes:
-                nomes.append(nome)
+            if al.rotulo_exibicao:
+                for part in al.rotulo_exibicao.split(' / '):
+                    part_clean = part.strip()
+                    if part_clean and part_clean not in nomes:
+                        nomes.append(part_clean)
+            else:
+                if al.professor and al.professor.nome_curto not in nomes:
+                    nomes.append(al.professor.nome_curto)
+                if al.professor_2 and al.professor_2.nome_curto not in nomes:
+                    nomes.append(al.professor_2.nome_curto)
         return ', '.join(nomes) if nomes else 'Nenhum alocado'
 
 
 class AlocacaoHorarioTurma(models.Model):
     """
-    Alocação de um professor em um slot de tempo e dia da semana para uma Turma.
+    Alocação de professor(es) em um slot de tempo e dia da semana para uma Turma.
+    Suporta Co-regência (dois professores no mesmo tempo).
     """
     turma = models.ForeignKey(
         TurmaComponente, on_delete=models.CASCADE,
@@ -548,11 +562,15 @@ class AlocacaoHorarioTurma(models.Model):
     hora_fim = models.TimeField(verbose_name='Horário de Fim')
     professor = models.ForeignKey(
         Professor, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='alocacoes_horario', verbose_name='Professor Alocado'
+        related_name='alocacoes_horario', verbose_name='1º Professor (Principal)'
+    )
+    professor_2 = models.ForeignKey(
+        Professor, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='alocacoes_horario_secundario', verbose_name='2º Professor (Co-regência / Apoio)'
     )
     rotulo_exibicao = models.CharField(
-        max_length=100, blank=True, verbose_name='Rótulo de Exibição',
-        help_text='Nome customizado para exibição no quadro (ex: SANDRA, LUCIANA 1, DANIELA 2)'
+        max_length=150, blank=True, verbose_name='Rótulo de Exibição',
+        help_text='Nome customizado para exibição no quadro (ex: DELMA / MARCELO)'
     )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
@@ -564,7 +582,15 @@ class AlocacaoHorarioTurma(models.Model):
         unique_together = ['turma', 'dia_semana', 'hora_inicio']
 
     def __str__(self):
-        prof = self.rotulo_exibicao or (self.professor.nome_curto if self.professor else 'Vazio')
+        if self.rotulo_exibicao:
+            prof = self.rotulo_exibicao
+        else:
+            p1 = self.professor.nome_curto if self.professor else ''
+            p2 = self.professor_2.nome_curto if self.professor_2 else ''
+            if p1 and p2:
+                prof = f'{p1} / {p2}'
+            else:
+                prof = p1 or p2 or 'Vazio'
         return f'{self.turma.codigo_turma} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}: {prof}'
 
 

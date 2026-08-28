@@ -354,7 +354,8 @@
                     data-dianome="{{ cell.dia_nome }}"
                     data-horainicio="{{ row.hora_inicio }}"
                     data-horafim="{{ row.hora_fim }}"
-                    data-profid="{{ cell.alocacao.professor.pk }}"
+                    data-profid="{{ cell.prof_id }}"
+                    data-prof2id="{{ cell.prof2_id }}"
                     data-rotulo="{{ cell.professor_nome }}"
                     ondragstart="arrastarInicio(event, this)"
                     ondragover="arrastarSobre(event, this)"
@@ -363,7 +364,14 @@
                     onclick="clicarCelulaGrid(this)"
                     title="Arraste para trocar de horário ou clique para editar">
                   <div class="cell-content-wrapper">
-                    <span><i class="bi bi-person-fill me-1"></i>{{ cell.professor_nome }}</span>
+                    <span>
+                      {% if cell.prof2_id %}
+                      <i class="bi bi-people-fill me-1" style="color:#38bdf8;"></i>
+                      {% else %}
+                      <i class="bi bi-person-fill me-1"></i>
+                      {% endif %}
+                      {{ cell.professor_nome }}
+                    </span>
                     <button type="button" class="btn-trash-clean no-print" onclick="deletarSlotDireto(event, '{{ cell.dia_code }}', '{{ row.hora_inicio }}')" title="Excluir este horário">
                       <i class="bi bi-trash-fill"></i>
                     </button>
@@ -376,12 +384,13 @@
                     data-horainicio="{{ row.hora_inicio }}"
                     data-horafim="{{ row.hora_fim }}"
                     data-profid=""
+                    data-prof2id=""
                     data-rotulo=""
                     ondragover="arrastarSobre(event, this)"
                     ondragleave="arrastarSair(this)"
                     ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
-                    title="Solte um professor arrastado ou clique para alocar">
+                    title="Clique no '+' para alocar professor(es)">
                   <div class="cell-content-wrapper">
                     <i class="bi bi-plus-lg opacity-75 text-info" style="font-size:1.2rem;"></i>
                   </div>
@@ -403,7 +412,7 @@
     <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
       <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
         <h5 class="modal-title font-weight-bold" style="color:var(--blue);">
-          <i class="bi bi-person-plus-fill me-2"></i>Alocar / Editar Professor em {{ turma.disciplina_nome }}
+          <i class="bi bi-person-plus-fill me-2"></i>Alocar / Editar Professor(es) em {{ turma.disciplina_nome }}
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -413,16 +422,18 @@
         <input type="hidden" name="dia_semana" id="input_dia_semana">
         <input type="hidden" name="hora_inicio" id="input_hora_inicio">
         <input type="hidden" name="hora_fim" id="input_hora_fim">
-        <input type="hidden" name="format" value="json">
 
         <div class="modal-body">
           <div class="alert alert-info py-2 font-weight-bold mb-3" style="font-size:0.9rem; background:rgba(6,182,212,0.1); border-color:rgba(6,182,212,0.3); color:#67e8f9;">
             <i class="bi bi-clock me-1"></i> Dia & Horário Selecionado: <span id="slotInfoLabel" style="color:#fff;"></span>
           </div>
 
+          <!-- 1º Professor (Principal) -->
           <div class="mb-3">
-            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">Selecione o Professor *</label>
-            <select class="form-select" name="professor_id" id="select_professor" onchange="atualizarRotuloSugerido(this)" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
+            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">
+              1º Professor (Principal) *
+            </label>
+            <select class="form-select" name="professor_id" id="select_professor" onchange="atualizarRotuloAutomatico()" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
               <option value="">-- Limpar / Nenhum Professor --</option>
               
               {% if profs_da_disciplina %}
@@ -445,11 +456,39 @@
             </select>
           </div>
 
+          <!-- 2º Professor (Co-regência / Apoio) -->
           <div class="mb-3">
-            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">Rótulo / Nome de Exibição na Grade (Ex: LUCIANA 1, DANIELA 2)</label>
-            <input type="text" class="form-control" name="rotulo_exibicao" id="input_rotulo_exibicao" placeholder="Ex: LUCIANA 1, DANIELA 2" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
+            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:#38bdf8;">
+              <i class="bi bi-people me-1"></i>2º Professor (Co-regência / Apoio - Opcional)
+            </label>
+            <select class="form-select" name="professor_2_id" id="select_professor_2" onchange="atualizarRotuloAutomatico()" style="height:44px; background:rgba(15,23,42,0.8); color:#fff; border-color:rgba(56,189,248,0.4);">
+              <option value="">-- Nenhum (Apenas 1 Professor) --</option>
+              
+              {% if profs_da_disciplina %}
+              <optgroup label="⭐ Professores da Disciplina ({{ turma.disciplina_nome }})">
+                {% for p in profs_da_disciplina %}
+                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  ⭐ {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo }}{% endif %})
+                </option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+
+              <optgroup label="👥 Demais Professores Cadastrados">
+                {% for p in outros_profs %}
+                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo|default:"Prof." }}{% endif %})
+                </option>
+                {% endfor %}
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">Rótulo / Nome de Exibição na Grade</label>
+            <input type="text" class="form-control" name="rotulo_exibicao" id="input_rotulo_exibicao" placeholder="Ex: DELMA / MARCELO ou DELMA 1" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
             <small style="color:var(--text-muted); font-size:0.78rem;">
-              É o nome em texto que aparecerá na célula da planilha (ex: <code>LUCIANA 1</code> para 1ª matrícula ou <code>DANIELA 2</code> para 2ª).
+              Nome exibido no quadrinho do horário (preenchido automaticamente com os professores selecionados).
             </small>
           </div>
         </div>
@@ -458,7 +497,7 @@
           <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-trash me-1"></i> Deletar Horário</button>
           <div class="d-flex gap-2">
             <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModal()"><i class="bi bi-clipboard-check me-1"></i> Copiar Este Professor</button>
+            <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModal()"><i class="bi bi-clipboard-check me-1"></i> Copiar Horário</button>
             <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Alteração</button>
           </div>
         </div>
@@ -472,23 +511,22 @@
   let dadosCopiados = null;
   let itemArrastado = null;
 
-  const totalAlocados = {{ turma.tempos_alocados|default:0 }};
-  const totalRequeridos = {{ turma.tempos_requeridos|default:12 }};
-
-  function podeAlocarNovoSlot() {
-    if (totalAlocados >= totalRequeridos) {
-      alert('⚠️ Limite de ' + totalRequeridos + ' tempos exigidos atingido para ' + '{{ turma.codigo_abrev }}' + '!\n\nVocê não pode alocar um ' + (totalAlocados + 1) + 'º tempo. Exclua um horário existente antes de alocar outro.');
-      return false;
-    }
-    return true;
+  function recarregarPaginaLimpa() {
+    window.location.href = window.location.pathname + '?t=' + Date.now();
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    // Garante que não haja resquício de backdrops de modal travando cliques
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+
     const saved = localStorage.getItem('ceja_copied_prof_global');
     if (saved) {
       try {
         dadosCopiados = JSON.parse(saved);
-        if (dadosCopiados && dadosCopiados.profId) {
+        if (dadosCopiados && (dadosCopiados.profId || dadosCopiados.rotulo)) {
           exibirBadgeCopia(dadosCopiados.rotulo);
         }
       } catch(e){}
@@ -502,6 +540,7 @@
       horaInicio: cellElem.dataset.horainicio,
       horaFim: cellElem.dataset.horafim,
       profId: cellElem.dataset.profid,
+      prof2Id: cellElem.dataset.prof2id,
       rotulo: cellElem.dataset.rotulo
     };
     e.dataTransfer.effectAllowed = 'move';
@@ -538,12 +577,12 @@
     .then(data => {
       if (data.success) {
         if (callback) callback();
-        else window.location.reload();
+        else recarregarPaginaLimpa();
       } else {
         alert('⚠️ ' + (data.error || 'Erro ao mover horário.'));
       }
     })
-    .catch(() => window.location.reload());
+    .catch(() => recarregarPaginaLimpa());
   }
 
   function soltarItem(e, targetElem) {
@@ -567,7 +606,7 @@
     if (origem.diaCode === destinoDia && origem.horaInicio === destinoHoraInicio) return;
 
     moverSlotAjax(origem.diaCode, origem.horaInicio, destinoDia, destinoHoraInicio, function() {
-      window.location.reload();
+      recarregarPaginaLimpa();
     });
   }
 
@@ -577,19 +616,20 @@
     e.stopPropagation();
 
     if (confirm('Deseja realmente excluir a alocação deste horário?')) {
-      salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', function() {
-        window.location.reload();
+      salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', '', function() {
+        recarregarPaginaLimpa();
       });
     }
   }
 
-  function salvarSlotAjax(diaCode, horaInicio, horaFim, profId, rotulo, callback) {
+  function salvarSlotAjax(diaCode, horaInicio, horaFim, profId, prof2Id, rotulo, callback) {
     const formData = new FormData();
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     formData.append('dia_semana', diaCode);
     formData.append('hora_inicio', horaInicio);
     formData.append('hora_fim', horaFim || horaInicio);
     formData.append('professor_id', profId);
+    formData.append('professor_2_id', prof2Id || '');
     formData.append('rotulo_exibicao', rotulo);
     formData.append('format', 'json');
 
@@ -602,34 +642,37 @@
     .then(data => {
       if (data.success) {
         if (callback) callback();
-        else window.location.reload();
+        else recarregarPaginaLimpa();
       } else {
         alert('⚠️ ' + (data.error || 'Erro ao processar alteração.'));
       }
     })
-    .catch(() => window.location.reload());
+    .catch(() => recarregarPaginaLimpa());
   }
 
   function abrirModalAlocacao(cellElem) {
+    // Limpa quaisquer backdrops fantasmas
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+
     const diaCode = cellElem.dataset.diacode;
     const diaNome = cellElem.dataset.dianome;
     const horaInicio = cellElem.dataset.horainicio;
     const horaFim = cellElem.dataset.horafim;
-    const profId = cellElem.dataset.profid;
-    const rotulo = cellElem.dataset.rotulo;
-
-    if (!profId && !podeAlocarNovoSlot()) {
-      return;
-    }
+    const profId = cellElem.dataset.profid || '';
+    const prof2Id = cellElem.dataset.prof2id || '';
+    const rotulo = cellElem.dataset.rotulo || '';
 
     document.getElementById('input_dia_semana').value = diaCode;
     document.getElementById('input_hora_inicio').value = horaInicio;
     document.getElementById('input_hora_fim').value = horaFim;
     document.getElementById('slotInfoLabel').textContent = diaNome + ' (' + horaInicio + ' / ' + horaFim + ')';
     
-    const selectProf = document.getElementById('select_professor');
-    selectProf.value = profId || '';
-    document.getElementById('input_rotulo_exibicao').value = rotulo || '';
+    document.getElementById('select_professor').value = profId;
+    document.getElementById('select_professor_2').value = prof2Id;
+    document.getElementById('input_rotulo_exibicao').value = rotulo;
 
     const modalEl = document.getElementById('modalAlocarSlot');
     const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -641,35 +684,29 @@
     cellElem.classList.add('cell-selected');
     celulaSelecionada = cellElem;
 
-    const profId = cellElem.dataset.profid;
-
-    if (dadosCopiados && !profId) {
-      if (!podeAlocarNovoSlot()) return;
-      salvarSlotAjax(cellElem.dataset.diacode, cellElem.dataset.horainicio, cellElem.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
-      return;
-    }
-
     abrirModalAlocacao(cellElem);
   }
 
-  function copiarDados(profId, rotulo) {
-    if (!profId) return;
-    dadosCopiados = { profId, rotulo };
+  function copiarDados(profId, prof2Id, rotulo) {
+    if (!profId && !prof2Id && !rotulo) return;
+    dadosCopiados = { profId, prof2Id, rotulo };
     localStorage.setItem('ceja_copied_prof_global', JSON.stringify(dadosCopiados));
     exibirBadgeCopia(rotulo);
   }
 
   function copiarDoModal() {
     const profSelect = document.getElementById('select_professor');
+    const prof2Select = document.getElementById('select_professor_2');
     const profId = profSelect.value;
+    const prof2Id = prof2Select.value;
     const rotulo = document.getElementById('input_rotulo_exibicao').value;
-    if (profId) {
-      copiarDados(profId, rotulo);
+    if (profId || prof2Id || rotulo) {
+      copiarDados(profId, prof2Id, rotulo);
       const modalEl = document.getElementById('modalAlocarSlot');
       const modalObj = bootstrap.Modal.getInstance(modalEl);
       if (modalObj) modalObj.hide();
     } else {
-      alert('Selecione um professor para copiar.');
+      alert('Selecione pelo menos um professor para copiar.');
     }
   }
 
@@ -679,7 +716,7 @@
       container.style.display = 'flex';
       container.style.visibility = 'visible';
     }
-    document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + rotulo;
+    document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + (rotulo || 'Professor(es)');
   }
 
   function limparCopiaForcado() {
@@ -699,57 +736,58 @@
 
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-      if (celulaSelecionada && celulaSelecionada.dataset.profid) {
-        copiarDados(celulaSelecionada.dataset.profid, celulaSelecionada.dataset.rotulo);
+      if (celulaSelecionada && (celulaSelecionada.dataset.profid || celulaSelecionada.dataset.rotulo)) {
+        copiarDados(
+          celulaSelecionada.dataset.profid,
+          celulaSelecionada.dataset.prof2id,
+          celulaSelecionada.dataset.rotulo
+        );
       }
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
       if (celulaSelecionada && dadosCopiados) {
-        if (!celulaSelecionada.dataset.profid && !podeAlocarNovoSlot()) return;
-        salvarSlotAjax(celulaSelecionada.dataset.diacode, celulaSelecionada.dataset.horainicio, celulaSelecionada.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
+        salvarSlotAjax(
+          celulaSelecionada.dataset.diacode,
+          celulaSelecionada.dataset.horainicio,
+          celulaSelecionada.dataset.horafim,
+          dadosCopiados.profId,
+          dadosCopiados.prof2Id,
+          dadosCopiados.rotulo
+        );
       }
     }
   });
 
-  function atualizarRotuloSugerido(selectElem) {
-    const selectedOpt = selectElem.options[selectElem.selectedIndex];
+  function atualizarRotuloAutomatico() {
+    const p1 = document.getElementById('select_professor');
+    const p2 = document.getElementById('select_professor_2');
     const rotuloInput = document.getElementById('input_rotulo_exibicao');
-    if (selectedOpt && selectedOpt.dataset.nomecurto && !rotuloInput.value) {
-      rotuloInput.value = selectedOpt.dataset.nomecurto;
+    
+    const opt1 = p1.selectedIndex >= 0 ? p1.options[p1.selectedIndex] : null;
+    const opt2 = p2.selectedIndex >= 0 ? p2.options[p2.selectedIndex] : null;
+    
+    const val1 = opt1 ? opt1.value : '';
+    const val2 = opt2 ? opt2.value : '';
+    
+    const nome1 = (val1 && opt1.dataset.nomecurto) ? opt1.dataset.nomecurto : '';
+    const nome2 = (val2 && opt2.dataset.nomecurto) ? opt2.dataset.nomecurto : '';
+    
+    if (nome1 && nome2) {
+      rotuloInput.value = nome1 + ' / ' + nome2;
+    } else if (nome1) {
+      rotuloInput.value = nome1;
+    } else if (nome2) {
+      rotuloInput.value = nome2;
+    } else {
+      rotuloInput.value = '';
     }
   }
 
   function limparSlotAtual() {
     document.getElementById('select_professor').value = '';
+    document.getElementById('select_professor_2').value = '';
     document.getElementById('input_rotulo_exibicao').value = '';
-    document.getElementById('formAlocarSlot').dispatchEvent(new Event('submit'));
+    document.getElementById('formAlocarSlot').submit();
   }
-
-  document.getElementById('formAlocarSlot').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-
-    fetch(this.action, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        const modalEl = document.getElementById('modalAlocarSlot');
-        const modalObj = bootstrap.Modal.getInstance(modalEl);
-        if (modalObj) modalObj.hide();
-        window.location.reload();
-      } else {
-        alert('⚠️ ' + (data.error || 'Erro desconhecido.'));
-      }
-    })
-    .catch(err => {
-      window.location.reload();
-    });
-  });
 </script>
 {% endblock %}

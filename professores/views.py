@@ -655,7 +655,7 @@ def view_grade_turma(request, pk):
     ]
 
     # Mapa de alocações existentes para esta turma
-    aloca_qs = AlocacaoHorarioTurma.objects.filter(turma=turma).select_related('professor')
+    aloca_qs = AlocacaoHorarioTurma.objects.filter(turma=turma).select_related('professor', 'professor_2')
     alocs_dict = {}
     for al in aloca_qs:
         key = (al.dia_semana, al.hora_inicio.strftime("%H:%M"))
@@ -672,6 +672,18 @@ def view_grade_turma(request, pk):
                 tem_horario_aberto = True
             aloc = alocs_dict.get((dia_code, inicio.strftime("%H:%M")))
 
+            prof_nome = ''
+            if aloc:
+                if aloc.rotulo_exibicao:
+                    prof_nome = aloc.rotulo_exibicao
+                else:
+                    p1 = aloc.professor.nome_curto if aloc.professor else ''
+                    p2 = aloc.professor_2.nome_curto if aloc.professor_2 else ''
+                    if p1 and p2:
+                        prof_nome = f'{p1} / {p2}'
+                    else:
+                        prof_nome = p1 or p2
+
             row_cells.append({
                 'dia_code': dia_code,
                 'dia_nome': dia_nome,
@@ -679,7 +691,9 @@ def view_grade_turma(request, pk):
                 'hora_fim': fim.strftime("%H:%M"),
                 'is_fechada': is_fechada,
                 'alocacao': aloc,
-                'professor_nome': (aloc.rotulo_exibicao or (aloc.professor.nome_curto if aloc.professor else '')) if aloc else ''
+                'professor_nome': prof_nome,
+                'prof_id': aloc.professor.pk if (aloc and aloc.professor) else '',
+                'prof2_id': aloc.professor_2.pk if (aloc and aloc.professor_2) else '',
             })
         
         # Só exibe a linha no quadro se houver funcionamento em pelo menos 1 dia
@@ -717,7 +731,7 @@ def view_grade_turma(request, pk):
 
 @diretor_required
 def view_salvar_alocacao_slot(request, pk):
-    """Salva ou remove a alocação de um professor em um slot da grade."""
+    """Salva ou remove a alocação de professor(es) em um slot da grade."""
     turma = get_object_or_404(TurmaComponente, pk=pk)
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -763,18 +777,19 @@ def view_salvar_alocacao_slot(request, pk):
         hora_inicio_str = request.POST.get('hora_inicio')
         hora_fim_str = request.POST.get('hora_fim')
         professor_id = request.POST.get('professor_id')
+        professor_2_id = request.POST.get('professor_2_id')
         rotulo_exibicao = request.POST.get('rotulo_exibicao', '').strip()
 
         if not dia_semana or not hora_inicio_str:
             return JsonResponse({'success': False, 'error': 'Parâmetros inválidos.'}, status=400)
 
-        if not professor_id or professor_id == 'limpar':
+        # Se nenhum professor for selecionado (ou ambos limpos)
+        if (not professor_id or professor_id == 'limpar') and (not professor_2_id or professor_2_id == 'limpar'):
             AlocacaoHorarioTurma.objects.filter(
                 turma=turma, dia_semana=dia_semana, hora_inicio=hora_inicio_str
             ).delete()
             msg = 'Horário liberado.'
         else:
-            # Validação para não permitir ultrapassar o número de tempos exigidos pela turma
             existente = AlocacaoHorarioTurma.objects.filter(
                 turma=turma, dia_semana=dia_semana, hora_inicio=hora_inicio_str
             ).exists()
@@ -786,8 +801,25 @@ def view_salvar_alocacao_slot(request, pk):
                 messages.error(request, err_msg)
                 return redirect('grade_turma', pk=turma.pk)
 
-            prof = get_object_or_404(Professor, pk=professor_id)
-            rotulo = rotulo_exibicao or prof.nome_curto.upper()
+            prof1 = None
+            if professor_id and professor_id != 'limpar':
+                prof1 = Professor.objects.filter(pk=professor_id).first()
+
+            prof2 = None
+            if professor_2_id and professor_2_id != 'limpar':
+                prof2 = Professor.objects.filter(pk=professor_2_id).first()
+
+            if not rotulo_exibicao:
+                if prof1 and prof2:
+                    rotulo = f'{prof1.nome_curto.upper()} / {prof2.nome_curto.upper()}'
+                elif prof1:
+                    rotulo = prof1.nome_curto.upper()
+                elif prof2:
+                    rotulo = prof2.nome_curto.upper()
+                else:
+                    rotulo = ''
+            else:
+                rotulo = rotulo_exibicao
 
             aloc, _ = AlocacaoHorarioTurma.objects.update_or_create(
                 turma=turma,
@@ -795,11 +827,12 @@ def view_salvar_alocacao_slot(request, pk):
                 hora_inicio=hora_inicio_str,
                 defaults={
                     'hora_fim': hora_fim_str or hora_inicio_str,
-                    'professor': prof,
+                    'professor': prof1,
+                    'professor_2': prof2,
                     'rotulo_exibicao': rotulo
                 }
             )
-            msg = f'Professor {rotulo} alocado no horário!'
+            msg = f'Professor(es) alocado(s): {rotulo}!'
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('format') == 'json':
             return JsonResponse({
