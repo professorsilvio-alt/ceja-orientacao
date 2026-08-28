@@ -2,6 +2,7 @@ from datetime import time
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 from django.contrib import messages
 from django.utils import timezone
 from django.db import models
@@ -532,6 +533,7 @@ def view_configuracao_escola(request):
 # ── Módulo de Quadro de Horários & Alocação ────────────────────────────────────
 
 @diretor_required
+@never_cache
 def view_listar_quadro_horarios(request):
     """Painel principal do Quadro de Horários por Unidade e Ano Letivo."""
     unidades = UnidadeEscolar.objects.filter(ativo=True).order_by('tipo', 'nome')
@@ -628,6 +630,7 @@ def view_listar_quadro_horarios(request):
 
 
 @diretor_required
+@never_cache
 def view_grade_turma(request, pk):
     """Tela interativa da Grade Horária de uma Turma/Componente."""
     turma = get_object_or_404(TurmaComponente, pk=pk)
@@ -743,6 +746,7 @@ def view_grade_turma(request, pk):
 
 
 @diretor_required
+@never_cache
 def view_salvar_alocacao_slot(request, pk):
     """Salva ou remove a alocação de professor(es) em um slot da grade."""
     turma = get_object_or_404(TurmaComponente, pk=pk)

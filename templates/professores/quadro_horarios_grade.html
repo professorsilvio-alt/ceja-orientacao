@@ -498,7 +498,7 @@
         <div class="modal-footer" style="border-top:1px solid var(--card-border); display:flex; justify-content:space-between;">
           <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-trash me-1"></i> Deletar Horário</button>
           <div class="d-flex gap-2">
-            <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal" onclick="fecharModalManual()">Cancelar</button>
             <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModalEContinuar()"><i class="bi bi-clipboard-check me-1"></i> Copiar & Preencher Vários</button>
             <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
           </div>
@@ -507,7 +507,9 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
   let celulaSelecionada = null;
   let dadosCopiados = null;
@@ -702,8 +704,39 @@
     document.getElementById('input_rotulo_exibicao').value = rotulo;
 
     const modalEl = document.getElementById('modalAlocarSlot');
-    const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modalObj.show();
+    if (window.bootstrap && bootstrap.Modal) {
+      try {
+        const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalObj.show();
+        return;
+      } catch(err) {
+        console.warn('Bootstrap modal instance fallback:', err);
+      }
+    }
+    // Fallback nativo
+    modalEl.classList.add('show');
+    modalEl.style.display = 'block';
+    modalEl.removeAttribute('aria-hidden');
+    let backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    backdrop.onclick = fecharModalManual;
+    document.body.appendChild(backdrop);
+    document.body.classList.add('modal-open');
+  }
+
+  function fecharModalManual() {
+    const modalEl = document.getElementById('modalAlocarSlot');
+    if (window.bootstrap && bootstrap.Modal) {
+      try {
+        const modalObj = bootstrap.Modal.getInstance(modalEl);
+        if (modalObj) modalObj.hide();
+      } catch(e){}
+    }
+    modalEl.classList.remove('show');
+    modalEl.style.display = 'none';
+    modalEl.setAttribute('aria-hidden', 'true');
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
   }
 
   /* ── CLIQUE NA CÉLULA: PREENCHIMENTO RÁPIDO OU MODAL ── */
