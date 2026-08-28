@@ -8,233 +8,247 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">{{ professor.nome_completo }}</div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success">
-      <i class="bi bi-clock-fill"></i> Horários
-    </a>
-    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-    <a href="{% url 'editar_professor' professor.pk %}" class="btn-gestao btn-gestao-primary">
-      <i class="bi bi-pencil"></i> Editar
-    </a>
-    {% endif %}
-    <a href="{% url 'listar_professores' %}" class="btn-gestao btn-gestao-secondary">
-      <i class="bi bi-arrow-left"></i> Voltar
-    </a>
-  </div>
-</div>
-
-<div class="row g-3 align-items-stretch">
-  <div class="col-lg-3 col-md-4">
-    <div class="card-gestao text-center h-100 d-flex flex-column align-items-center justify-content-center p-4">
+<!-- CABEÇALHO DO PROFESSOR (FULL WIDTH HORIZONTAL BANNER) -->
+<div class="card-gestao mb-4" style="background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border: 1px solid var(--card-border); padding: 20px 24px; border-radius: 14px;">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
       {% if professor.foto %}
-      <img src="{{ professor.foto.url }}" alt="Foto" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--blue); margin:0 auto 16px;">
+      <img src="{{ professor.foto.url }}" alt="Foto" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:3px solid var(--blue);">
       {% else %}
-      <div style="width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:2.2rem; color:white; font-weight:800;">
+      <div style="width:65px; height:65px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:white; font-weight:800; border:2px solid var(--card-border);">
         {{ professor.nome_completo|first|upper }}
       </div>
       {% endif %}
-      <div style="font-weight:800; font-size:1rem;">{{ professor.nome_completo }}</div>
-      <div style="color:var(--text-secondary); margin-top:4px; font-size:0.85rem;">{{ professor.cargo }}</div>
-      <div class="mt-2">
-        {% if professor.classificacao %}
-        <span class="badge-gestao badge-primary" style="font-size:0.9rem;">{{ professor.classificacao }}º lugar</span>
-        {% endif %}
-      </div>
-      <div class="mt-2">
-        <span class="badge-gestao {% if professor.ativo %}badge-success{% else %}badge-danger{% endif %}">
-          {% if professor.ativo %}Ativo{% else %}Inativo{% endif %}
-        </span>
+
+      <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <h3 style="font-weight:800; margin:0; color:#fff; font-size:1.4rem;">{{ professor.nome_completo }}</h3>
+          {% if professor.classificacao %}
+          <span class="badge-gestao badge-primary" style="font-size:0.85rem; padding:4px 12px; font-weight:700;">
+            <i class="bi bi-trophy-fill me-1"></i>{{ professor.classificacao }}º lugar
+          </span>
+          {% endif %}
+          <span class="badge-gestao {% if professor.ativo %}badge-success{% else %}badge-danger{% endif %}" style="font-size:0.85rem; padding:4px 12px; font-weight:700;">
+            {% if professor.ativo %}● Ativo{% else %}● Inativo{% endif %}
+          </span>
+        </div>
+        <div style="color:var(--text-secondary); font-size:0.92rem;" class="d-flex align-items-center gap-3 flex-wrap">
+          <span><i class="bi bi-briefcase me-1" style="color:var(--cyan);"></i><strong>{{ professor.cargo }}</strong></span>
+          {% if professor.funcao %}
+          <span><i class="bi bi-person-gear me-1" style="color:#67e8f9;"></i>{{ professor.funcao }} {% if professor.tipo_funcao %}({{ professor.tipo_funcao }}){% endif %}</span>
+          {% endif %}
+          {% if professor.id_vinculo %}
+          <span style="color:#fde047;"><i class="bi bi-hash me-1"></i>Vínculo: {{ professor.id_vinculo }}</span>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-lg-9 col-md-8">
-    <div class="card-gestao mb-3">
-      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados Funcionais</h6>
-      <div class="row g-2">
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">ID / VÍNCULO 1</div>
-          <div style="font-size:0.9rem; font-weight:700; color:#fde047;">{{ professor.id_vinculo|default:"—" }}</div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success">
+        <i class="bi bi-clock-fill me-1"></i> Horários
+      </a>
+      {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+      <a href="{% url 'editar_professor' professor.pk %}" class="btn-gestao btn-gestao-primary">
+        <i class="bi bi-pencil me-1"></i> Editar
+      </a>
+      {% endif %}
+      <a href="{% url 'listar_professores' %}" class="btn-gestao btn-gestao-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- DADOS FUNCIONAIS (FULL WIDTH) -->
+  <div class="col-12">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;" class="d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-file-person me-2"></i>Dados Funcionais Principais</span>
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400;">1ª Matrícula</span>
+      </h6>
+      <div class="row g-3">
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">ID / VÍNCULO 1</div>
+          <div style="font-size:0.95rem; font-weight:700; color:#fde047;">{{ professor.id_vinculo|default:"—" }}</div>
         </div>
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">MATRÍCULA 1</div>
-          <div style="font-family:monospace; font-weight:600;">{{ professor.matricula }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">MATRÍCULA 1</div>
+          <div style="font-family:monospace; font-weight:700; font-size:0.95rem;">{{ professor.matricula }}</div>
         </div>
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">SITUAÇÃO 1ª MATRÍCULA</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">SITUAÇÃO 1ª MATRÍCULA</div>
           <div>
             <span class="badge-gestao {% if professor.situacao_matricula_1 == 'ativo' %}badge-success{% elif professor.situacao_matricula_1 == 'aposentado' %}badge-warning{% else %}badge-secondary{% endif %}">
               {{ professor.get_situacao_matricula_1_display }}
             </span>
           </div>
         </div>
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CPF</div>
-          <div style="font-family:monospace; font-weight:600;">{{ professor.cpf|slice:":3" }}.{{ professor.cpf|slice:"3:6" }}.{{ professor.cpf|slice:"6:9" }}-{{ professor.cpf|slice:"9:" }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CPF</div>
+          <div style="font-family:monospace; font-weight:700; font-size:0.95rem;">{{ professor.cpf|slice:":3" }}.{{ professor.cpf|slice:"3:6" }}.{{ professor.cpf|slice:"6:9" }}-{{ professor.cpf|slice:"9:" }}</div>
         </div>
 
-        <div class="col-md-6 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CARGO DETALHADO</div>
-          <div style="font-weight:600;">{{ professor.cargo }}</div>
+        <div class="col-xl-4 col-md-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CARGO DETALHADO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.cargo }}</div>
         </div>
-        <div class="col-md-6 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">FUNÇÃO / TIPO FUNÇÃO</div>
-          <div style="font-weight:600; color:#67e8f9;">{{ professor.funcao }} {% if professor.tipo_funcao %}({{ professor.tipo_funcao }}){% endif %}</div>
+        <div class="col-xl-4 col-md-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">FUNÇÃO / TIPO FUNÇÃO</div>
+          <div style="font-weight:700; font-size:0.95rem; color:#67e8f9;">{{ professor.funcao }} {% if professor.tipo_funcao %}({{ professor.tipo_funcao }}){% endif %}</div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DISCIPLINA DE INGRESSO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.disciplina_ingresso|default:"—" }}</div>
         </div>
 
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DISCIPLINA DE INGRESSO</div>
-          <div style="font-weight:600;">{{ professor.disciplina_ingresso|default:"—" }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">REGIME CONTRATAÇÃO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.regime_contratacao|default:"—" }}</div>
         </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">REGIME CONTRATAÇÃO</div>
-          <div style="font-weight:600;">{{ professor.regime_contratacao|default:"—" }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CARGA HORÁRIA TOTAL</div>
+          <div style="font-weight:800; font-size:1.05rem; color:#fde047;">{% if professor.ch_total %}{{ professor.ch_total }} horas{% else %}—{% endif %}</div>
         </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CARGA HORÁRIA TOTAL</div>
-          <div style="font-weight:700; color:#fde047;">{% if professor.ch_total %}{{ professor.ch_total }} horas{% else %}—{% endif %}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DATA DE ADMISSÃO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.data_admissao|date:"d/m/Y"|default:"—" }}</div>
+        </div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DATA DE NASCIMENTO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.data_nascimento|date:"d/m/Y"|default:"—" }}</div>
         </div>
 
         {% if professor.ch_regencia or professor.ch_planejamento %}
-        <div class="col-12 mt-1" style="font-size:0.8rem; color:var(--text-secondary);">
-          <span class="me-3">Regência: <strong>{{ professor.ch_regencia|default:0 }}h</strong></span>
-          <span class="me-3">Planejamento: <strong>{{ professor.ch_planejamento|default:0 }}h</strong></span>
-          <span>Complementação: <strong>{{ professor.ch_complementacao|default:0 }}h</strong></span>
+        <div class="col-12 mt-2 pt-2 border-top" style="border-color:var(--card-border) !important;">
+          <div style="font-size:0.85rem; color:var(--text-secondary);" class="d-flex gap-4 flex-wrap">
+            <span>Regência: <strong class="text-white">{{ professor.ch_regencia|default:0 }}h</strong></span>
+            <span>Planejamento: <strong class="text-white">{{ professor.ch_planejamento|default:0 }}h</strong></span>
+            <span>Complementação: <strong class="text-white">{{ professor.ch_complementacao|default:0 }}h</strong></span>
+            <span class="ms-auto">Tempo na escola: <strong style="color:var(--green);">{{ professor.tempo_na_escola }}</strong></span>
+          </div>
         </div>
         {% endif %}
-
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE ADMISSÃO</div>
-          <div style="font-weight:600;">{{ professor.data_admissao|date:"d/m/Y"|default:"—" }}</div>
-        </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE NASCIMENTO</div>
-          <div style="font-weight:600;">{{ professor.data_nascimento|date:"d/m/Y"|default:"—" }}</div>
-        </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">TEMPO NA ESCOLA / ADMISSÃO</div>
-          <div style="font-weight:700; color:var(--green); font-size:1rem;">{{ professor.tempo_na_escola }}</div>
-        </div>
       </div>
     </div>
+  </div>
 
-    {% if professor.matricula_acumulacao or professor.id_vinculo_acumulacao %}
-    <!-- Segunda Matrícula / Cargo em Acumulacao -->
-    <div class="card-gestao mb-3" style="border-left:4px solid var(--purple);">
-      <h6 style="font-weight:700; color:#c084fc; margin-bottom:12px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
-        <i class="bi bi-layers-fill me-1"></i> Dados da 2ª Matrícula (Acumulação de Cargo na Escola)
+  {% if professor.matricula_acumulacao or professor.id_vinculo_acumulacao %}
+  <!-- SEGUNDA MATRÍCULA (FULL WIDTH) -->
+  <div class="col-12">
+    <div class="card-gestao" style="border-left:4px solid var(--purple);">
+      <h6 style="font-weight:700; color:#c084fc; margin-bottom:14px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+        <i class="bi bi-layers-fill me-2"></i>Dados da 2ª Matrícula (Acumulação de Cargo na Escola)
       </h6>
-      <div class="row g-2">
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">ID / VÍNCULO (2ª MATRÍCULA)</div>
-          <div style="font-size:0.9rem; font-weight:700; color:#fde047;">{{ professor.id_vinculo_acumulacao|default:"—" }}</div>
+      <div class="row g-3">
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">ID / VÍNCULO (2ª MATRÍCULA)</div>
+          <div style="font-size:0.95rem; font-weight:700; color:#fde047;">{{ professor.id_vinculo_acumulacao|default:"—" }}</div>
         </div>
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">2ª MATRÍCULA</div>
-          <div style="font-family:monospace; font-weight:700; color:#c084fc;">{{ professor.matricula_acumulacao|default:"—" }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">2ª MATRÍCULA</div>
+          <div style="font-family:monospace; font-weight:700; font-size:0.95rem; color:#c084fc;">{{ professor.matricula_acumulacao|default:"—" }}</div>
         </div>
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">SITUAÇÃO 2ª MATRÍCULA</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">SITUAÇÃO 2ª MATRÍCULA</div>
           <div>
             <span class="badge-gestao {% if professor.situacao_matricula_2 == 'ativo' %}badge-success{% elif professor.situacao_matricula_2 == 'aposentado' %}badge-warning{% else %}badge-secondary{% endif %}">
               {{ professor.get_situacao_matricula_2_display }}
             </span>
           </div>
         </div>
-        <div class="col-md-3">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CARGA HORÁRIA 2ª MATRÍCULA</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CARGA HORÁRIA 2ª MATRÍCULA</div>
           <div style="font-weight:700; color:#fde047;">{% if professor.ch_total_acumulacao %}{{ professor.ch_total_acumulacao }} horas{% else %}—{% endif %}</div>
         </div>
-        <div class="col-md-6 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CARGO (2ª MATRÍCULA)</div>
-          <div style="font-weight:600;">{{ professor.cargo_acumulacao|default:"—" }}</div>
+
+        <div class="col-xl-4 col-md-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CARGO (2ª MATRÍCULA)</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.cargo_acumulacao|default:"—" }}</div>
         </div>
-        <div class="col-md-6 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DISCIPLINA DE INGRESSO (2ª MATRÍCULA)</div>
-          <div style="font-weight:600;">{{ professor.disciplina_ingresso_acumulacao|default:"—" }}</div>
+        <div class="col-xl-4 col-md-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DISCIPLINA DE INGRESSO (2ª MATRÍCULA)</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ professor.disciplina_ingresso_acumulacao|default:"—" }}</div>
         </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DISCIPLINA DE INGRESSO</div>
-          <div style="font-weight:600;">{{ professor.disciplina_ingresso_acumulacao|default:"—" }}</div>
+        <div class="col-xl-4 col-md-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">FUNÇÃO NA 2ª MATRÍCULA</div>
+          <div style="font-weight:700; font-size:0.95rem; color:#67e8f9;">{{ professor.funcao_acumulacao|default:"—" }}</div>
         </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">FUNÇÃO NA 2ª MATRÍCULA</div>
-          <div style="font-weight:600; color:#67e8f9;">{{ professor.funcao_acumulacao|default:"—" }}</div>
-        </div>
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CARGA HORÁRIA 2ª MATRÍCULA</div>
-          <div style="font-weight:700; color:#fde047;">{% if professor.ch_total_acumulacao %}{{ professor.ch_total_acumulacao }} horas{% else %}—{% endif %}</div>
-        </div>
-        {% if professor.data_admissao_acumulacao %}
-        <div class="col-md-4 mt-2">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE ADMISSÃO (2ª MATRÍCULA)</div>
-          <div style="font-weight:600;">{{ professor.data_admissao_acumulacao|date:"d/m/Y" }}</div>
-        </div>
-        {% endif %}
       </div>
     </div>
-    {% endif %}
+  </div>
+  {% endif %}
 
-    <!-- Contato e Endereço -->
-    <div class="card-gestao mb-3">
-      <h6 style="font-weight:700; color:var(--blue); margin-bottom:12px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
-        Contato e Endereço Residencial
+  <!-- CONTATO E ENDEREÇO (FULL WIDTH) -->
+  <div class="col-12">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; color:var(--blue); margin-bottom:14px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+        <i class="bi bi-geo-alt-fill me-2" style="color:var(--yellow);"></i>Contato e Endereço Residencial
       </h6>
-      <div class="row g-2">
+      <div class="row g-3">
         <div class="col-md-6">
-          <div style="font-size:0.75rem; color:var(--text-muted);">E-MAILS</div>
-          {% if professor.email_google %}<div style="font-size:0.82rem;"><i class="bi bi-google me-1"></i>{{ professor.email_google }}</div>{% endif %}
-          {% if professor.email %}<div style="font-size:0.82rem;"><i class="bi bi-envelope me-1"></i>{{ professor.email }}</div>{% endif %}
-          {% if professor.email_alternativo %}<div style="font-size:0.82rem; color:var(--text-muted);"><i class="bi bi-envelope-at me-1"></i>{{ professor.email_alternativo }}</div>{% endif %}
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">E-MAILS REGISTRADOS</div>
+          {% if professor.email_google %}<div style="font-size:0.88rem; margin-bottom:4px;"><i class="bi bi-google me-2" style="color:#ea4335;"></i>{{ professor.email_google }}</div>{% endif %}
+          {% if professor.email %}<div style="font-size:0.88rem; margin-bottom:4px;"><i class="bi bi-envelope-fill me-2" style="color:var(--blue);"></i>{{ professor.email }}</div>{% endif %}
+          {% if professor.email_alternativo %}<div style="font-size:0.85rem; color:var(--text-muted);"><i class="bi bi-envelope-at me-2"></i>{{ professor.email_alternativo }}</div>{% endif %}
         </div>
         <div class="col-md-6">
-          <div style="font-size:0.75rem; color:var(--text-muted);">TELEFONES</div>
-          {% if professor.celular %}<div style="font-size:0.85rem;"><i class="bi bi-phone me-1"></i>{{ professor.celular }}</div>{% endif %}
-          {% if professor.telefone %}<div style="font-size:0.85rem;"><i class="bi bi-telephone me-1"></i>{{ professor.telefone }}</div>{% endif %}
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">TELEFONES DE CONTATO</div>
+          {% if professor.celular %}<div style="font-size:0.9rem; font-weight:700; margin-bottom:4px;"><i class="bi bi-phone-fill me-2" style="color:var(--green);"></i>{{ professor.celular }}</div>{% endif %}
+          {% if professor.telefone %}<div style="font-size:0.88rem;"><i class="bi bi-telephone-fill me-2"></i>{{ professor.telefone }}</div>{% endif %}
         </div>
         {% if professor.endereco %}
-        <div class="col-12 mt-2" style="border-top:1px dashed var(--card-border); padding-top:8px;">
-          <div style="font-size:0.75rem; color:var(--text-muted);">ENDEREÇO COMPLETO</div>
-          <div style="font-size:0.85rem;">
-            <i class="bi bi-geo-alt-fill me-1" style="color:var(--yellow);"></i>
+        <div class="col-12 mt-2 pt-2 border-top" style="border-color:var(--card-border) !important;">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">ENDEREÇO COMPLETO</div>
+          <div style="font-size:0.9rem; font-weight:600;">
+            <i class="bi bi-pin-map-fill me-2" style="color:var(--yellow);"></i>
             {{ professor.endereco }}, {{ professor.numero }} {% if professor.complemento %}({{ professor.complemento }}){% endif %} — {{ professor.bairro }}, {{ professor.municipio }}
           </div>
         </div>
         {% endif %}
       </div>
     </div>
+  </div>
 
-    <!-- Horários do ano atual -->
+  <!-- HORÁRIOS (FULL WIDTH) -->
+  <div class="col-12">
     <div class="card-gestao">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 style="font-weight:700; color:var(--blue); margin:0;">Horários {{ "now"|date:"Y" }}</h6>
-        <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-secondary" style="font-size:0.78rem; padding:6px 12px;">
-          <i class="bi bi-pencil"></i> Gerenciar
+        <h6 style="font-weight:700; color:var(--blue); margin:0;">
+          <i class="bi bi-calendar-week me-2"></i>Horários de Regência e Atendimento {{ "now"|date:"Y" }}
+        </h6>
+        <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-secondary" style="font-size:0.8rem; padding:6px 14px;">
+          <i class="bi bi-pencil me-1"></i> Gerenciar Horários
         </a>
       </div>
       {% if horarios %}
-      {% for h in horarios %}
-      <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px 14px; margin-bottom:6px; border-left:3px solid {% if h.aprovado %}var(--green){% else %}var(--yellow){% endif %};">
-        <div class="d-flex justify-content-between">
-          <div>
-            <strong style="font-size:0.88rem;">{{ h.get_dia_semana_display }}</strong>
-            <span style="color:var(--text-secondary); font-size:0.85rem; margin-left:10px;">{{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}</span>
+      <div class="row g-2">
+        {% for h in horarios %}
+        <div class="col-md-6 col-lg-4">
+          <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px 16px; border-left:4px solid {% if h.aprovado %}var(--green){% else %}var(--yellow){% endif %}; border:1px solid var(--card-border);">
+            <div class="d-flex justify-content-between align-items-center">
+              <strong style="font-size:0.9rem;">{{ h.get_dia_semana_display }}</strong>
+              <span class="badge-gestao {% if h.aprovado %}badge-success{% else %}badge-warning{% endif %}">
+                {% if h.aprovado %}Aprovado{% else %}Pendente{% endif %}
+              </span>
+            </div>
+            <div style="color:var(--text-secondary); font-size:0.85rem; font-weight:700; margin-top:4px;">
+              {{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">{{ h.local_display }}</div>
           </div>
-          <span class="badge-gestao {% if h.aprovado %}badge-success{% else %}badge-warning{% endif %}">
-            {% if h.aprovado %}Aprovado{% else %}Pendente{% endif %}
-          </span>
         </div>
-        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">{{ h.local_display }}</div>
+        {% endfor %}
       </div>
-      {% endfor %}
       {% else %}
-      <p style="color:var(--text-muted); font-size:0.85rem;">Nenhum horário cadastrado para este ano.</p>
+      <p style="color:var(--text-muted); font-size:0.88rem; margin:0;" class="py-2 text-center">Nenhum horário cadastrado para este ano.</p>
       {% endif %}
     </div>
+  </div>
 
-    <!-- MÓDULO PASTA DIGITAL DO SERVIDOR -->
+  <!-- MÓDULO PASTA DIGITAL DO SERVIDOR (FULL WIDTH) -->
+  <div class="col-12">
     {% include "professores/_pasta_digital_componente.html" with funcionario_pk=professor.pk tipo_servidor='professor' %}
   </div>
 </div>

@@ -8,124 +8,167 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">{{ funcionario.nome_completo }}</div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'folha_ponto_terceirizado' funcionario.pk %}" class="btn-gestao btn-gestao-secondary" target="_blank">
-      <i class="bi bi-file-earmark-pdf me-1"></i> Folha de Ponto (Kratus)
-    </a>
-    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-    <a href="{% url 'editar_terceirizado' funcionario.pk %}" class="btn-gestao btn-gestao-primary">
-      <i class="bi bi-pencil"></i> Editar
-    </a>
-    {% endif %}
-    <a href="{% url 'listar_terceirizados' %}" class="btn-gestao btn-gestao-secondary">
-      <i class="bi bi-arrow-left"></i> Voltar
-    </a>
-  </div>
-</div>
-
-<div class="row g-3 align-items-stretch">
-  <!-- Perfil -->
-  <div class="col-lg-3 col-md-4">
-    <div class="card-gestao text-center h-100 d-flex flex-column align-items-center justify-content-center p-4">
+<!-- CABEÇALHO DO TERCEIRIZADO (FULL WIDTH HORIZONTAL BANNER) -->
+<div class="card-gestao mb-4" style="background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border: 1px solid var(--card-border); padding: 20px 24px; border-radius: 14px;">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
       {% if funcionario.foto %}
-      <img src="{{ funcionario.foto.url }}" alt="Foto" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--purple); margin:0 auto 16px;">
+      <img src="{{ funcionario.foto.url }}" alt="Foto" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:3px solid var(--purple);">
       {% else %}
-      <div style="width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--cyan)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:2.2rem; color:white; font-weight:800;">
+      <div style="width:65px; height:65px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--cyan)); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:white; font-weight:800; border:2px solid var(--card-border);">
         {{ funcionario.nome_completo|first|upper }}
       </div>
       {% endif %}
-      <div style="font-weight:800; font-size:1rem;">{{ funcionario.nome_completo }}</div>
-      <div style="color:var(--text-secondary); margin-top:4px; font-size:0.85rem;">{{ funcionario.cargo_funcao }}</div>
-      <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">{{ funcionario.empresa_contratante }}</div>
-      <div class="mt-3">
-        <span class="badge-gestao {% if funcionario.ativo %}badge-success{% else %}badge-danger{% endif %}">
-          {% if funcionario.ativo %}✅ Ativo{% else %}❌ Desligado{% endif %}
-        </span>
+
+      <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <h3 style="font-weight:800; margin:0; color:#fff; font-size:1.4rem;">{{ funcionario.nome_completo }}</h3>
+          <span class="badge-gestao {% if funcionario.ativo %}badge-success{% else %}badge-danger{% endif %}" style="font-size:0.85rem; padding:4px 12px; font-weight:700;">
+            {% if funcionario.ativo %}● Ativo{% else %}● Desligado{% endif %}
+          </span>
+          {% if funcionario.empresa_contratante %}
+          <span class="badge-gestao badge-info" style="font-size:0.85rem; padding:4px 12px; font-weight:700;">
+            <i class="bi bi-building me-1"></i>{{ funcionario.empresa_contratante }}
+          </span>
+          {% endif %}
+        </div>
+        <div style="color:var(--text-secondary); font-size:0.92rem;" class="d-flex align-items-center gap-3 flex-wrap">
+          <span><i class="bi bi-briefcase me-1" style="color:var(--cyan);"></i><strong>{{ funcionario.cargo_funcao }}</strong></span>
+          {% if funcionario.codigo_terceirizado %}
+          <span style="color:#fde047;"><i class="bi bi-qr-code me-1"></i>Cód: {{ funcionario.codigo_terceirizado }}</span>
+          {% endif %}
+          {% if funcionario.idade %}
+          <span style="color:var(--text-muted);"><i class="bi bi-person me-1"></i>{{ funcionario.idade }} anos</span>
+          {% endif %}
+        </div>
       </div>
-      {% if funcionario.idade %}
-      <div style="color:var(--text-muted); font-size:0.78rem; margin-top:8px;">{{ funcionario.idade }} anos</div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'folha_ponto_terceirizado' funcionario.pk %}" class="btn-gestao btn-gestao-secondary" target="_blank">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Folha de Ponto (Kratus)
+      </a>
+      {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+      <a href="{% url 'editar_terceirizado' funcionario.pk %}" class="btn-gestao btn-gestao-primary">
+        <i class="bi bi-pencil me-1"></i> Editar
+      </a>
       {% endif %}
+      <a href="{% url 'listar_terceirizados' %}" class="btn-gestao btn-gestao-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+      </a>
     </div>
   </div>
+</div>
 
-  <div class="col-lg-9 col-md-8">
-    <!-- Dados Pessoais -->
-    <div class="card-gestao mb-3">
-      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Dados Pessoais</h6>
-      <div class="row g-2">
-        <div class="col-md-4">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CPF</div>
-          <div style="font-family:monospace; font-weight:600;">{{ funcionario.cpf|slice:":3" }}.{{ funcionario.cpf|slice:"3:6" }}.{{ funcionario.cpf|slice:"6:9" }}-{{ funcionario.cpf|slice:"9:" }}</div>
+<div class="row g-3">
+  <!-- DADOS PESSOAIS (FULL WIDTH) -->
+  <div class="col-12">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+        <i class="bi bi-person-lines-fill me-2"></i>Dados Pessoais
+      </h6>
+      <div class="row g-3">
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CPF</div>
+          <div style="font-family:monospace; font-weight:700; font-size:0.95rem;">{{ funcionario.cpf|slice:":3" }}.{{ funcionario.cpf|slice:"3:6" }}.{{ funcionario.cpf|slice:"6:9" }}-{{ funcionario.cpf|slice:"9:" }}</div>
         </div>
-        <div class="col-md-4">
-          <div style="font-size:0.72rem; color:var(--text-muted);">RG</div>
-          <div style="font-weight:600;">{{ funcionario.rg }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">RG</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.rg }}</div>
         </div>
-        <div class="col-md-4">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE NASCIMENTO</div>
-          <div style="font-weight:600;">{{ funcionario.data_nascimento|date:"d/m/Y" }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DATA DE NASCIMENTO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.data_nascimento|date:"d/m/Y" }}</div>
         </div>
         {% if funcionario.pis_pasep %}
-        <div class="col-md-4 mt-1">
-          <div style="font-size:0.72rem; color:var(--text-muted);">PIS / PASEP</div>
-          <div style="font-family:monospace; font-weight:600;">{{ funcionario.pis_pasep }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">PIS / PASEP</div>
+          <div style="font-family:monospace; font-weight:700; font-size:0.95rem;">{{ funcionario.pis_pasep }}</div>
         </div>
         {% endif %}
         {% if funcionario.ctps_numero %}
-        <div class="col-md-4 mt-1">
-          <div style="font-size:0.72rem; color:var(--text-muted);">CTPS</div>
-          <div style="font-weight:600;">{{ funcionario.ctps_numero }}/{{ funcionario.ctps_serie }}-{{ funcionario.ctps_uf }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CTPS</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.ctps_numero }}/{{ funcionario.ctps_serie }}-{{ funcionario.ctps_uf }}</div>
         </div>
         {% endif %}
       </div>
     </div>
+  </div>
 
-    <!-- Dados do Contrato -->
-    <div class="card-gestao mb-3">
-      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Contrato CLT</h6>
-      <div class="row g-2">
-        <div class="col-md-4">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE ADMISSÃO</div>
-          <div style="font-weight:600;">{{ funcionario.data_admissao|date:"d/m/Y" }}</div>
+  <!-- CONTRATO CLT (FULL WIDTH) -->
+  <div class="col-12">
+    <div class="card-gestao">
+      <h6 style="font-weight:700; color:var(--blue); margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+        <i class="bi bi-file-earmark-medical me-2"></i>Contrato Terceirizado CLT
+      </h6>
+      <div class="row g-3">
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DATA DE ADMISSÃO</div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.data_admissao|date:"d/m/Y" }}</div>
         </div>
         {% if funcionario.data_demissao %}
-        <div class="col-md-4">
-          <div style="font-size:0.72rem; color:var(--text-muted);">DATA DE DEMISSÃO</div>
-          <div style="font-weight:600; color:var(--red);">{{ funcionario.data_demissao|date:"d/m/Y" }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DATA DE DEMISSÃO</div>
+          <div style="font-weight:700; font-size:0.95rem; color:var(--red);">{{ funcionario.data_demissao|date:"d/m/Y" }}</div>
         </div>
         {% endif %}
-        <div class="col-md-4">
-          <div style="font-size:0.72rem; color:var(--text-muted);">TEMPO NA ESCOLA</div>
-          <div style="font-weight:700; color:var(--green);">{{ funcionario.tempo_na_escola }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">TEMPO NA ESCOLA</div>
+          <div style="font-weight:700; color:var(--green); font-size:1.05rem;">{{ funcionario.tempo_na_escola }}</div>
         </div>
         {% if funcionario.salario %}
-        <div class="col-md-4 mt-1">
-          <div style="font-size:0.72rem; color:var(--text-muted);">SALÁRIO</div>
-          <div style="font-weight:600;">R$ {{ funcionario.salario }}</div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">SALÁRIO</div>
+          <div style="font-weight:700; font-size:0.95rem;">R$ {{ funcionario.salario }}</div>
         </div>
         {% endif %}
       </div>
     </div>
+  </div>
 
-    <!-- Contato e Endereço -->
+  <!-- CONTATO E ENDEREÇO (FULL WIDTH) -->
+  <div class="col-12">
     <div class="card-gestao">
-      <h6 style="font-weight:700; color:var(--blue); margin-bottom:12px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">Contato e Endereço</h6>
-      {% if funcionario.email %}<div class="mb-1"><i class="bi bi-envelope me-2" style="color:var(--text-muted);"></i>{{ funcionario.email }}</div>{% endif %}
-      {% if funcionario.telefone %}<div class="mb-1"><i class="bi bi-phone me-2" style="color:var(--text-muted);"></i>{{ funcionario.telefone }}</div>{% endif %}
-      {% if funcionario.telefone_emergencia %}<div class="mb-1"><i class="bi bi-phone-vibrate me-2" style="color:var(--yellow);"></i>{{ funcionario.telefone_emergencia }} <span style="font-size:0.75rem; color:var(--text-muted);">(emergência)</span></div>{% endif %}
-      {% if funcionario.logradouro %}
-      <div class="mt-2" style="font-size:0.85rem; color:var(--text-secondary);">
-        <i class="bi bi-geo-alt me-2" style="color:var(--text-muted);"></i>
-        {{ funcionario.logradouro }}, {{ funcionario.numero }}{% if funcionario.complemento %} — {{ funcionario.complemento }}{% endif %}<br>
-        {{ funcionario.bairro }} — {{ funcionario.cidade }}/{{ funcionario.uf }}
-        {% if funcionario.cep %} — CEP {{ funcionario.cep }}{% endif %}
+      <h6 style="font-weight:700; color:var(--blue); margin-bottom:14px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+        <i class="bi bi-geo-alt-fill me-2" style="color:var(--yellow);"></i>Contato e Endereço
+      </h6>
+      <div class="row g-3">
+        {% if funcionario.email %}
+        <div class="col-md-4">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">E-MAIL</div>
+          <div style="font-size:0.9rem;"><i class="bi bi-envelope-fill me-2" style="color:var(--blue);"></i>{{ funcionario.email }}</div>
+        </div>
+        {% endif %}
+        {% if funcionario.telefone %}
+        <div class="col-md-4">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">TELEFONE</div>
+          <div style="font-size:0.9rem; font-weight:700;"><i class="bi bi-phone-fill me-2" style="color:var(--green);"></i>{{ funcionario.telefone }}</div>
+        </div>
+        {% endif %}
+        {% if funcionario.telefone_emergencia %}
+        <div class="col-md-4">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">EMERGÊNCIA</div>
+          <div style="font-size:0.9rem; font-weight:700;"><i class="bi bi-phone-vibrate-fill me-2" style="color:var(--yellow);"></i>{{ funcionario.telefone_emergencia }}</div>
+        </div>
+        {% endif %}
+        {% if funcionario.logradouro %}
+        <div class="col-12 mt-2 pt-2 border-top" style="border-color:var(--card-border) !important;">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase mb-1">ENDEREÇO COMPLETO</div>
+          <div style="font-size:0.9rem; font-weight:600;">
+            <i class="bi bi-pin-map-fill me-2" style="color:var(--yellow);"></i>
+            {{ funcionario.logradouro }}, {{ funcionario.numero }}{% if funcionario.complemento %} — {{ funcionario.complemento }}{% endif %} |
+            {{ funcionario.bairro }} — {{ funcionario.cidade }}/{{ funcionario.uf }}
+            {% if funcionario.cep %} — CEP {{ funcionario.cep }}{% endif %}
+          </div>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
+  </div>
 
-    <!-- MÓDULO PASTA DIGITAL DO SERVIDOR -->
+  <!-- MÓDULO PASTA DIGITAL DO SERVIDOR (FULL WIDTH) -->
+  <div class="col-12">
     {% include "professores/_pasta_digital_componente.html" with funcionario_pk=funcionario.pk tipo_servidor='terc' %}
   </div>
 </div>
