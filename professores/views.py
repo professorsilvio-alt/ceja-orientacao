@@ -20,9 +20,12 @@ from .forms import (
 @login_required
 @verificar_primeiro_acesso
 def view_listar_professores(request):
+    import re
     recalcular_classificacao_professores()
 
     status_filtro = request.GET.get('status', 'ativos')
+    q = request.GET.get('q', '').strip()
+    cpf_limpo = re.sub(r'\D', '', q)
 
     # Contadores
     total_ativos = Professor.objects.filter(ativo=True, situacao_matricula_1='ativo').count()
@@ -43,9 +46,22 @@ def view_listar_professores(request):
             ativo=True, situacao_matricula_1='ativo'
         ).order_by('classificacao')
 
+    if q:
+        query_filter = Q(nome_completo__icontains=q) | \
+                       Q(matricula__icontains=q) | \
+                       Q(matricula_acumulacao__icontains=q) | \
+                       Q(id_vinculo__icontains=q) | \
+                       Q(id_vinculo_acumulacao__icontains=q) | \
+                       Q(cargo__icontains=q) | \
+                       Q(disciplina_ingresso__icontains=q)
+        if cpf_limpo:
+            query_filter |= Q(cpf__icontains=cpf_limpo)
+        professores = professores.filter(query_filter)
+
     return render(request, 'professores/listar.html', {
         'professores': professores,
         'status_filtro': status_filtro,
+        'query': q,
         'total_ativos': total_ativos,
         'total_inativos': total_inativos,
         'total_geral': total_geral,

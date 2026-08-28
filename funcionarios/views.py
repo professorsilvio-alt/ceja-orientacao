@@ -13,9 +13,27 @@ from .forms import FuncionarioAdmForm, FuncionarioTercForm
 @login_required
 @verificar_primeiro_acesso
 def view_listar_administrativos(request):
+    import re
+    from django.db.models import Q
+    q = request.GET.get('q', '').strip()
+    cpf_limpo = re.sub(r'\D', '', q)
+
     funcionarios = FuncionarioAdministrativo.objects.filter(ativo=True)
+
+    if q:
+        query_filter = Q(nome_completo__icontains=q) | \
+                       Q(matricula__icontains=q) | \
+                       Q(matricula_acumulacao__icontains=q) | \
+                       Q(id_vinculo__icontains=q) | \
+                       Q(cargo__icontains=q) | \
+                       Q(funcao_atual__icontains=q)
+        if cpf_limpo:
+            query_filter |= Q(cpf__icontains=cpf_limpo)
+        funcionarios = funcionarios.filter(query_filter)
+
     return render(request, 'funcionarios/listar_adm.html', {
         'funcionarios': funcionarios,
+        'query': q,
         'tipo': 'Funcionários Administrativos',
     })
 
@@ -79,9 +97,26 @@ def view_editar_administrativo(request, pk):
 @login_required
 @verificar_primeiro_acesso
 def view_listar_terceirizados(request):
+    import re
+    from django.db.models import Q
+    q = request.GET.get('q', '').strip()
+    cpf_limpo = re.sub(r'\D', '', q)
+
     funcionarios = FuncionarioTerceirizado.objects.filter(ativo=True)
+
+    if q:
+        query_filter = Q(nome_completo__icontains=q) | \
+                       Q(codigo_terceirizado__icontains=q) | \
+                       Q(cargo_funcao__icontains=q) | \
+                       Q(empresa_contratante__icontains=q) | \
+                       Q(rg__icontains=q)
+        if cpf_limpo:
+            query_filter |= Q(cpf__icontains=cpf_limpo)
+        funcionarios = funcionarios.filter(query_filter)
+
     return render(request, 'funcionarios/listar_terc.html', {
         'funcionarios': funcionarios,
+        'query': q,
         'tipo': 'Funcionários Terceirizados',
     })
 

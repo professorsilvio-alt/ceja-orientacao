@@ -17,6 +17,28 @@
 </div>
 
 <div class="card-gestao">
+  <!-- Formulário de Busca -->
+  <form method="get" action="" class="mb-3 pb-3 border-bottom" style="border-color:var(--card-border) !important;">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="input-group">
+          <span class="input-group-text bg-dark text-muted border-secondary" style="border-color:var(--card-border) !important;"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por Nome, CPF, ID/Vínculo ou Matrícula..." style="height:42px; font-size:0.88rem; background:rgba(15,23,42,0.6); color:#fff; border-color:var(--card-border);">
+          <button type="submit" class="btn-gestao btn-gestao-primary px-4" style="height:42px; font-weight:700;">Buscar</button>
+          {% if query %}
+          <a href="{% url 'listar_administrativos' %}" class="btn-gestao btn-gestao-secondary px-3" title="Limpar busca" style="height:42px; display:inline-flex; align-items:center;"><i class="bi bi-x-lg"></i></a>
+          {% endif %}
+        </div>
+      </div>
+      {% if query %}
+      <div class="col-md-4 col-lg-6">
+        <span class="badge-gestao badge-info" style="font-size:0.85rem; padding:6px 12px;">
+          <i class="bi bi-funnel-fill me-1"></i>Encontrado(s) {{ funcionarios.count }} resultado(s) para "{{ query }}"
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </form>
   {% if funcionarios %}
   <div class="table-responsive">
     <table class="table-gestao" id="tabela-adm">
