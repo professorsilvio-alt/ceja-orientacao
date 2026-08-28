@@ -112,6 +112,15 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def primeiro_nome(self):
         return self.nome_completo.split()[0]
 
+    @property
+    def username(self):
+        """Propriedade alias para compatibilidade com Django templates e plugins."""
+        return self.cpf
+
+    def get_full_name(self):
+        """Método padrão Django para retornar o nome completo do usuário."""
+        return self.nome_completo
+
     def save(self, *args, **kwargs):
         self.cpf = re.sub(r'\D', '', self.cpf)
         super().save(*args, **kwargs)
