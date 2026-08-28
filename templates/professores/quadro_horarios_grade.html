@@ -65,13 +65,14 @@
     font-size: 0.85rem;
   }
 
-  /* Tabela de Grade Interativa Expandida a 100% da Largura */
+  /* Tabela de Grade Interativa com Linhas de Grade Destacadas */
   .grade-table-container {
     background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    border: 2px solid rgba(56, 189, 248, 0.4) !important;
     border-radius: 12px;
     overflow: hidden;
     width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 
   .grade-table {
@@ -82,7 +83,7 @@
   }
 
   .grade-table th, .grade-table td {
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
     padding: 12px 10px;
     text-align: center;
     vertical-align: middle;
@@ -92,31 +93,34 @@
   }
 
   .grade-table th {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(30, 41, 59, 0.9);
     color: #f8fafc;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 0.84rem;
     padding: 14px 10px;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.5) !important;
   }
 
   .grade-table th.col-horario, .grade-table td.col-horario {
-    background: rgba(30, 41, 59, 0.8);
+    background: rgba(15, 23, 42, 0.95);
     color: #67e8f9;
     font-size: 0.85rem;
     font-weight: 700;
+    border-right: 2px solid rgba(56, 189, 248, 0.3) !important;
   }
 
   /* Célula Selecionada */
   .cell-selected {
-    outline: 2px solid #38bdf8 !important;
-    outline-offset: -2px;
+    outline: 3px solid #38bdf8 !important;
+    outline-offset: -3px;
+    background-color: rgba(56, 189, 248, 0.2) !important;
   }
 
   /* Estado Célula FECHADA (Fora do expediente) */
   .cell-fechada {
-    background-color: rgba(15, 23, 42, 0.85) !important;
+    background-color: rgba(15, 23, 42, 0.95) !important;
     color: #64748b !important;
     font-weight: 700 !important;
     font-size: 0.75rem;
@@ -124,7 +128,7 @@
     user-select: none;
   }
 
-  /* Estado Célula LIVRE (Clicável) */
+  /* Estado Célula LIVRE (Clicável com ícone de +) */
   .cell-livre {
     background-color: rgba(255, 255, 255, 0.015);
     cursor: pointer;
@@ -141,10 +145,10 @@
   /* Estado Célula ALOCADA (Clicável para editar) */
   .cell-alocada {
     background-color: rgba(34, 197, 94, 0.15) !important;
-    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    border: 1px solid rgba(34, 197, 94, 0.5) !important;
     color: #4ade80 !important;
     font-weight: 800 !important;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     cursor: pointer;
     transition: all 0.15s ease-in-out;
     text-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
@@ -232,18 +236,18 @@
         <i class="bi bi-clipboard-plus me-1"></i>Alocação Rápida (Ctrl+C / Ctrl+V):
       </span>
       <span id="copy-status-text" style="font-size:0.85rem; color:#cbd5e1; font-weight:500;">
-        Clique em um horário para selecionar. Pressione <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> para copiar e <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd> para colar em outro horário!
+        Selecione um horário com professor e pressione <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> para copiar e <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd> para colar em outro horário vago!
       </span>
     </div>
     <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
       <span id="copied-label-badge" class="copy-status-badge"></span>
-      <button type="button" class="btn-gestao btn-gestao-secondary py-1 px-2" style="font-size:0.78rem; background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);" onclick="limparCopia()">
+      <button type="button" class="btn btn-sm btn-danger py-1 px-2 font-weight-bold" style="font-size:0.8rem;" onclick="limparCopia(event)">
         <i class="bi bi-x-circle me-1"></i> Limpar Cópia
       </button>
     </div>
   </div>
 
-  <!-- Tabela de Grade Interativa Expandida em 100% da Largura da Tela -->
+  <!-- Tabela de Grade Interativa Expandida com Linhas de Grade Visíveis -->
   <div class="grade-table-container">
     <div class="table-responsive">
       <table class="grade-table" id="tabela-grade">
@@ -275,7 +279,7 @@
                     data-profid="{{ cell.alocacao.professor.pk }}"
                     data-rotulo="{{ cell.professor_nome }}"
                     onclick="clicarCelulaGrid(this)"
-                    title="Clique 1x para selecionar / copiar. Clique duplo para alterar no modal.">
+                    title="Clique para abrir ou copiar (Ctrl+C)">
                   <i class="bi bi-person-check-fill me-1"></i>{{ cell.professor_nome }}
                 </td>
                 {% else %}
@@ -287,7 +291,7 @@
                     data-profid=""
                     data-rotulo=""
                     onclick="clicarCelulaGrid(this)"
-                    title="Clique para selecionar / alocar neste horário.">
+                    title="Clique para alocar professor neste horário">
                   <i class="bi bi-plus-lg opacity-50" style="font-size:1.1rem;"></i>
                 </td>
                 {% endif %}
@@ -360,8 +364,9 @@
 
         <div class="modal-footer" style="border-top:1px solid var(--card-border); display:flex; justify-content:space-between;">
           <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-eraser me-1"></i> Limpar Horário</button>
-          <div>
+          <div class="d-flex gap-2">
             <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModal()"><i class="bi bi-clipboard-check me-1"></i> Copiar Este Professor</button>
             <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Horário</button>
           </div>
         </div>
@@ -373,6 +378,7 @@
 <script>
   let celulaSelecionada = null;
   let dadosCopiados = null; // { profId, rotulo }
+  const temposRequeridos = {{ turma.tempos_requeridos|default:12 }};
 
   // Carrega a cópia persistente ao carregar a página
   document.addEventListener('DOMContentLoaded', function() {
@@ -410,9 +416,8 @@
     modalObj.show();
   }
 
-  // Clique na célula da grade: seleciona, permite colar se houver cópia, ou abre modal
+  // Clique na célula da grade
   function clicarCelulaGrid(cellElem) {
-    // Remove destaque de seleção anterior
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
     cellElem.classList.add('cell-selected');
     celulaSelecionada = cellElem;
@@ -420,18 +425,13 @@
     const profId = cellElem.dataset.profid;
     const rotulo = cellElem.dataset.rotulo;
 
-    // Se já tivermos dados copiados (persistentes) e clicarmos em uma célula livre, cola direto!
+    // Se já tivermos dados copiados (persistentes) e clicarmos em uma célula LIVRE, cola direto!
     if (dadosCopiados && !profId) {
       colarEmCelula(cellElem, dadosCopiados.profId, dadosCopiados.rotulo);
       return;
     }
 
-    // Se a célula tiver um professor, atualiza a cópia automática
-    if (profId) {
-      copiarDados(profId, rotulo);
-    }
-
-    // Abre o modal de alocação
+    // Caso contrário, abre a modal de edição/alocação
     abrirModalAlocacao(cellElem);
   }
 
@@ -442,15 +442,34 @@
     exibirBadgeCopia(rotulo);
   }
 
+  function copiarDoModal() {
+    const profSelect = document.getElementById('select_professor');
+    const profId = profSelect.value;
+    const rotulo = document.getElementById('input_rotulo_exibicao').value;
+    if (profId) {
+      copiarDados(profId, rotulo);
+      const modalEl = document.getElementById('modalAlocarSlot');
+      const modalObj = bootstrap.Modal.getInstance(modalEl);
+      if (modalObj) modalObj.hide();
+    } else {
+      alert('Selecione um professor para copiar.');
+    }
+  }
+
   function exibirBadgeCopia(rotulo) {
     document.getElementById('copy-actions-container').style.display = 'flex';
     document.getElementById('copied-label-badge').textContent = '📋 Copiado (Persistente): ' + rotulo;
   }
 
-  function limparCopia() {
+  function limparCopia(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     dadosCopiados = null;
     localStorage.removeItem('ceja_copied_prof_global');
     document.getElementById('copy-actions-container').style.display = 'none';
+    document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
   }
 
   function colarEmCelula(cellElem, profId, rotulo) {
@@ -477,7 +496,7 @@
       if (data.success) {
         window.location.reload();
       } else {
-        alert('Erro ao colar: ' + (data.error || 'Erro desconhecido.'));
+        alert('⚠️ ' + (data.error || 'Não foi possível alocar o horário.'));
       }
     })
     .catch(() => window.location.reload());
@@ -530,7 +549,7 @@
         if (modalObj) modalObj.hide();
         window.location.reload();
       } else {
-        alert('Erro ao salvar: ' + (data.error || 'Erro desconhecido.'));
+        alert('⚠️ ' + (data.error || 'Erro desconhecido.'));
       }
     })
     .catch(err => {

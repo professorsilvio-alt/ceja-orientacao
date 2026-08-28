@@ -734,6 +734,18 @@ def view_salvar_alocacao_slot(request, pk):
             ).delete()
             msg = 'Horário liberado.'
         else:
+            # Validação para não permitir ultrapassar o número de tempos exigidos pela turma
+            existente = AlocacaoHorarioTurma.objects.filter(
+                turma=turma, dia_semana=dia_semana, hora_inicio=hora_inicio_str
+            ).exists()
+
+            if not existente and turma.tempos_alocados >= turma.tempos_requeridos:
+                err_msg = f'Limite máximo de {turma.tempos_requeridos} tempos atingido para esta disciplina ({turma.codigo_abrev}).'
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('format') == 'json':
+                    return JsonResponse({'success': False, 'error': err_msg}, status=400)
+                messages.error(request, err_msg)
+                return redirect('grade_turma', pk=turma.pk)
+
             prof = get_object_or_404(Professor, pk=professor_id)
             rotulo = rotulo_exibicao or prof.nome_curto.upper()
 

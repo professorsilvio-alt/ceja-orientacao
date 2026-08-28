@@ -23,6 +23,7 @@ urlpatterns = [
     path('ponto/espelho/', views.view_espelho_ponto, name='espelho_ponto'),
     path('ponto/<int:pk>/editar/', views.view_editar_ponto_terceirizado, name='editar_ponto_terceirizado'),
     path('ponto/<int:pk>/excluir/', views.view_excluir_ponto_terceirizado, name='excluir_ponto_terceirizado'),
+    path('ponto/<int:pk>/reenviar-email/', views.view_reenviar_email_ponto, name='reenviar_email_ponto'),
     path('ponto/senhas/', views.view_gerenciar_senhas_ponto, name='gerenciar_senhas_ponto'),
     path('terceirizados/folha-ponto/', views.view_folha_ponto_kratus, name='folha_ponto_kratus'),
     path('terceirizados/<int:pk>/folha-ponto/', views.view_folha_ponto_kratus, name='folha_ponto_terceirizado'),

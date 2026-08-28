@@ -152,9 +152,18 @@
           </td>
           <td class="text-center">
             {% if r.email_enviado %}
-            <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Enviado</span>
+            <span class="badge bg-success text-white py-1 px-2 fw-bold" style="font-size:0.8rem;"><i class="bi bi-check-circle-fill me-1"></i> Enviado</span>
             {% else %}
-            <span class="text-muted"><i class="bi bi-dash-circle me-1"></i> Pendente</span>
+              {% if r.funcionario.email %}
+              <div class="d-flex align-items-center justify-content-center gap-1">
+                <span class="badge bg-warning text-dark py-1 px-2 fw-bold" style="font-size:0.8rem;" title="E-mail de confirmação pendente de envio"><i class="bi bi-clock-history me-1"></i> Pendente</span>
+                <a href="{% url 'reenviar_email_ponto' r.pk %}" class="btn btn-sm btn-outline-warning py-0 px-1" style="font-size:0.75rem;" title="Tentar Reenviar E-mail">
+                  <i class="bi bi-send-fill"></i>
+                </a>
+              </div>
+              {% else %}
+              <span class="badge bg-dark border border-secondary py-1 px-2 font-weight-bold" style="font-size:0.78rem; color:#94a3b8 !important;" title="Funcionário sem e-mail cadastrado"><i class="bi bi-envelope-slash me-1"></i> Sem E-mail</span>
+              {% endif %}
             {% endif %}
           </td>
           <td class="text-end">

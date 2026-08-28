@@ -545,3 +545,19 @@ def view_excluir_ponto_terceirizado(request, pk):
     messages.success(request, f'Batida de ponto de {nome} excluída com sucesso.')
     return redirect(request.META.get('HTTP_REFERER', 'espelho_ponto'))
 
+
+@diretor_required
+def view_reenviar_email_ponto(request, pk):
+    """Reenvia o e-mail de confirmação de batida de ponto para o funcionário."""
+    registro = get_object_or_404(RegistroPontoTerceirizado, pk=pk)
+    if not registro.funcionario.email:
+        messages.error(request, f'O funcionário {registro.funcionario.nome_curto} não possui e-mail cadastrado.')
+    else:
+        sucesso = enviar_email_confirmacao_ponto(registro)
+        if sucesso:
+            messages.success(request, f'E-mail de confirmação reenviado para {registro.funcionario.email}.')
+        else:
+            messages.error(request, 'Falha ao enviar e-mail. Verifique se o e-mail está correto ou as configurações de SMTP.')
+
+    return redirect(request.META.get('HTTP_REFERER', 'espelho_ponto'))
+
