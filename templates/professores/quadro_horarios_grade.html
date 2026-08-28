@@ -4,25 +4,25 @@
 
 {% block extra_head %}
 <style>
-  /* Cabeçalho da Grade em Tema Dark Oficial */
+  /* Cabeçalho da Grade em Tema Dark Oficial Premium */
   .grade-header-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #0f172a;
+    border: 1px solid #334155;
     border-radius: 12px;
     padding: 20px 24px;
     margin-bottom: 16px;
   }
 
   .grade-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: 8px;
+    color: #f8fafc;
+    margin-bottom: 6px;
   }
 
   .grade-chip {
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid #334155;
     border-radius: 8px;
     padding: 6px 14px;
     font-size: 0.85rem;
@@ -34,20 +34,20 @@
   .badge-code {
     background: rgba(6, 182, 212, 0.15);
     color: #67e8f9;
-    border: 1px solid rgba(6, 182, 212, 0.3);
+    border: 1px solid rgba(6, 182, 212, 0.4);
     font-weight: 800;
     font-family: monospace;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 6px;
     font-size: 0.95rem;
   }
 
-  /* Barra de Copiar e Colar Rápido (Ctrl+C / Ctrl+V e Drag-and-Drop) */
+  /* Barra de Ferramentas e Instruções */
   .copy-paste-bar {
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(59, 130, 246, 0.4);
+    background: #0f172a;
+    border: 1px solid #3b82f6;
     border-radius: 10px;
-    padding: 10px 16px;
+    padding: 12px 18px;
     margin-bottom: 16px;
     display: flex;
     align-items: center;
@@ -59,56 +59,155 @@
     background: rgba(34, 197, 94, 0.25);
     color: #4ade80;
     border: 1px solid rgba(34, 197, 94, 0.5);
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 6px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
   }
 
-  /* Tabela de Grade Interativa com Linhas de Grade Perfeitamente Definidas */
+  /* MATRIZ DE GRADE COM LINHAS DE GRADE (BORDERS) DE ALTO CONTRASTE */
   .grade-table-container {
-    background: var(--card-bg);
-    border: 3px solid #38bdf8 !important;
+    background: #090d16;
+    border: 2px solid #38bdf8 !important;
     border-radius: 12px;
     overflow: hidden;
     width: 100%;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   }
 
-  .grade-table {
+  table.grade-table {
     width: 100% !important;
-    table-layout: fixed;
-    border-collapse: collapse;
-    color: var(--text-primary);
-  }
-
-  .grade-table th, .grade-table td {
-    border: 2px solid rgba(255, 255, 255, 0.35) !important;
-    padding: 10px 6px;
-    text-align: center !important;
-    vertical-align: middle !important;
-    font-size: 0.88rem;
-    word-break: break-word;
-    position: relative;
-  }
-
-  .grade-table th {
-    background: rgba(30, 41, 59, 0.95);
+    table-layout: fixed !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
     color: #f8fafc;
-    font-weight: 800;
+    margin: 0 !important;
+  }
+
+  /* LINHAS DE GRADE HORIZONTAIS E VERTICAIS 100% VISÍVEIS E DEFINIDAS */
+  table.grade-table th, 
+  table.grade-table td {
+    border-right: 2px solid #475569 !important;
+    border-bottom: 2px solid #475569 !important;
+    padding: 8px 6px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    box-sizing: border-block !important;
+  }
+
+  /* Cabeçalho da Tabela */
+  table.grade-table th {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    font-weight: 800 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-size: 0.84rem;
-    padding: 14px 8px;
+    font-size: 0.85rem;
+    padding: 14px 6px !important;
     border-bottom: 3px solid #38bdf8 !important;
   }
 
-  .grade-table th.col-horario, .grade-table td.col-horario {
-    background: rgba(15, 23, 42, 0.95);
-    color: #67e8f9;
+  /* Coluna de Horários */
+  table.grade-table th.col-horario, 
+  table.grade-table td.col-horario {
+    background: #0f172a !important;
+    color: #38bdf8 !important;
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 800;
     border-right: 3px solid #38bdf8 !important;
+    width: 14% !important;
+  }
+
+  /* Células de Dia */
+  table.grade-table th.col-dia,
+  table.grade-table td.col-dia {
+    width: 17.2% !important;
+  }
+
+  /* Estado Célula FECHADA (Fora do expediente) */
+  .cell-fechada {
+    background-color: #020617 !important;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    user-select: none;
+  }
+
+  /* Estado Célula LIVRE (Clicável com ícone de +) */
+  .cell-livre {
+    background-color: rgba(255, 255, 255, 0.015);
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.15s ease-in-out;
+  }
+  .cell-livre:hover {
+    background-color: rgba(59, 130, 246, 0.25) !important;
+    color: #60a5fa !important;
+  }
+
+  /* Estado Célula ALOCADA (Sleek Green Card) */
+  .cell-alocada {
+    background-color: rgba(34, 197, 94, 0.16) !important;
+    color: #4ade80 !important;
+    font-weight: 800 !important;
+    font-size: 0.88rem;
+    cursor: grab;
+    transition: all 0.15s ease-in-out;
+    user-select: none;
+  }
+  .cell-alocada:active {
+    cursor: grabbing;
+  }
+  .cell-alocada:hover {
+    background-color: rgba(34, 197, 94, 0.3) !important;
+  }
+
+  /* Wrapper flexível dentro da célula alocada */
+  .cell-content-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .cell-content-wrapper span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* Ícone Botão de Excluir (X Vermelho Redondo) */
+  .btn-trash-icon {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.5) !important;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    margin-left: 6px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    pointer-events: auto !important;
+  }
+  .btn-trash-icon:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    transform: scale(1.15);
   }
 
   /* Célula Selecionada */
@@ -122,74 +221,6 @@
   .cell-drag-over {
     outline: 3px dashed #4ade80 !important;
     background-color: rgba(34, 197, 94, 0.35) !important;
-  }
-
-  /* Estado Célula FECHADA (Fora do expediente) */
-  .cell-fechada {
-    background-color: rgba(15, 23, 42, 0.95) !important;
-    color: #64748b !important;
-    font-weight: 700 !important;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-    user-select: none;
-  }
-
-  /* Estado Célula LIVRE (Clicável com ícone de +) */
-  .cell-livre {
-    background-color: rgba(255, 255, 255, 0.02);
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.15s ease-in-out;
-  }
-  .cell-livre:hover {
-    background-color: rgba(59, 130, 246, 0.25) !important;
-    color: #60a5fa !important;
-  }
-
-  /* Estado Célula ALOCADA (Clicável e Arrastável) */
-  .cell-alocada {
-    background-color: rgba(34, 197, 94, 0.18) !important;
-    border: 2px solid rgba(34, 197, 94, 0.6) !important;
-    color: #4ade80 !important;
-    font-weight: 800 !important;
-    font-size: 0.9rem;
-    cursor: grab;
-    transition: all 0.15s ease-in-out;
-    text-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
-    user-select: none;
-  }
-  .cell-alocada span {
-    pointer-events: none;
-  }
-  .cell-alocada:active {
-    cursor: grabbing;
-  }
-  .cell-alocada:hover {
-    background-color: rgba(34, 197, 94, 0.35) !important;
-  }
-
-  /* Botão de Excluir Direto na Célula */
-  .btn-deletar-slot {
-    background: rgba(239, 68, 68, 0.25);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.6);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    margin-left: 6px;
-    opacity: 0.6;
-    pointer-events: auto !important;
-  }
-  .cell-alocada:hover .btn-deletar-slot {
-    opacity: 1;
-  }
-  .btn-deletar-slot:hover {
-    background: #ef4444;
-    color: #fff;
   }
 
   @media print {
@@ -273,7 +304,7 @@
         <i class="bi bi-arrows-move me-1"></i>Tabuleiro Interativo:
       </span>
       <span id="copy-status-text" style="font-size:0.85rem; color:#cbd5e1; font-weight:500;">
-        💡 <strong>Arraste o nome do professor</strong> para outro horário como no xadrez, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> / <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd>!
+        💡 <strong>Arraste o nome do professor</strong> para trocar de horário, ou selecione e use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> / <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd>!
       </span>
     </div>
     <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
@@ -284,31 +315,31 @@
     </div>
   </div>
 
-  <!-- Tabela de Grade Interativa Expandida com Linhas de Grade Visíveis -->
+  <!-- MATRIZ DE GRADE COM LINHAS DE GRADE VERTICAIS E HORIZONTAIS DEFINIDAS -->
   <div class="grade-table-container">
     <div class="table-responsive">
       <table class="grade-table" id="tabela-grade">
         <thead>
           <tr>
-            <th class="col-horario" style="width: 15%;">HORÁRIO</th>
+            <th class="col-horario">HORÁRIO</th>
             {% for dia_code, dia_nome, func_dia, abert, fech in dias_map %}
-            <th style="width: 17%;">{{ dia_nome }}</th>
+            <th class="col-dia">{{ dia_nome }}</th>
             {% endfor %}
           </tr>
         </thead>
         <tbody>
           {% for row in grid %}
           <tr>
-            <td class="col-horario font-monospace" style="font-weight:700;">
+            <td class="col-horario font-monospace">
               {{ row.label_horario }}
             </td>
 
             {% for cell in row.cells %}
               {% if cell.is_fechada %}
-              <td class="cell-fechada">FECHADA</td>
+              <td class="cell-fechada col-dia">FECHADA</td>
               {% else %}
                 {% if cell.alocacao %}
-                <td class="cell-alocada grid-cell"
+                <td class="cell-alocada grid-cell col-dia"
                     draggable="true"
                     data-diacode="{{ cell.dia_code }}"
                     data-dianome="{{ cell.dia_nome }}"
@@ -321,16 +352,16 @@
                     ondragleave="arrastarSair(this)"
                     ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
-                    title="Arraste para outro horário ou clique para editar/remover">
-                  <div class="d-flex align-items-center justify-content-center">
-                    <span><i class="bi bi-person-check-fill me-1"></i>{{ cell.professor_nome }}</span>
-                    <button type="button" class="btn-deletar-slot no-print" onclick="deletarSlotDireto(event, '{{ cell.dia_code }}', '{{ row.hora_inicio }}')" title="Excluir este horário">
-                      <i class="bi bi-trash-fill"></i>
+                    title="Arraste para trocar de horário ou clique para editar">
+                  <div class="cell-content-wrapper">
+                    <span><i class="bi bi-person-fill me-1"></i>{{ cell.professor_nome }}</span>
+                    <button type="button" class="btn-trash-icon no-print" onclick="deletarSlotDireto(event, '{{ cell.dia_code }}', '{{ row.hora_inicio }}')" title="Excluir este horário">
+                      <i class="bi bi-x-lg"></i>
                     </button>
                   </div>
                 </td>
                 {% else %}
-                <td class="cell-livre grid-cell"
+                <td class="cell-livre grid-cell col-dia"
                     data-diacode="{{ cell.dia_code }}"
                     data-dianome="{{ cell.dia_nome }}"
                     data-horainicio="{{ row.hora_inicio }}"
@@ -342,7 +373,7 @@
                     ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
                     title="Solte um professor arrastado ou clique para alocar">
-                  <i class="bi bi-plus-lg opacity-50" style="font-size:1.1rem;"></i>
+                  <i class="bi bi-plus-lg opacity-75 text-info" style="font-size:1.1rem;"></i>
                 </td>
                 {% endif %}
               {% endif %}
@@ -427,13 +458,12 @@
 
 <script>
   let celulaSelecionada = null;
-  let dadosCopiados = null; // { profId, rotulo }
-  let itemArrastado = null; // Dados da célula sendo arrastada
+  let dadosCopiados = null;
+  let itemArrastado = null;
 
   const totalAlocados = {{ turma.tempos_alocados|default:0 }};
   const totalRequeridos = {{ turma.tempos_requeridos|default:12 }};
 
-  // Trava de Alocação Máxima no Frontend
   function podeAlocarNovoSlot() {
     if (totalAlocados >= totalRequeridos) {
       alert('⚠️ Limite de ' + totalRequeridos + ' tempos exigidos atingido para ' + '{{ turma.codigo_abrev }}' + '!\n\nVocê não pode alocar um ' + (totalAlocados + 1) + 'º tempo. Exclua um horário existente antes de alocar outro.');
@@ -442,7 +472,6 @@
     return true;
   }
 
-  // Carrega a cópia persistente ao carregar a página
   document.addEventListener('DOMContentLoaded', function() {
     const saved = localStorage.getItem('ceja_copied_prof_global');
     if (saved) {
@@ -497,10 +526,8 @@
     const destinoDia = targetElem.dataset.diacode;
     const destinoHoraInicio = targetElem.dataset.horainicio;
 
-    // Se for o mesmo slot, ignora
     if (origem.diaCode === destinoDia && origem.horaInicio === destinoHoraInicio) return;
 
-    // Salva no novo slot e libera origem
     salvarSlotAjax(destinoDia, destinoHoraInicio, targetElem.dataset.horafim, origem.profId, origem.rotulo, function() {
       salvarSlotAjax(origem.diaCode, origem.horaInicio, origem.horaFim, 'limpar', '', function() {
         window.location.reload();
@@ -547,7 +574,6 @@
     .catch(() => window.location.reload());
   }
 
-  /* ── ABRIR MODAL / SELEÇÃO ── */
   function abrirModalAlocacao(cellElem) {
     const diaCode = cellElem.dataset.diacode;
     const diaNome = cellElem.dataset.dianome;
@@ -556,7 +582,6 @@
     const profId = cellElem.dataset.profid;
     const rotulo = cellElem.dataset.rotulo;
 
-    // Se for um slot livre e já tivermos atingido o limite máximo, bloqueia!
     if (!profId && !podeAlocarNovoSlot()) {
       return;
     }
@@ -582,7 +607,6 @@
 
     const profId = cellElem.dataset.profid;
 
-    // Se já tivermos dados COPIADOS explicitamente e clicarmos em uma célula LIVRE, cola!
     if (dadosCopiados && !profId) {
       if (!podeAlocarNovoSlot()) return;
       salvarSlotAjax(cellElem.dataset.diacode, cellElem.dataset.horainicio, cellElem.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
@@ -637,7 +661,6 @@
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
   }
 
-  // Atalhos Globais de Teclado (Ctrl+C e Ctrl+V)
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
       if (celulaSelecionada && celulaSelecionada.dataset.profid) {
