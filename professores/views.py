@@ -501,8 +501,15 @@ def view_configuracao_escola(request):
                         pass
                 of.save()
 
-                # Sincroniza os tempos requeridos nas turmas atreladas a esta disciplina ofertada
-                TurmaComponente.objects.filter(configuracao=config, disciplina_ofertada=of).update(tempos_requeridos=of.horas_aula_semanais)
+                if of.ativo:
+                    # Sincroniza os tempos requeridos nas turmas atreladas a esta disciplina ofertada
+                    TurmaComponente.objects.filter(configuracao=config, disciplina_ofertada=of).update(tempos_requeridos=of.horas_aula_semanais)
+                else:
+                    # Se a disciplina foi desmarcada na matriz e não possui alocações, remove a turma correspondente
+                    turmas_inativas = TurmaComponente.objects.filter(configuracao=config, disciplina_ofertada=of)
+                    for ti in turmas_inativas:
+                        if ti.tempos_alocados == 0:
+                            ti.delete()
 
             messages.success(request, f'Configurações de {unidade_atual.nome} ({config.ano_letivo}) salvas com sucesso!')
             return redirect(f'/professores/configuracao/?unidade={unidade_atual.pk}&ano={config.ano_letivo}')
@@ -565,7 +572,7 @@ def view_listar_quadro_horarios(request):
             turma.save()
             messages.success(request, f'Turma/Componente "{turma.codigo_turma}" criada com sucesso!')
             return redirect(f'/professores/horarios/quadro/?unidade={unidade_atual.pk}&ano={config.ano_letivo}')
-    # Ação POST: Gerar turmas automáticas a partir das disciplinas ofertadas
+    # Ação POST: Gerar turmas automáticas a partir das disciplinas ofertadas (apenas ativas)
     elif request.method == 'POST' and request.POST.get('action') == 'gerar_automaticas':
         ofertas = DisciplinaOfertada.objects.filter(configuracao=config, ativo=True)
         criadas = 0
@@ -592,7 +599,13 @@ def view_listar_quadro_horarios(request):
     else:
         turma_form = TurmaComponenteForm()
 
-    turmas = TurmaComponente.objects.filter(configuracao=config).prefetch_related('alocacoes', 'alocacoes__professor')
+    from django.db.models import Q
+    # Filtra apenas turmas manuais OU atreladas a disciplinas ofertadas ativas
+    turmas = TurmaComponente.objects.filter(
+        configuracao=config
+    ).filter(
+        Q(disciplina_ofertada__isnull=True) | Q(disciplina_ofertada__ativo=True)
+    ).prefetch_related('alocacoes', 'alocacoes__professor', 'alocacoes__professor_2')
     anos_cadastrados = ConfiguracaoEscola.objects.filter(unidade=unidade_atual).values_list('ano_letivo', flat=True).order_by('-ano_letivo')
 
     # Estatísticas

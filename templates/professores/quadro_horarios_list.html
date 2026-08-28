@@ -10,6 +10,7 @@
     border-collapse: separate;
     border-spacing: 0;
     color: var(--text-primary);
+    margin-bottom: 0;
   }
 
   .table-quadro-dark thead th {
@@ -93,6 +94,38 @@
     white-space: nowrap;
     display: inline-block;
   }
+
+  /* Grid Responsivo de KPIs */
+  .kpi-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .kpi-stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .kpi-icon-box {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
 </style>
 {% endblock %}
 
@@ -109,11 +142,11 @@
     </div>
   </div>
   
-  <div class="d-flex flex-wrap align-items-center gap-3">
+  <div class="d-flex flex-wrap align-items-center gap-2">
     <!-- Seletor de Unidade Escolar -->
     <div class="d-flex align-items-center gap-2">
       <label style="font-weight:700; font-size:0.85rem; color:#67e8f9;"><i class="bi bi-building me-1"></i>Unidade:</label>
-      <select class="form-select form-select-sm" style="min-width:210px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; border-color:var(--blue);" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
+      <select class="form-select form-select-sm" style="min-width:190px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; border-color:var(--blue);" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
         {% for u in unidades %}
         <option value="{{ u.pk }}" {% if u.pk == unidade_atual.pk %}selected{% endif %}>
           {{ u.nome }} {% if u.tipo == 'sede' %}(Sede){% else %}(Vinculada){% endif %}
@@ -124,8 +157,8 @@
 
     <!-- Seletor de Ano Letivo -->
     <div class="d-flex align-items-center gap-2">
-      <label style="font-weight:600; font-size:0.85rem; color:var(--text-muted);">Ano Letivo:</label>
-      <select class="form-select form-select-sm" style="width:110px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
+      <label style="font-weight:600; font-size:0.85rem; color:var(--text-muted);">Ano:</label>
+      <select class="form-select form-select-sm" style="width:95px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
         {% for a in anos_cadastrados %}
         <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>{{ a }}</option>
         {% empty %}
@@ -139,63 +172,57 @@
       {% csrf_token %}
       <input type="hidden" name="action" value="gerar_automaticas">
       <input type="hidden" name="unidade_id" value="{{ unidade_atual.pk }}">
-      <button type="submit" class="btn-gestao btn-gestao-secondary" style="font-size:0.85rem;" title="Criar turmas automaticamente a partir das disciplinas ofertadas no ano">
-        <i class="bi bi-magic me-1"></i> Gerar da Matriz Ofertada
+      <button type="submit" class="btn-gestao btn-gestao-secondary" style="font-size:0.82rem; padding:6px 12px;" title="Criar turmas automaticamente a partir das disciplinas ofertadas ativas no ano">
+        <i class="bi bi-magic me-1"></i> Gerar da Matriz
       </button>
     </form>
 
-    <button type="button" class="btn-gestao btn-gestao-primary" data-bs-toggle="modal" data-bs-target="#modalNovaTurma" style="font-size:0.85rem;">
-      <i class="bi bi-plus-circle me-1"></i> Nova Turma / Componente
+    <button type="button" class="btn-gestao btn-gestao-primary" data-bs-toggle="modal" data-bs-target="#modalNovaTurma" style="font-size:0.82rem; padding:6px 12px;">
+      <i class="bi bi-plus-circle me-1"></i> Nova Turma
     </button>
   </div>
 </div>
 
-<!-- KPIs de Resumo -->
-<div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="card-gestao p-3 d-flex align-items-center justify-content-between">
-      <div>
-        <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">TOTAL DE TURMAS / COMPONENTES</div>
-        <div style="font-size:1.8rem; font-weight:800; color:var(--text-primary);">{{ total_turmas }}</div>
-      </div>
-      <div style="width:48px; height:48px; border-radius:12px; background:rgba(30,136,229,0.15); color:var(--blue);" class="d-flex align-items-center justify-content-center">
-        <i class="bi bi-collection-fill fs-4"></i>
-      </div>
+<!-- KPIs de Resumo (100% Responsivo e Enquadrado) -->
+<div class="kpi-grid-container">
+  <div class="kpi-stat-card">
+    <div style="min-width:0;">
+      <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; letter-spacing:0.04em;">TOTAL DE TURMAS</div>
+      <div style="font-size:1.7rem; font-weight:800; color:var(--text-primary); line-height:1.2;">{{ total_turmas }}</div>
+    </div>
+    <div class="kpi-icon-box" style="background:rgba(30,136,229,0.15); color:var(--blue);">
+      <i class="bi bi-collection-fill fs-5"></i>
     </div>
   </div>
 
-  <div class="col-md-4">
-    <div class="card-gestao p-3 d-flex align-items-center justify-content-between">
-      <div>
-        <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">QUADROS COMPLETOS (OK)</div>
-        <div style="font-size:1.8rem; font-weight:800; color:#4ade80;">{{ turmas_ok }}</div>
-      </div>
-      <div style="width:48px; height:48px; border-radius:12px; background:rgba(34,197,94,0.15); color:#4ade80;" class="d-flex align-items-center justify-content-center">
-        <i class="bi bi-check-circle-fill fs-4"></i>
-      </div>
+  <div class="kpi-stat-card">
+    <div style="min-width:0;">
+      <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; letter-spacing:0.04em;">QUADROS COMPLETOS (OK)</div>
+      <div style="font-size:1.7rem; font-weight:800; color:#4ade80; line-height:1.2;">{{ turmas_ok }}</div>
+    </div>
+    <div class="kpi-icon-box" style="background:rgba(34,197,94,0.15); color:#4ade80;">
+      <i class="bi bi-check-circle-fill fs-5"></i>
     </div>
   </div>
 
-  <div class="col-md-4">
-    <div class="card-gestao p-3 d-flex align-items-center justify-content-between">
-      <div>
-        <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">PENDENTES DE ALOCAÇÃO</div>
-        <div style="font-size:1.8rem; font-weight:800; color:#fbbf24;">{{ turmas_pendentes }}</div>
-      </div>
-      <div style="width:48px; height:48px; border-radius:12px; background:rgba(245,158,11,0.15); color:#fbbf24;" class="d-flex align-items-center justify-content-center">
-        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
-      </div>
+  <div class="kpi-stat-card">
+    <div style="min-width:0;">
+      <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; letter-spacing:0.04em;">PENDENTES DE ALOCAÇÃO</div>
+      <div style="font-size:1.7rem; font-weight:800; color:#fbbf24; line-height:1.2;">{{ turmas_pendentes }}</div>
+    </div>
+    <div class="kpi-icon-box" style="background:rgba(245,158,11,0.15); color:#fbbf24;">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
     </div>
   </div>
 </div>
 
 <!-- Tabela de Turmas / Componentes (Tema Dark Estilizado) -->
-<div class="card-gestao p-0" style="overflow:hidden;">
+<div class="card-gestao p-0" style="overflow:hidden; width:100%;">
   <div class="d-flex justify-content-between align-items-center p-3 border-bottom mb-0" style="border-color:var(--card-border) !important;">
-    <h6 style="font-weight:700; margin:0; color:var(--blue);"><i class="bi bi-grid-3x3-gap me-2"></i>Turmas e Componentes Cadastrados ({{ unidade_atual.nome }} — {{ ano_selecionado }})</h6>
+    <h6 style="font-weight:700; margin:0; color:var(--blue);"><i class="bi bi-grid-3x3-gap me-2"></i>Turmas e Componentes Ativos ({{ unidade_atual.nome }} — {{ ano_selecionado }})</h6>
   </div>
 
-  <div class="table-responsive">
+  <div class="table-responsive" style="width:100%;">
     <table class="table-quadro-dark">
       <thead>
         <tr>
