@@ -660,12 +660,15 @@ def view_grade_turma(request, pk):
         key = (al.dia_semana, al.hora_inicio.strftime("%H:%M"))
         alocs_dict[key] = al
 
-    # Construção da matriz da grade
+    # Construção da matriz da grade (exibe apenas os horários com expediente da escola)
     grid = []
     for inicio, fim, label_horario in SLOTS:
         row_cells = []
+        tem_horario_aberto = False
         for dia_code, dia_nome, func_dia, abert, fech in DIAS_MAP:
             is_fechada = not func_dia or (inicio < abert or fim > fech)
+            if not is_fechada:
+                tem_horario_aberto = True
             aloc = alocs_dict.get((dia_code, inicio.strftime("%H:%M")))
 
             row_cells.append({
@@ -677,12 +680,15 @@ def view_grade_turma(request, pk):
                 'alocacao': aloc,
                 'professor_nome': (aloc.rotulo_exibicao or (aloc.professor.nome_curto if aloc.professor else '')) if aloc else ''
             })
-        grid.append({
-            'label_horario': label_horario,
-            'hora_inicio': inicio.strftime("%H:%M"),
-            'hora_fim': fim.strftime("%H:%M"),
-            'cells': row_cells
-        })
+        
+        # Só exibe a linha no quadro se houver funcionamento em pelo menos 1 dia
+        if tem_horario_aberto:
+            grid.append({
+                'label_horario': label_horario,
+                'hora_inicio': inicio.strftime("%H:%M"),
+                'hora_fim': fim.strftime("%H:%M"),
+                'cells': row_cells
+            })
 
     all_profs = Professor.objects.filter(ativo=True).order_by('nome_completo')
     disc_nome = (turma.disciplina_nome or '').lower()

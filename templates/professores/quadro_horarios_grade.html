@@ -42,48 +42,51 @@
     font-size: 0.95rem;
   }
 
-  /* Tabela de Grade Interativa com Linhas de Grade Claras */
+  /* Tabela de Grade Interativa Expandida a 100% da Largura */
   .grade-table-container {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 12px;
     overflow: hidden;
+    width: 100%;
   }
 
   .grade-table {
-    width: 100%;
+    width: 100% !important;
+    table-layout: fixed;
     border-collapse: collapse;
     color: var(--text-primary);
   }
 
   .grade-table th, .grade-table td {
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    padding: 10px 8px;
+    padding: 12px 10px;
     text-align: center;
     vertical-align: middle;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
+    word-break: break-word;
   }
 
   .grade-table th {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     color: #f8fafc;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-size: 0.82rem;
-    padding: 14px 8px;
+    font-size: 0.84rem;
+    padding: 14px 10px;
   }
 
-  .grade-table th.col-horario {
+  .grade-table th.col-horario, .grade-table td.col-horario {
     background: rgba(30, 41, 59, 0.8);
     color: #67e8f9;
-    width: 130px;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
+    font-weight: 700;
   }
 
-  /* Estado Célula FECHADA */
+  /* Estado Célula FECHADA (Fora do expediente) */
   .cell-fechada {
-    background-color: rgba(15, 23, 42, 0.9) !important;
+    background-color: rgba(15, 23, 42, 0.85) !important;
     color: #64748b !important;
     font-weight: 700 !important;
     font-size: 0.75rem;
@@ -96,11 +99,12 @@
     background-color: rgba(255, 255, 255, 0.015);
     cursor: pointer;
     color: var(--text-muted);
-    font-size: 0.78rem;
+    font-size: 0.82rem;
+    font-weight: 600;
     transition: all 0.15s ease-in-out;
   }
   .cell-livre:hover {
-    background-color: rgba(59, 130, 246, 0.2) !important;
+    background-color: rgba(59, 130, 246, 0.25) !important;
     color: #60a5fa !important;
   }
 
@@ -192,15 +196,15 @@
     </div>
   </div>
 
-  <!-- Tabela de Grade Interativa com Linhas de Grade Visíveis -->
+  <!-- Tabela de Grade Interativa Expandida em 100% da Largura da Tela -->
   <div class="grade-table-container">
     <div class="table-responsive">
       <table class="grade-table">
         <thead>
           <tr>
-            <th class="col-horario">HORÁRIO</th>
+            <th class="col-horario" style="width: 15%;">HORÁRIO</th>
             {% for dia_code, dia_nome, func_dia, abert, fech in dias_map %}
-            <th>{{ dia_nome }}</th>
+            <th style="width: 17%;">{{ dia_nome }}</th>
             {% endfor %}
           </tr>
         </thead>
