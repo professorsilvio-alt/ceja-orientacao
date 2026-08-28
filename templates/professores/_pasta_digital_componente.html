@@ -34,20 +34,20 @@
     <div class="tab-pane fade show active" id="content-docs" role="tabpanel">
       {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
       <!-- Form Anexar Documento -->
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:20px;">
-        <h6 style="font-weight:700; color:var(--text-primary); margin-bottom:12px;">
-          <i class="bi bi-cloud-upload me-1" style="color:var(--blue);"></i>Anexar Novo Documento ou Atestado
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:12px; padding:20px; margin-bottom:20px;">
+        <h6 style="font-weight:700; color:var(--blue); margin-bottom:14px;">
+          <i class="bi bi-cloud-upload me-2"></i>Anexar Novo Documento ou Atestado
         </h6>
         <form method="post" action="{% url 'adicionar_documento_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}" enctype="multipart/form-data">
           {% csrf_token %}
-          <div class="row g-2">
-            <div class="col-md-4">
-              <label class="form-label" style="font-size:0.75rem;">Título / Descrição *</label>
-              <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Ex: Atestado Médico (3 dias)" required>
+          <div class="row g-3 align-items-start">
+            <div class="col-lg-4 col-md-6">
+              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Título / Descrição *</label>
+              <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Ex: Atestado Médico (3 dias)" required style="height:36px;">
             </div>
-            <div class="col-md-3">
-              <label class="form-label" style="font-size:0.75rem;">Categoria *</label>
-              <select name="categoria" class="form-select form-select-sm">
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Categoria *</label>
+              <select name="categoria" class="form-select form-select-sm" style="height:36px;">
                 <option value="atestado">🏥 Atestado Médico / Licença</option>
                 <option value="ausencia">⚠️ Justificativa de Ausência</option>
                 <option value="folga">🏖️ Comprovante de Folga</option>
@@ -55,20 +55,21 @@
                 <option value="outro">📁 Outros Documentos</option>
               </select>
             </div>
-            <div class="col-md-2">
-              <label class="form-label" style="font-size:0.75rem;">Data da Ocorrência *</label>
-              <input type="date" name="data_documento" class="form-control form-control-sm" value="{% now 'Y-m-d' %}">
+            <div class="col-lg-2 col-md-6">
+              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Data Ocorrência *</label>
+              <input type="date" name="data_documento" class="form-control form-control-sm" value="{% now 'Y-m-d' %}" style="height:36px;">
             </div>
-            <div class="col-md-3">
-              <label class="form-label" style="font-size:0.75rem;">Arquivo (PDF/Imagem) *</label>
-              <input type="file" name="arquivo" class="form-control form-control-sm" required>
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Arquivo (PDF/Imagem) *</label>
+              <input type="file" name="arquivo" class="form-control form-control-sm" required style="height:36px; padding:4px 8px;">
             </div>
-            <div class="col-12 mt-2">
+            <div class="col-12 mt-1">
+              <label class="form-label fw-bold text-uppercase" style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px;">Observações Adicionais</label>
               <textarea name="observacoes" class="form-control form-control-sm" rows="2" placeholder="Observações adicionais (opcional)..."></textarea>
             </div>
             <div class="col-12 text-end mt-2">
-              <button type="submit" class="btn-gestao btn-gestao-primary" style="font-size:0.82rem; padding:6px 16px;">
-                <i class="bi bi-upload"></i> Salvar Documento na Pasta
+              <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size:0.85rem; font-weight:700;">
+                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Salvar Documento na Pasta
               </button>
             </div>
           </div>
