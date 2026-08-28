@@ -36,7 +36,7 @@
       </div>
       {% endif %}
       <div style="font-weight:800; font-size:1rem;">{{ professor.nome_completo }}</div>
-      <div style="color:var(--text-secondary); margin-top:4px; font-size:0.85rem;">{{ professor.get_cargo_display }}</div>
+      <div style="color:var(--text-secondary); margin-top:4px; font-size:0.85rem;">{{ professor.cargo }}</div>
       <div class="mt-2">
         {% if professor.classificacao %}
         <span class="badge-gestao badge-primary" style="font-size:0.9rem;">{{ professor.classificacao }}º lugar</span>

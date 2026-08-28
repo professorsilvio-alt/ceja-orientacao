@@ -54,7 +54,7 @@
                 <option value="">Selecione o professor...</option>
                 {% for p in professores %}
                 <option value="{{ p.id }}" {% if form.professor_id.value == p.id or registro.professor_id == p.id %}selected{% endif %}>
-                  {{ p.nome_completo }} ({{ p.get_disciplina_ingresso_display }})
+                  {{ p.nome_completo }} ({{ p.disciplina_ingresso|default:p.cargo }})
                 </option>
                 {% endfor %}
               </select>
@@ -66,7 +66,7 @@
                 <option value="">Selecione o funcionário...</option>
                 {% for a in administrativos %}
                 <option value="{{ a.id }}" {% if form.administrativo_id.value == a.id or registro.administrativo_id == a.id %}selected{% endif %}>
-                  {{ a.nome_completo }} ({{ a.get_cargo_display }})
+                  {{ a.nome_completo }} ({{ a.cargo }})
                 </option>
                 {% endfor %}
               </select>

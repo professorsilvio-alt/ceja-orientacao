@@ -136,7 +136,7 @@ class FuncionarioAdministrativo(models.Model):
         ordering = ['classificacao', 'nome_completo']
 
     def __str__(self):
-        return f'{self.nome_completo} — {self.get_cargo_display()}'
+        return f'{self.nome_completo} — {self.cargo}'
 
     @property
     def tempo_na_escola(self):

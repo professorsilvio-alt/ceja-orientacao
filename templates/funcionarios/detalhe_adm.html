@@ -34,7 +34,7 @@
       </div>
       {% endif %}
       <div style="font-weight:800; font-size:1.1rem;">{{ funcionario.nome_completo }}</div>
-      <div style="color:var(--text-secondary); margin-top:4px;">{{ funcionario.get_cargo_display }}</div>
+      <div style="color:var(--text-secondary); margin-top:4px; font-size:0.85rem;">{{ funcionario.cargo }}</div>
       <div class="mt-3">
         <span class="badge-gestao {% if funcionario.ativo %}badge-success{% else %}badge-danger{% endif %}">
           {% if funcionario.ativo %}✅ Ativo{% else %}❌ Inativo{% endif %}
