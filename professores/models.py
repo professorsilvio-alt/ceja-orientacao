@@ -192,7 +192,8 @@ class Professor(models.Model):
         ordering = ['classificacao', 'nome_completo']
 
     def __str__(self):
-        return f'{self.nome_completo} — {self.get_disciplina_ingresso_display()}'
+        disc = self.disciplina_ingresso or self.cargo or ''
+        return f'{self.nome_completo} — {disc}' if disc else self.nome_completo
 
     @property
     def tempo_na_escola(self):
