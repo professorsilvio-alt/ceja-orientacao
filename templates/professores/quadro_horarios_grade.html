@@ -160,6 +160,9 @@
     text-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
     user-select: none;
   }
+  .cell-alocada span {
+    pointer-events: none;
+  }
   .cell-alocada:active {
     cursor: grabbing;
   }
@@ -178,7 +181,8 @@
     cursor: pointer;
     transition: all 0.15s;
     margin-left: 6px;
-    opacity: 0.5;
+    opacity: 0.6;
+    pointer-events: auto !important;
   }
   .cell-alocada:hover .btn-deletar-slot {
     opacity: 1;
@@ -235,7 +239,9 @@
 
       <div class="d-flex align-items-center gap-2">
         <span class="badge-code">{{ turma.codigo_abrev }}</span>
-        <span class="tempos-pill" style="font-size:0.9rem; padding:6px 14px;">{{ turma.tempos_alocados }}/{{ turma.tempos_requeridos }} tempos preenchidos</span>
+        <span class="tempos-pill" style="font-size:0.9rem; padding:6px 14px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; font-weight:700;">
+          {{ turma.tempos_alocados }}/{{ turma.tempos_requeridos }} tempos preenchidos
+        </span>
         
         <div id="status-badge-container">
           {% if turma.status_ok %}
@@ -478,18 +484,24 @@
     targetElem.classList.remove('cell-drag-over');
     document.querySelectorAll('.grid-cell').forEach(c => c.style.opacity = '1');
 
-    if (!itemArrastado) return;
+    let origem = itemArrastado;
+    if (!origem) {
+      try {
+        let dataRaw = e.dataTransfer.getData('text/plain');
+        if (dataRaw) origem = JSON.parse(dataRaw);
+      } catch(err){}
+    }
 
-    const origem = itemArrastado;
+    if (!origem || !origem.profId) return;
+
     const destinoDia = targetElem.dataset.diacode;
     const destinoHoraInicio = targetElem.dataset.horainicio;
 
     // Se for o mesmo slot, ignora
     if (origem.diaCode === destinoDia && origem.horaInicio === destinoHoraInicio) return;
 
-    // Se a célula de destino for livre, verifica se não ultrapassa limite se não for uma movimentação direta
+    // Salva no novo slot e libera origem
     salvarSlotAjax(destinoDia, destinoHoraInicio, targetElem.dataset.horafim, origem.profId, origem.rotulo, function() {
-      // Libera o slot de origem
       salvarSlotAjax(origem.diaCode, origem.horaInicio, origem.horaFim, 'limpar', '', function() {
         window.location.reload();
       });
@@ -603,15 +615,25 @@
 
   function exibirBadgeCopia(rotulo) {
     const container = document.getElementById('copy-actions-container');
-    if (container) container.style.display = 'flex';
+    if (container) {
+      container.style.display = 'flex';
+      container.style.visibility = 'visible';
+    }
     document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + rotulo;
   }
 
   function limparCopiaForcado() {
     dadosCopiados = null;
-    localStorage.clear();
+    try {
+      localStorage.removeItem('ceja_copied_prof_global');
+      localStorage.clear();
+    } catch(e){}
+    
     const container = document.getElementById('copy-actions-container');
-    if (container) container.style.display = 'none';
+    if (container) {
+      container.style.display = 'none';
+      container.setAttribute('style', 'display: none !important');
+    }
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
   }
 
