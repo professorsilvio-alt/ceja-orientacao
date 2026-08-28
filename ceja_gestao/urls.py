@@ -24,3 +24,5 @@ urlpatterns = [
 admin.site.site_header = 'CEJA Profa Rosa Soares — Administração'
 admin.site.site_title = 'CEJA Gestão'
 admin.site.index_title = 'Painel de Administração'
+
+handler500 = 'usuarios.views.custom_500_view'

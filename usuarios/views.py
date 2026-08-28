@@ -19,6 +19,21 @@ from .forms import (
 User = get_user_model()
 
 
+import sys
+import traceback
+
+def custom_500_view(request):
+    """Handler customizado para erros 500 — exibe detalhes do erro para facilitar diagnóstico."""
+    type_, value_, tb_ = sys.exc_info()
+    error_msg = f"{type_.__name__ if type_ else 'Erro'}: {value_}" if type_ else "Erro Interno no Servidor (500)"
+    stack_trace = "".join(traceback.format_exception(type_, value_, tb_)) if tb_ else ""
+
+    return render(request, '500.html', {
+        'error_msg': error_msg,
+        'stack_trace': stack_trace,
+    }, status=500)
+
+
 # ============================================================
 # DECORADORES
 # ============================================================
