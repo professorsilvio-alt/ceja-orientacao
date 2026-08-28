@@ -298,20 +298,20 @@
     </div>
   </div>
 
-  <!-- Barra de Ferramentas: Tabuleiro Interativo & Copiar/Colar -->
+  <!-- Barra de Ferramentas: Tabuleiro Interativo & Modo Pintura Rápida (Cópia Contínua) -->
   <div class="copy-paste-bar no-print">
-    <div class="d-flex align-items-center gap-2 flex-wrap">
+    <div class="d-flex align-items-center gap-2 flex-wrap" style="flex:1;">
       <span style="font-size:0.88rem; font-weight:800; color:#38bdf8;">
-        <i class="bi bi-arrows-move me-1"></i>Tabuleiro Interativo:
+        <i class="bi bi-brush me-1"></i>Pintura Rápida:
       </span>
       <span id="copy-status-text" style="font-size:0.85rem; color:#cbd5e1; font-weight:500;">
-        💡 <strong>Arraste o nome do professor</strong> para trocar de horário, ou selecione e use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> / <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd>!
+        💡 Clique no <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">+</kbd> para escolher um professor, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">Ctrl+C</kbd> para copiar e colar com 1 clique!
       </span>
     </div>
     <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
       <span id="copied-label-badge" class="copy-status-badge"></span>
-      <button type="button" class="btn btn-sm btn-danger py-1 px-2 font-weight-bold" style="font-size:0.8rem;" onclick="limparCopiaForcado(); return false;">
-        <i class="bi bi-x-circle me-1"></i> Limpar Cópia
+      <button type="button" class="btn btn-sm btn-danger py-1 px-3 font-weight-bold" style="font-size:0.82rem; border-radius:8px;" onclick="limparCopiaForcado(); return false;" title="Sair do modo de cópia e voltar a escolher professores manualmente (ou pressione Esc)">
+        <i class="bi bi-x-circle me-1"></i> Limpar Cópia / Escolher Outro
       </button>
     </div>
   </div>
@@ -349,6 +349,7 @@
               {% else %}
                 {% if cell.alocacao %}
                 <td class="cell-alocada grid-cell"
+                    id="cell-{{ cell.dia_code }}-{{ row.hora_inicio|slugify }}"
                     draggable="true"
                     data-diacode="{{ cell.dia_code }}"
                     data-dianome="{{ cell.dia_nome }}"
@@ -362,7 +363,7 @@
                     ondragleave="arrastarSair(this)"
                     ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
-                    title="Arraste para trocar de horário ou clique para editar">
+                    title="Clique para editar ou use Ctrl+C para copiar">
                   <div class="cell-content-wrapper">
                     <span>
                       {% if cell.prof2_id %}
@@ -379,6 +380,7 @@
                 </td>
                 {% else %}
                 <td class="cell-livre grid-cell"
+                    id="cell-{{ cell.dia_code }}-{{ row.hora_inicio|slugify }}"
                     data-diacode="{{ cell.dia_code }}"
                     data-dianome="{{ cell.dia_nome }}"
                     data-horainicio="{{ row.hora_inicio }}"
@@ -390,7 +392,7 @@
                     ondragleave="arrastarSair(this)"
                     ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
-                    title="Clique no '+' para alocar professor(es)">
+                    title="Clique para alocar">
                   <div class="cell-content-wrapper">
                     <i class="bi bi-plus-lg opacity-75 text-info" style="font-size:1.2rem;"></i>
                   </div>
@@ -497,8 +499,8 @@
           <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-trash me-1"></i> Deletar Horário</button>
           <div class="d-flex gap-2">
             <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModal()"><i class="bi bi-clipboard-check me-1"></i> Copiar Horário</button>
-            <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Alteração</button>
+            <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModalEContinuar()"><i class="bi bi-clipboard-check me-1"></i> Copiar & Preencher Vários</button>
+            <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
           </div>
         </div>
       </form>
@@ -525,13 +527,39 @@
     const saved = localStorage.getItem('ceja_copied_prof_global');
     if (saved) {
       try {
-        dadosCopiados = JSON.parse(saved);
-        if (dadosCopiados && (dadosCopiados.profId || dadosCopiados.rotulo)) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.profId || parsed.rotulo)) {
+          dadosCopiados = parsed;
           exibirBadgeCopia(dadosCopiados.rotulo);
+        } else {
+          limparCopiaForcado();
         }
-      } catch(e){}
+      } catch(e){
+        limparCopiaForcado();
+      }
     }
   });
+
+  /* ── ATUALIZAÇÃO DINÂMICA DE CONTADORES DO CABEÇALHO ── */
+  function atualizarContadoresHeader(data) {
+    if (!data) return;
+    const temposBadge = document.querySelector('.tempos-pill');
+    if (temposBadge && data.tempos_alocados !== undefined) {
+      temposBadge.textContent = data.tempos_alocados + '/' + data.tempos_requeridos + ' tempos preenchidos';
+    }
+    const profsLabel = document.getElementById('professores-alocados-label');
+    if (profsLabel && data.professores_nomes) {
+      profsLabel.textContent = data.professores_nomes;
+    }
+    const statusContainer = document.getElementById('status-badge-container');
+    if (statusContainer && data.status_display) {
+      if (data.status_ok) {
+        statusContainer.innerHTML = '<span class="badge-status-ok" style="font-size:0.9rem; padding:6px 14px;"><i class="bi bi-check-circle-fill"></i>OK (Preenchido)</span>';
+      } else {
+        statusContainer.innerHTML = '<span class="badge-status-pending" style="font-size:0.9rem; padding:6px 14px;"><i class="bi bi-clock-fill"></i>' + data.status_display + '</span>';
+      }
+    }
+  }
 
   /* ── DRAG AND DROP (Tabuleiro de Xadrez) ── */
   function arrastarInicio(e, cellElem) {
@@ -576,7 +604,7 @@
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        if (callback) callback();
+        if (callback) callback(data);
         else recarregarPaginaLimpa();
       } else {
         alert('⚠️ ' + (data.error || 'Erro ao mover horário.'));
@@ -616,7 +644,7 @@
     e.stopPropagation();
 
     if (confirm('Deseja realmente excluir a alocação deste horário?')) {
-      salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', '', function() {
+      salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', '', function(data) {
         recarregarPaginaLimpa();
       });
     }
@@ -641,8 +669,7 @@
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        if (callback) callback();
-        else recarregarPaginaLimpa();
+        if (callback) callback(data);
       } else {
         alert('⚠️ ' + (data.error || 'Erro ao processar alteração.'));
       }
@@ -650,8 +677,8 @@
     .catch(() => recarregarPaginaLimpa());
   }
 
+  /* ── ABRIR MODAL ── */
   function abrirModalAlocacao(cellElem) {
-    // Limpa quaisquer backdrops fantasmas
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style.removeProperty('overflow');
@@ -679,14 +706,63 @@
     modalObj.show();
   }
 
+  /* ── CLIQUE NA CÉLULA: PREENCHIMENTO RÁPIDO OU MODAL ── */
   function clicarCelulaGrid(cellElem) {
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
     cellElem.classList.add('cell-selected');
     celulaSelecionada = cellElem;
 
+    const isAlocada = cellElem.classList.contains('cell-alocada');
+
+    // Se já tem professor alocado nesta célula, abre o modal para editar/trocar
+    if (isAlocada) {
+      abrirModalAlocacao(cellElem);
+      return;
+    }
+
+    // Se a célula está livre e temos professor copiado (Modo Pintura Rápida Ativo!) -> Cola direto com 1 clique!
+    if (dadosCopiados && (dadosCopiados.profId || dadosCopiados.rotulo)) {
+      colarSlotInstantaneo(cellElem, dadosCopiados);
+      return;
+    }
+
+    // Se não há cópia ativa, abre o modal normalmente para escolher professor
     abrirModalAlocacao(cellElem);
   }
 
+  /* ── COLAR INSTANTÂNEO COM 1 CLIQUE NA CÉLULA ── */
+  function colarSlotInstantaneo(cellElem, dados) {
+    const diaCode = cellElem.dataset.diacode;
+    const horaInicio = cellElem.dataset.horainicio;
+    const horaFim = cellElem.dataset.horafim;
+
+    const iconHtml = dados.prof2Id ? '<i class="bi bi-people-fill me-1" style="color:#38bdf8;"></i>' : '<i class="bi bi-person-fill me-1"></i>';
+
+    // Atualiza imediatamente a interface visualmente sem esperar a rede
+    cellElem.innerHTML = `
+      <div class="cell-content-wrapper">
+        <span>${iconHtml}${dados.rotulo}</span>
+        <button type="button" class="btn-trash-clean no-print" onclick="deletarSlotDireto(event, '${diaCode}', '${horaInicio}')" title="Excluir este horário">
+          <i class="bi bi-trash-fill"></i>
+        </button>
+      </div>
+    `;
+    cellElem.className = 'cell-alocada grid-cell';
+    cellElem.dataset.profid = dados.profId || '';
+    cellElem.dataset.prof2id = dados.prof2Id || '';
+    cellElem.dataset.rotulo = dados.rotulo;
+    cellElem.title = 'Clique para editar ou use Ctrl+C para copiar';
+    cellElem.draggable = true;
+
+    // Dispara salvamento em segundo plano e atualiza contadores do topo
+    salvarSlotAjax(diaCode, horaInicio, horaFim, dados.profId, dados.prof2Id, dados.rotulo, function(res) {
+      if (res) {
+        atualizarContadoresHeader(res);
+      }
+    });
+  }
+
+  /* ── COPIAR DADOS ── */
   function copiarDados(profId, prof2Id, rotulo) {
     if (!profId && !prof2Id && !rotulo) return;
     dadosCopiados = { profId, prof2Id, rotulo };
@@ -694,17 +770,25 @@
     exibirBadgeCopia(rotulo);
   }
 
-  function copiarDoModal() {
+  function copiarDoModalEContinuar() {
     const profSelect = document.getElementById('select_professor');
     const prof2Select = document.getElementById('select_professor_2');
     const profId = profSelect.value;
     const prof2Id = prof2Select.value;
     const rotulo = document.getElementById('input_rotulo_exibicao').value;
+
     if (profId || prof2Id || rotulo) {
       copiarDados(profId, prof2Id, rotulo);
+      
+      // Fecha modal
       const modalEl = document.getElementById('modalAlocarSlot');
       const modalObj = bootstrap.Modal.getInstance(modalEl);
       if (modalObj) modalObj.hide();
+
+      // Salva o slot atual onde o modal foi aberto
+      if (celulaSelecionada) {
+        colarSlotInstantaneo(celulaSelecionada, dadosCopiados);
+      }
     } else {
       alert('Selecione pelo menos um professor para copiar.');
     }
@@ -716,43 +800,48 @@
       container.style.display = 'flex';
       container.style.visibility = 'visible';
     }
-    document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + (rotulo || 'Professor(es)');
+    const badge = document.getElementById('copied-label-badge');
+    if (badge) {
+      badge.textContent = '📋 Copiado: ' + (rotulo || 'Professor');
+    }
+    const statusText = document.getElementById('copy-status-text');
+    if (statusText) {
+      statusText.innerHTML = `💡 <strong>Modo Pintura Rápida Ativo!</strong> Clique em qualquer <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">+</kbd> para preencher com <strong>${rotulo}</strong> instantaneamente!`;
+    }
   }
 
   function limparCopiaForcado() {
     dadosCopiados = null;
     try {
       localStorage.removeItem('ceja_copied_prof_global');
-      localStorage.clear();
     } catch(e){}
     
     const container = document.getElementById('copy-actions-container');
     if (container) {
       container.style.display = 'none';
-      container.setAttribute('style', 'display: none !important');
+    }
+    const statusText = document.getElementById('copy-status-text');
+    if (statusText) {
+      statusText.innerHTML = `💡 Clique no <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">+</kbd> para escolher um professor, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">Ctrl+C</kbd> para copiar e colar com 1 clique!`;
     }
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
   }
 
+  /* ── ATALHOS DE TECLADO ── */
   document.addEventListener('keydown', function(e) {
+    // ESC limpa o modo cópia
+    if (e.key === 'Escape') {
+      if (dadosCopiados) {
+        limparCopiaForcado();
+      }
+    }
+    // Ctrl+C copia da célula selecionada
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
       if (celulaSelecionada && (celulaSelecionada.dataset.profid || celulaSelecionada.dataset.rotulo)) {
         copiarDados(
           celulaSelecionada.dataset.profid,
           celulaSelecionada.dataset.prof2id,
           celulaSelecionada.dataset.rotulo
-        );
-      }
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-      if (celulaSelecionada && dadosCopiados) {
-        salvarSlotAjax(
-          celulaSelecionada.dataset.diacode,
-          celulaSelecionada.dataset.horainicio,
-          celulaSelecionada.dataset.horafim,
-          dadosCopiados.profId,
-          dadosCopiados.prof2Id,
-          dadosCopiados.rotulo
         );
       }
     }
