@@ -4,30 +4,30 @@
 
 {% block extra_head %}
 <style>
-  /* Tabela Dark Tema Oficial CEJA */
+  /* Tabela Dark Compacta e 100% Enquadrada */
   .table-quadro-dark {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     color: var(--text-primary);
     margin-bottom: 0;
+    font-size: 0.84rem;
   }
 
   .table-quadro-dark thead th {
     background: rgba(255, 255, 255, 0.04);
     color: var(--text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     font-weight: 700;
-    padding: 14px 16px;
+    padding: 10px 10px;
     border-bottom: 1px solid var(--card-border);
     white-space: nowrap;
   }
 
   .table-quadro-dark tbody tr {
     background: transparent;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     transition: background 0.15s ease;
   }
 
@@ -36,21 +36,20 @@
   }
 
   .table-quadro-dark td {
-    padding: 14px 16px;
+    padding: 10px 10px;
     vertical-align: middle;
-    font-size: 0.88rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
 
   .turma-code-badge {
     background: rgba(6, 182, 212, 0.15);
     color: #67e8f9;
     border: 1px solid rgba(6, 182, 212, 0.3);
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
     font-weight: 700;
     font-family: monospace;
-    font-size: 0.92rem;
+    font-size: 0.82rem;
     white-space: nowrap;
     display: inline-block;
   }
@@ -59,54 +58,53 @@
     background: rgba(34, 197, 94, 0.15);
     color: #4ade80;
     border: 1px solid rgba(34, 197, 94, 0.3);
-    padding: 6px 14px;
-    border-radius: 8px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-weight: 700;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 
   .badge-status-pending {
     background: rgba(245, 158, 11, 0.15);
     color: #fbbf24;
     border: 1px solid rgba(245, 158, 11, 0.3);
-    padding: 6px 14px;
-    border-radius: 8px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-weight: 700;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 
   .tempos-pill {
     background: rgba(59, 130, 246, 0.12);
     color: #60a5fa;
     border: 1px solid rgba(59, 130, 246, 0.25);
-    padding: 4px 10px;
-    border-radius: 20px;
+    padding: 3px 8px;
+    border-radius: 12px;
     font-weight: 700;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     white-space: nowrap;
     display: inline-block;
   }
 
-  /* Grid Responsivo de KPIs — Usa minmax(0, 1fr) para caber 100% na tela sem transbordar */
+  /* Grid Responsivo de KPIs */
   .kpi-grid-container {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     width: 100%;
-    max-width: 100%;
     margin-bottom: 20px;
     box-sizing: border-box;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 768px) {
     .kpi-grid-container {
       grid-template-columns: 1fr;
       gap: 10px;
@@ -114,10 +112,10 @@
   }
 
   .kpi-stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 12px 16px;
+    background: var(--card-bg, #1e293b);
+    border: 1px solid var(--card-border, rgba(255,255,255,0.07));
+    border-radius: 10px;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -128,15 +126,15 @@
   }
 
   .kpi-icon-box {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-left: 8px;
+    margin-left: 6px;
   }
 </style>
 {% endblock %}
@@ -146,19 +144,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3" style="width:100%; max-width:100%; box-sizing:border-box;">
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" style="width:100%; box-sizing:border-box;">
   <div style="min-width:0;">
-    <div class="page-title"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Quadro de Horários & Alocação</div>
-    <div style="color:var(--text-secondary); font-size:0.88rem;">
-      Gerencie a alocação dos professores nas turmas e componentes por <strong>Unidade Escolar</strong> e <strong>Ano Letivo</strong>.
+    <div class="page-title" style="font-size:1.35rem;"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Quadro de Horários & Alocação</div>
+    <div style="color:var(--text-secondary); font-size:0.84rem;">
+      Gerencie a alocação dos professores por <strong>Unidade Escolar</strong> e <strong>Ano Letivo</strong>.
     </div>
   </div>
   
-  <div class="d-flex flex-wrap align-items-center gap-2" style="max-width:100%;">
+  <div class="d-flex flex-wrap align-items-center gap-2">
     <!-- Seletor de Unidade Escolar -->
     <div class="d-flex align-items-center gap-1">
-      <label style="font-weight:700; font-size:0.8rem; color:#67e8f9;"><i class="bi bi-building me-1"></i>Unidade:</label>
-      <select class="form-select form-select-sm" style="max-width:185px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; border-color:var(--blue); font-size:0.8rem;" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
+      <label style="font-weight:700; font-size:0.78rem; color:#67e8f9;"><i class="bi bi-building me-1"></i>Unidade:</label>
+      <select class="form-select form-select-sm" style="max-width:180px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; border-color:var(--blue); font-size:0.78rem;" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
         {% for u in unidades %}
         <option value="{{ u.pk }}" {% if u.pk == unidade_atual.pk %}selected{% endif %}>
           {{ u.nome }} {% if u.tipo == 'sede' %}(Sede){% else %}(Vinculada){% endif %}
@@ -169,8 +167,8 @@
 
     <!-- Seletor de Ano Letivo -->
     <div class="d-flex align-items-center gap-1">
-      <label style="font-weight:600; font-size:0.8rem; color:var(--text-muted);">Ano:</label>
-      <select class="form-select form-select-sm" style="width:85px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; font-size:0.8rem;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
+      <label style="font-weight:600; font-size:0.78rem; color:var(--text-muted);">Ano:</label>
+      <select class="form-select form-select-sm" style="width:80px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; font-size:0.78rem;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
         {% for a in anos_cadastrados %}
         <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>{{ a }}</option>
         {% empty %}
@@ -184,46 +182,46 @@
       {% csrf_token %}
       <input type="hidden" name="action" value="gerar_automaticas">
       <input type="hidden" name="unidade_id" value="{{ unidade_atual.pk }}">
-      <button type="submit" class="btn-gestao btn-gestao-secondary btn-sm" style="font-size:0.8rem; padding:5px 10px;" title="Criar turmas automaticamente a partir das disciplinas ofertadas ativas no ano">
+      <button type="submit" class="btn-gestao btn-gestao-secondary btn-sm" style="font-size:0.78rem; padding:4px 8px;" title="Criar turmas automaticamente a partir das disciplinas ofertadas ativas no ano">
         <i class="bi bi-magic me-1"></i> Gerar Matriz
       </button>
     </form>
 
-    <button type="button" class="btn-gestao btn-gestao-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNovaTurma" style="font-size:0.8rem; padding:5px 10px;">
+    <button type="button" class="btn-gestao btn-gestao-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNovaTurma" style="font-size:0.78rem; padding:4px 10px;">
       <i class="bi bi-plus-circle me-1"></i> Nova Turma
     </button>
   </div>
 </div>
 
-<!-- KPIs de Resumo (100% Enquadrado sem estourar margem) -->
+<!-- KPIs de Resumo -->
 <div class="kpi-grid-container">
   <div class="kpi-stat-card">
     <div style="min-width:0; overflow:hidden;">
-      <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; letter-spacing:0.03em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">TOTAL DE TURMAS</div>
-      <div style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">{{ total_turmas }}</div>
+      <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700; letter-spacing:0.02em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">TOTAL DE TURMAS</div>
+      <div style="font-size:1.45rem; font-weight:800; color:var(--text-primary); line-height:1.2;">{{ total_turmas }}</div>
     </div>
     <div class="kpi-icon-box" style="background:rgba(30,136,229,0.15); color:var(--blue);">
-      <i class="bi bi-collection-fill fs-5"></i>
+      <i class="bi bi-collection-fill fs-6"></i>
     </div>
   </div>
 
   <div class="kpi-stat-card">
     <div style="min-width:0; overflow:hidden;">
-      <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; letter-spacing:0.03em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">QUADROS COMPLETOS (OK)</div>
-      <div style="font-size:1.6rem; font-weight:800; color:#4ade80; line-height:1.2;">{{ turmas_ok }}</div>
+      <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700; letter-spacing:0.02em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">QUADROS COMPLETOS (OK)</div>
+      <div style="font-size:1.45rem; font-weight:800; color:#4ade80; line-height:1.2;">{{ turmas_ok }}</div>
     </div>
     <div class="kpi-icon-box" style="background:rgba(34,197,94,0.15); color:#4ade80;">
-      <i class="bi bi-check-circle-fill fs-5"></i>
+      <i class="bi bi-check-circle-fill fs-6"></i>
     </div>
   </div>
 
   <div class="kpi-stat-card">
     <div style="min-width:0; overflow:hidden;">
-      <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; letter-spacing:0.03em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">PENDENTES DE ALOCAÇÃO</div>
-      <div style="font-size:1.6rem; font-weight:800; color:#fbbf24; line-height:1.2;">{{ turmas_pendentes }}</div>
+      <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700; letter-spacing:0.02em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">PENDENTES DE ALOCAÇÃO</div>
+      <div style="font-size:1.45rem; font-weight:800; color:#fbbf24; line-height:1.2;">{{ turmas_pendentes }}</div>
     </div>
     <div class="kpi-icon-box" style="background:rgba(245,158,11,0.15); color:#fbbf24;">
-      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <i class="bi bi-exclamation-triangle-fill fs-6"></i>
     </div>
   </div>
 </div>
@@ -231,19 +229,19 @@
 <!-- Tabela de Turmas / Componentes (Tema Dark Estilizado) -->
 <div class="card-gestao p-0" style="overflow:hidden; width:100%; box-sizing:border-box;">
   <div class="d-flex justify-content-between align-items-center p-3 border-bottom mb-0" style="border-color:var(--card-border) !important;">
-    <h6 style="font-weight:700; margin:0; color:var(--blue);"><i class="bi bi-grid-3x3-gap me-2"></i>Turmas e Componentes Ativos ({{ unidade_atual.nome }} — {{ ano_selecionado }})</h6>
+    <h6 style="font-weight:700; margin:0; color:var(--blue); font-size:0.9rem;"><i class="bi bi-grid-3x3-gap me-2"></i>Turmas e Componentes Ativos ({{ unidade_atual.nome }} — {{ ano_selecionado }})</h6>
   </div>
 
   <div class="table-responsive" style="width:100%; overflow-x:auto;">
     <table class="table-quadro-dark">
       <thead>
         <tr>
-          <th>Código Turma</th>
+          <th style="width:110px;">Código</th>
           <th>Disciplina / Componente</th>
-          <th class="text-center">Carga Horária</th>
-          <th>Professores Alocados</th>
-          <th class="text-center">Status</th>
-          <th class="text-end" style="padding-right:24px;">Ações</th>
+          <th class="text-center" style="width:100px;">Carga Horária</th>
+          <th style="width:160px;">Professores Alocados</th>
+          <th class="text-center" style="width:110px;">Status</th>
+          <th class="text-end" style="width:130px; padding-right:14px;">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -253,7 +251,7 @@
             <span class="turma-code-badge">{{ t.codigo_abrev }}</span>
           </td>
           <td>
-            <div style="font-weight:700; font-size:0.95rem; color:#f8fafc;">{{ t.disciplina_nome }}</div>
+            <div style="font-weight:700; font-size:0.88rem; color:#f8fafc;">{{ t.disciplina_nome }}</div>
           </td>
           <td class="text-center">
             <span class="tempos-pill">
@@ -261,7 +259,7 @@
             </span>
           </td>
           <td>
-            <span style="font-weight:600; font-size:0.85rem; color:{% if t.tempos_alocados > 0 %}#4ade80{% else %}var(--text-muted){% endif %};">
+            <span style="font-weight:600; font-size:0.82rem; color:{% if t.tempos_alocados > 0 %}#4ade80{% else %}var(--text-muted){% endif %};">
               <i class="bi {% if t.tempos_alocados > 0 %}bi-person-check-fill{% else %}bi-person-dash{% endif %} me-1"></i>
               {{ t.total_professores_alocados_count }}
             </span>
@@ -273,15 +271,15 @@
             <span class="badge-status-pending"><i class="bi bi-clock-fill"></i>{{ t.status_display }}</span>
             {% endif %}
           </td>
-          <td class="text-end" style="padding-right:24px;">
-            <div class="d-inline-flex align-items-center gap-2">
-              <a href="{% url 'grade_turma' t.pk %}" class="btn-gestao btn-gestao-primary btn-sm text-nowrap" style="padding:6px 14px; font-weight:700;">
-                <i class="bi bi-grid-3x3 me-1"></i> Montar Grade
+          <td class="text-end" style="padding-right:14px;">
+            <div class="d-inline-flex align-items-center gap-1 justify-content-end">
+              <a href="{% url 'grade_turma' t.pk %}" class="btn-gestao btn-gestao-primary btn-sm text-nowrap" style="padding:4px 10px; font-weight:700; font-size:0.78rem;">
+                <i class="bi bi-grid-3x3 me-1"></i>Grade
               </a>
               <form method="post" action="{% url 'excluir_turma' t.pk %}" class="d-inline" onsubmit="return confirm('Deseja excluir a turma {{ t.codigo_turma }}?');">
                 {% csrf_token %}
-                <button type="submit" class="btn-gestao btn-gestao-danger btn-sm p-1 px-2" title="Excluir turma" style="height:34px; width:34px; display:inline-flex; align-items:center; justify-content:center;">
-                  <i class="bi bi-trash"></i>
+                <button type="submit" class="btn-gestao btn-gestao-danger btn-sm p-1" title="Excluir turma" style="height:28px; width:28px; display:inline-flex; align-items:center; justify-content:center;">
+                  <i class="bi bi-trash" style="font-size:0.8rem;"></i>
                 </button>
               </form>
             </div>
