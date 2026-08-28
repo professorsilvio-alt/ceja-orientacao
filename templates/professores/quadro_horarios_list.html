@@ -4,62 +4,52 @@
 
 {% block extra_head %}
 <style>
-  .table-dark-custom {
-    --bs-table-bg: transparent;
-    --bs-table-color: var(--text-main);
+  /* Tabela Dark Tema Oficial CEJA */
+  .table-quadro-dark {
+    width: 100%;
     border-collapse: separate;
-    border-spacing: 0 4px;
+    border-spacing: 0;
+    color: var(--text-primary);
   }
 
-  .table-dark-custom thead th {
-    background: rgba(255, 255, 255, 0.03);
+  .table-quadro-dark thead th {
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-secondary);
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.06em;
     font-weight: 700;
     padding: 14px 16px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--card-border);
     white-space: nowrap;
   }
 
-  .table-dark-custom tbody tr {
-    background: rgba(255, 255, 255, 0.015);
-    transition: background 0.15s ease, transform 0.15s ease;
+  .table-quadro-dark tbody tr {
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.15s ease;
   }
 
-  .table-dark-custom tbody tr:hover {
-    background: rgba(255, 255, 255, 0.04);
+  .table-quadro-dark tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
   }
 
-  .table-dark-custom td {
+  .table-quadro-dark td {
     padding: 14px 16px;
     vertical-align: middle;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .table-dark-custom td:first-child {
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-left: 1px solid var(--border-color);
-  }
-
-  .table-dark-custom td:last-child {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-right: 1px solid var(--border-color);
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   }
 
   .turma-code-badge {
-    background: rgba(6, 182, 212, 0.12);
-    color: #38bdf8;
+    background: rgba(6, 182, 212, 0.15);
+    color: #67e8f9;
     border: 1px solid rgba(6, 182, 212, 0.3);
     padding: 6px 12px;
     border-radius: 8px;
     font-weight: 700;
     font-family: monospace;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     white-space: nowrap;
     display: inline-block;
   }
@@ -123,7 +113,7 @@
     <!-- Seletor de Unidade Escolar -->
     <div class="d-flex align-items-center gap-2">
       <label style="font-weight:700; font-size:0.85rem; color:#67e8f9;"><i class="bi bi-building me-1"></i>Unidade:</label>
-      <select class="form-select form-select-sm" style="min-width:210px; font-weight:700; background:var(--card-bg); color:var(--text-main); border-color:var(--blue);" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
+      <select class="form-select form-select-sm" style="min-width:210px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff; border-color:var(--blue);" onchange="location = '?unidade=' + this.value + '&ano={{ ano_selecionado }}';">
         {% for u in unidades %}
         <option value="{{ u.pk }}" {% if u.pk == unidade_atual.pk %}selected{% endif %}>
           {{ u.nome }} {% if u.tipo == 'sede' %}(Sede){% else %}(Vinculada){% endif %}
@@ -135,7 +125,7 @@
     <!-- Seletor de Ano Letivo -->
     <div class="d-flex align-items-center gap-2">
       <label style="font-weight:600; font-size:0.85rem; color:var(--text-muted);">Ano Letivo:</label>
-      <select class="form-select form-select-sm" style="width:110px; font-weight:700;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
+      <select class="form-select form-select-sm" style="width:110px; font-weight:700; background:rgba(15,23,42,0.8); color:#fff;" onchange="location = '?unidade={{ unidade_atual.pk }}&ano=' + this.value;">
         {% for a in anos_cadastrados %}
         <option value="{{ a }}" {% if a == ano_selecionado %}selected{% endif %}>{{ a }}</option>
         {% empty %}
@@ -166,7 +156,7 @@
     <div class="card-gestao p-3 d-flex align-items-center justify-content-between">
       <div>
         <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">TOTAL DE TURMAS / COMPONENTES</div>
-        <div style="font-size:1.8rem; font-weight:800; color:var(--text-main);">{{ total_turmas }}</div>
+        <div style="font-size:1.8rem; font-weight:800; color:var(--text-primary);">{{ total_turmas }}</div>
       </div>
       <div style="width:48px; height:48px; border-radius:12px; background:rgba(30,136,229,0.15); color:var(--blue);" class="d-flex align-items-center justify-content-center">
         <i class="bi bi-collection-fill fs-4"></i>
@@ -199,55 +189,43 @@
   </div>
 </div>
 
-<!-- Tabela de Turmas / Componentes -->
-<div class="card-gestao">
-  <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary mb-2">
-    <h6 style="font-weight:700; margin:0; color:var(--text-main);"><i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Turmas e Componentes Cadastrados ({{ unidade_atual.nome }} — {{ ano_selecionado }})</h6>
+<!-- Tabela de Turmas / Componentes (Tema Dark Estilizado) -->
+<div class="card-gestao p-0" style="overflow:hidden;">
+  <div class="d-flex justify-content-between align-items-center p-3 border-bottom mb-0" style="border-color:var(--card-border) !important;">
+    <h6 style="font-weight:700; margin:0; color:var(--blue);"><i class="bi bi-grid-3x3-gap me-2"></i>Turmas e Componentes Cadastrados ({{ unidade_atual.nome }} — {{ ano_selecionado }})</h6>
   </div>
 
-  <div class="table-responsive p-2">
-    <table class="table table-dark-custom align-middle mb-0">
+  <div class="table-responsive">
+    <table class="table-quadro-dark">
       <thead>
         <tr>
           <th>Código Turma</th>
-          <th>Área / Trilha / Núcleo</th>
           <th>Disciplina / Componente</th>
           <th class="text-center">Carga Horária</th>
           <th>Professores Alocados</th>
           <th class="text-center">Status</th>
-          <th class="text-end">Ações</th>
+          <th class="text-end" style="padding-right:24px;">Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for t in turmas %}
         <tr>
           <td>
-            <span class="turma-code-badge">{{ t.codigo_turma }}</span>
-          </td>
-          <td>
-            <div style="font-weight:600; font-size:0.88rem; color:var(--text-main);">{{ t.area|default:"Geral" }}</div>
-            {% if t.trilha_nucleo %}
-            <small style="color:var(--text-muted); font-size:0.78rem;">{{ t.trilha_nucleo }}</small>
-            {% endif %}
+            <span class="turma-code-badge">{{ t.codigo_abrev }}</span>
           </td>
           <td>
             <div style="font-weight:700; font-size:0.95rem; color:#f8fafc;">{{ t.disciplina_nome }}</div>
           </td>
           <td class="text-center">
             <span class="tempos-pill">
-              {{ t.tempos_alocados }} / {{ t.tempos_requeridos }} tempos
+              {{ t.tempos_requeridos }} tempos
             </span>
           </td>
           <td>
-            {% if t.tempos_alocados > 0 %}
-            <span style="color:#4ade80; font-weight:600; font-size:0.85rem;">
-              <i class="bi bi-person-check-fill me-1"></i>{{ t.professores_alocados_nomes }}
+            <span style="font-weight:600; font-size:0.85rem; color:{% if t.tempos_alocados > 0 %}#4ade80{% else %}var(--text-muted){% endif %};">
+              <i class="bi {% if t.tempos_alocados > 0 %}bi-person-check-fill{% else %}bi-person-dash{% endif %} me-1"></i>
+              {{ t.total_professores_alocados_count }}
             </span>
-            {% else %}
-            <span style="color:var(--text-muted); font-size:0.85rem;">
-              <i class="bi bi-person-dash me-1"></i>Nenhum alocado
-            </span>
-            {% endif %}
           </td>
           <td class="text-center">
             {% if t.status_ok %}
@@ -256,14 +234,14 @@
             <span class="badge-status-pending"><i class="bi bi-clock-fill"></i>{{ t.status_display }}</span>
             {% endif %}
           </td>
-          <td class="text-end">
+          <td class="text-end" style="padding-right:24px;">
             <div class="d-inline-flex align-items-center gap-2">
-              <a href="{% url 'grade_turma' t.pk %}" class="btn-gestao btn-gestao-primary btn-sm text-nowrap">
-                <i class="bi bi-grid-3x3"></i> Montar Grade
+              <a href="{% url 'grade_turma' t.pk %}" class="btn-gestao btn-gestao-primary btn-sm text-nowrap" style="padding:6px 14px; font-weight:700;">
+                <i class="bi bi-grid-3x3 me-1"></i> Montar Grade
               </a>
               <form method="post" action="{% url 'excluir_turma' t.pk %}" class="d-inline" onsubmit="return confirm('Deseja excluir a turma {{ t.codigo_turma }}?');">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-danger p-1 px-2" title="Excluir turma" style="border-radius:8px;">
+                <button type="submit" class="btn-gestao btn-gestao-danger btn-sm p-1 px-2" title="Excluir turma" style="height:34px; width:34px; display:inline-flex; align-items:center; justify-content:center;">
                   <i class="bi bi-trash"></i>
                 </button>
               </form>
@@ -272,7 +250,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-center py-5" style="color:var(--text-muted);">
+          <td colspan="6" class="text-center py-5" style="color:var(--text-muted);">
             <i class="bi bi-inbox fs-1 d-block mb-2 text-primary opacity-50"></i>
             Nenhuma turma ou componente curricular cadastrado para {{ unidade_atual.nome }} ({{ ano_selecionado }}).<br>
             Clique em <strong>"Nova Turma / Componente"</strong> ou em <strong>"Gerar da Matriz Ofertada"</strong> acima.
@@ -287,9 +265,9 @@
 <!-- Modal Nova Turma / Componente -->
 <div class="modal fade" id="modalNovaTurma" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border-color);">
-      <div class="modal-header border-bottom border-secondary">
-        <h5 class="modal-title font-weight-bold"><i class="bi bi-plus-circle text-primary me-2"></i>Nova Turma / Componente</h5>
+    <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+      <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+        <h5 class="modal-title font-weight-bold" style="color:var(--blue);"><i class="bi bi-plus-circle me-2"></i>Nova Turma / Componente</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post">
@@ -299,28 +277,18 @@
         
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Código da Turma / Componente</label>
+            <label class="form-label font-weight-bold">Código da Turma / Componente *</label>
             {{ turma_form.codigo_turma }}
-            <small style="color:var(--text-muted);">Ex: CEJAS-C1L-080, CEJAS-E32-100</small>
+            <small style="color:var(--text-muted);">Ex: CEJAS-ART, CEJAS-BIO, CEJAS-MAT</small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Área do Conhecimento</label>
-            {{ turma_form.area }}
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label font-weight-bold">Trilha / Núcleo Integrador</label>
-            {{ turma_form.trilha_nucleo }}
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label font-weight-bold">Nome da Disciplina / Componente</label>
+            <label class="form-label font-weight-bold">Nome da Disciplina / Componente *</label>
             {{ turma_form.disciplina_nome }}
           </div>
 
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Tempos Exigidos (Horas/Aula de 50 min)</label>
+            <label class="form-label font-weight-bold">Tempos Exigidos (Horas/Aula de 50 min) *</label>
             {{ turma_form.tempos_requeridos }}
           </div>
 
@@ -330,7 +298,7 @@
           </div>
         </div>
 
-        <div class="modal-footer border-top border-secondary">
+        <div class="modal-footer" style="border-top:1px solid var(--card-border);">
           <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Turma</button>
         </div>

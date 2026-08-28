@@ -569,7 +569,7 @@ def view_listar_quadro_horarios(request):
         ofertas = DisciplinaOfertada.objects.filter(configuracao=config, ativo=True)
         criadas = 0
         for of in ofertas:
-            cod_sugerido = f'CEJAS-{of.disciplina.nome[:3].upper()}-{of.horas_aula_semanais * 10:03d}'
+            cod_sugerido = f'CEJAS-{of.disciplina.nome[:3].upper()}'
             _, created = TurmaComponente.objects.get_or_create(
                 configuracao=config,
                 disciplina_ofertada=of,
@@ -684,7 +684,17 @@ def view_grade_turma(request, pk):
             'cells': row_cells
         })
 
-    professores = Professor.objects.filter(ativo=True).order_by('nome_completo')
+    all_profs = Professor.objects.filter(ativo=True).order_by('nome_completo')
+    disc_nome = (turma.disciplina_nome or '').lower()
+
+    profs_da_disciplina = []
+    outros_profs = []
+    for p in all_profs:
+        p_disc = (p.disciplina_ingresso or '').lower()
+        if disc_nome and (disc_nome in p_disc or p_disc in disc_nome or any(w in disc_nome for w in p_disc.split() if len(w) > 3)):
+            profs_da_disciplina.append(p)
+        else:
+            outros_profs.append(p)
 
     return render(request, 'professores/quadro_horarios_grade.html', {
         'turma': turma,
@@ -692,7 +702,9 @@ def view_grade_turma(request, pk):
         'unidade': unidade,
         'dias_map': DIAS_MAP,
         'grid': grid,
-        'professores': professores,
+        'professores': all_profs,
+        'profs_da_disciplina': profs_da_disciplina,
+        'outros_profs': outros_profs,
     })
 
 

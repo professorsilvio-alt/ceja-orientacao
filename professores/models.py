@@ -476,6 +476,22 @@ class TurmaComponente(models.Model):
         return f'Pendente ({alocados}/{self.tempos_requeridos})'
 
     @property
+    def codigo_abrev(self):
+        import re
+        clean = re.sub(r'-\d+$', '', self.codigo_turma)
+        return clean
+
+    @property
+    def total_professores_alocados_count(self):
+        prof_ids = set(self.alocacoes.filter(professor__isnull=False).values_list('professor_id', flat=True))
+        count = len(prof_ids)
+        if count == 0:
+            return "0 alocados"
+        elif count == 1:
+            return "1 professor alocado"
+        return f"{count} professores alocados"
+
+    @property
     def professores_alocados_nomes(self):
         alocacoes = self.alocacoes.filter(professor__isnull=False).select_related('professor')
         nomes = []

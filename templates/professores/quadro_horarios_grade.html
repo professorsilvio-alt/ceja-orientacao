@@ -1,128 +1,123 @@
 {% extends "base.html" %}
-{% block title %}Grade Horária — {{ turma.codigo_turma }}{% endblock %}
+{% block title %}Montar Grade — {{ turma.codigo_abrev }} ({{ turma.disciplina_nome }}){% endblock %}
 {% block nav_quadro_horarios %}active{% endblock %}
 
 {% block extra_head %}
 <style>
-  /* Estilos específicos para replicar a estética da planilha oficial do CEJA */
-  .sheet-header-box {
-    background: #e2efda;
-    border: 2px solid #385723;
-    border-radius: 8px;
-    color: #1e4620;
-    padding: 12px 18px;
+  /* Cabeçalho da Grade em Tema Dark Oficial */
+  .grade-header-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px 24px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
 
-  .sheet-header-title {
-    font-size: 1.15rem;
+  .grade-title {
+    font-size: 1.25rem;
     font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
   }
 
-  .sheet-turma-badge {
-    background: #ffffff;
-    border: 1.5px solid #385723;
-    color: #c00000;
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 1rem;
-  }
-
-  .sheet-status-badge-ok {
-    background: #2e7d32;
-    color: #ffffff;
-    font-weight: 900;
-    padding: 6px 16px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-  }
-
-  .sheet-status-badge-pending {
-    background: #ed6c02;
-    color: #ffffff;
-    font-weight: 800;
+  .grade-chip {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
     padding: 6px 14px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .badge-code {
+    background: rgba(6, 182, 212, 0.15);
+    color: #67e8f9;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    font-weight: 800;
+    font-family: monospace;
+    padding: 4px 10px;
     border-radius: 6px;
     font-size: 0.95rem;
   }
 
-  .sheet-info-row {
-    background: #f2f9f1;
-    border: 1.5px solid #a8d08d;
-    border-radius: 6px;
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    color: #1e3a1e;
-    font-size: 0.9rem;
+  /* Tabela de Grade Interativa com Linhas de Grade Claras */
+  .grade-table-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
   }
 
-  /* Tabela de Grade Interativa */
-  .sheet-table {
-    border-collapse: collapse;
+  .grade-table {
     width: 100%;
-    background: #ffffff;
-    color: #000000;
-    border: 2px solid #385723;
+    border-collapse: collapse;
+    color: var(--text-primary);
   }
 
-  .sheet-table th, .sheet-table td {
-    border: 1px solid #a6a6a6;
-    padding: 8px 6px;
+  .grade-table th, .grade-table td {
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding: 10px 8px;
     text-align: center;
-    font-size: 0.85rem;
     vertical-align: middle;
+    font-size: 0.85rem;
   }
 
-  .sheet-table th {
-    background: #fff2cc; /* Tom suave de amarelado/bege de cabeçalho */
-    color: #000000;
+  .grade-table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-size: 0.82rem;
+    padding: 14px 8px;
   }
 
-  .sheet-table th.col-horario {
-    background: #e2efda;
-    color: #1e4620;
+  .grade-table th.col-horario {
+    background: rgba(30, 41, 59, 0.8);
+    color: #67e8f9;
     width: 130px;
+    font-size: 0.82rem;
   }
 
-  /* Células Fechadas */
+  /* Estado Célula FECHADA */
   .cell-fechada {
-    background-color: #fce4d6 !important; /* Tom salmão/pêssego da planilha */
-    color: #c65911 !important;
-    font-weight: 800 !important;
-    font-size: 0.8rem;
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem;
     letter-spacing: 0.5px;
     user-select: none;
   }
 
-  /* Célula Livre */
+  /* Estado Célula LIVRE (Clicável) */
   .cell-livre {
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.015);
     cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    transition: all 0.15s ease-in-out;
   }
   .cell-livre:hover {
-    background-color: #e8f5e9 !important;
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
   }
 
-  /* Célula Alocada */
+  /* Estado Célula ALOCADA (Clicável para editar) */
   .cell-alocada {
-    background-color: #ffffff;
-    color: #2e7d32 !important; /* Texto verde em destaque como nas imagens */
-    font-weight: 900 !important;
+    background-color: rgba(34, 197, 94, 0.15) !important;
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    color: #4ade80 !important;
+    font-weight: 800 !important;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
+    transition: all 0.15s ease-in-out;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
   }
   .cell-alocada:hover {
-    background-color: #c8e6c9 !important;
+    background-color: rgba(34, 197, 94, 0.3) !important;
+    transform: scale(1.02);
   }
 
   @media print {
@@ -136,14 +131,14 @@
 
 {% block breadcrumb %}
   <a href="{% url 'quadro_horarios' %}?unidade={{ unidade.pk }}&ano={{ config.ano_letivo }}" style="color:var(--text-secondary); text-decoration:none;">
-    <i class="bi bi-grid-3x3-gap-fill me-1"></i>Quadro de Horários
+    <i class="bi bi-calendar3-week me-1"></i>Quadro de Horários
   </a>
   <span class="mx-2" style="color:var(--text-muted);">/</span>
-  <span style="color:var(--text-main); font-weight:700;">{{ turma.codigo_turma }}</span>
+  <span style="color:var(--text-primary); font-weight:700;">{{ turma.codigo_abrev }} ({{ turma.disciplina_nome }})</span>
 {% endblock %}
 
 {% block content %}
-<!-- Barra Superior de Navegação -->
+<!-- Barra Superior de Ações -->
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 no-print gap-2">
   <div>
     <a href="{% url 'quadro_horarios' %}?unidade={{ unidade.pk }}&ano={{ config.ano_letivo }}" class="btn-gestao btn-gestao-secondary btn-sm">
@@ -158,103 +153,98 @@
 </div>
 
 <div id="printable-grid">
-  <!-- Banner de Cabeçalho da Planilha Oficial -->
-  <div class="sheet-header-box d-flex flex-wrap justify-content-between align-items-center gap-3">
-    <div>
-      <div class="sheet-header-title">
-        {{ unidade.nome }} - HORÁRIO {{ config.ano_letivo }}
+  <!-- Card de Cabeçalho da Grade da Turma -->
+  <div class="grade-header-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+      <div>
+        <div class="grade-title">
+          {{ unidade.nome }} — HORÁRIO {{ config.ano_letivo }}
+        </div>
+        <div style="font-size:0.88rem; color:var(--text-secondary);">
+          Unidade: <strong>{{ unidade.nome }}</strong> {% if unidade.tipo == 'sede' %}(Sede Principal){% else %}(Vinculada){% endif %}
+        </div>
       </div>
-      <div style="font-size:0.85rem; font-weight:600; opacity:0.9;">
-        Unidade: {{ unidade.nome }} {% if unidade.tipo == 'sede' %}(Sede Principal){% else %}(Vinculada){% endif %}
-      </div>
-    </div>
 
-    <div class="d-flex align-items-center gap-3">
       <div class="d-flex align-items-center gap-2">
-        <span style="font-weight:800; font-size:0.9rem;">TURMA / TEMPOS:</span>
-        <span class="sheet-turma-badge">{{ turma.codigo_turma }}</span>
-        <span class="sheet-turma-badge" style="color:#2e7d32;" id="turma-tempos-target">{{ turma.tempos_requeridos }}</span>
+        <span class="badge-code">{{ turma.codigo_abrev }}</span>
+        <span class="tempos-pill" style="font-size:0.9rem; padding:6px 14px;">{{ turma.tempos_requeridos }} tempos exigidos</span>
+        
+        <div id="status-badge-container">
+          {% if turma.status_ok %}
+          <span class="badge-status-ok" style="font-size:0.9rem; padding:6px 14px;"><i class="bi bi-check-circle-fill"></i>OK (Preenchido)</span>
+          {% else %}
+          <span class="badge-status-pending" style="font-size:0.9rem; padding:6px 14px;"><i class="bi bi-clock-fill"></i>{{ turma.status_display }}</span>
+          {% endif %}
+        </div>
       </div>
+    </div>
 
-      <div id="status-badge-container">
-        {% if turma.status_ok %}
-        <span class="sheet-status-badge-ok" id="status-badge">OK</span>
-        {% else %}
-        <span class="sheet-status-badge-pending" id="status-badge">{{ turma.status_display }}</span>
-        {% endif %}
+    <!-- Linha de Detalhes da Disciplina -->
+    <div class="d-flex flex-wrap gap-3 align-items-center pt-2 border-top" style="border-color:var(--card-border) !important;">
+      <div class="grade-chip">
+        <span style="color:var(--text-muted);">DISCIPLINA:</span>
+        <strong style="color:#60a5fa; font-size:1rem;">{{ turma.disciplina_nome }}</strong>
+      </div>
+      <div class="grade-chip">
+        <span style="color:var(--text-muted);">PROFESSOR(ES) ALOCADO(S):</span>
+        <strong id="professores-alocados-label" style="color:#4ade80;">{{ turma.professores_alocados_nomes }}</strong>
       </div>
     </div>
   </div>
 
-  <!-- Sub-cabeçalho de Informações do Componente -->
-  <div class="sheet-info-row">
-    <div class="row g-2 align-items-center">
-      <div class="col-md-3">
-        <strong>ÁREA:</strong> <span style="color:#1b5e20; font-weight:700;">{{ turma.area|default:"GERAL" }}</span>
-      </div>
-      <div class="col-md-3">
-        <strong>TRILHA / NÚCLEO:</strong> <span style="color:#1b5e20; font-weight:700;">{{ turma.trilha_nucleo|default:"-" }}</span>
-      </div>
-      <div class="col-md-3">
-        <strong>DISCIPLINA:</strong> <span style="color:#c00000; font-weight:800;">{{ turma.disciplina_nome }}</span>
-      </div>
-      <div class="col-md-3 text-md-end">
-        <strong>PROFESSOR(ES):</strong> <span id="professores-alocados-label" style="color:#2e7d32; font-weight:800;">{{ turma.professores_alocados_nomes }}</span>
-      </div>
-    </div>
-  </div>
+  <!-- Tabela de Grade Interativa com Linhas de Grade Visíveis -->
+  <div class="grade-table-container">
+    <div class="table-responsive">
+      <table class="grade-table">
+        <thead>
+          <tr>
+            <th class="col-horario">HORÁRIO</th>
+            {% for dia_code, dia_nome, func_dia, abert, fech in dias_map %}
+            <th>{{ dia_nome }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in grid %}
+          <tr>
+            <td class="col-horario font-monospace" style="font-weight:700;">
+              {{ row.label_horario }}
+            </td>
 
-  <!-- Tabela de Grade de Tempos (Planilha) -->
-  <div class="table-responsive shadow-sm rounded border">
-    <table class="sheet-table">
-      <thead>
-        <tr>
-          <th class="col-horario">HORÁRIO</th>
-          {% for dia_code, dia_nome, func_dia, abert, fech in dias_map %}
-          <th>{{ dia_nome }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in grid %}
-        <tr>
-          <td class="col-horario font-monospace" style="font-weight:700;">
-            {{ row.label_horario }}
-          </td>
-
-          {% for cell in row.cells %}
-            {% if cell.is_fechada %}
-            <td class="cell-fechada">FECHADA</td>
-            {% else %}
-              {% if cell.alocacao %}
-              <td class="cell-alocada" 
-                  onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '{{ cell.alocacao.professor.pk }}', '{{ cell.professor_nome }}')"
-                  title="Clique para alterar/remover alocação">
-                {{ cell.professor_nome }}
-              </td>
+            {% for cell in row.cells %}
+              {% if cell.is_fechada %}
+              <td class="cell-fechada">FECHADA</td>
               {% else %}
-              <td class="cell-livre" 
-                  onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '', '')"
-                  title="Clique para alocar um professor neste horário">
-                &nbsp;
-              </td>
+                {% if cell.alocacao %}
+                <td class="cell-alocada" 
+                    onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '{{ cell.alocacao.professor.pk }}', '{{ cell.professor_nome }}')"
+                    title="Clique para alterar ou remover professor">
+                  <i class="bi bi-person-check-fill me-1"></i>{{ cell.professor_nome }}
+                </td>
+                {% else %}
+                <td class="cell-livre" 
+                    onclick="abrirModalAlocacao('{{ cell.dia_code }}', '{{ cell.dia_nome }}', '{{ row.hora_inicio }}', '{{ row.hora_fim }}', '', '')"
+                    title="Clique para alocar professor neste horário">
+                  <i class="bi bi-plus-circle opacity-50 me-1"></i>Alocar
+                </td>
+                {% endif %}
               {% endif %}
-            {% endif %}
+            {% endfor %}
+          </tr>
           {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <!-- Modal Interativo de Alocação de Slot -->
 <div class="modal fade no-print" id="modalAlocarSlot" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border-color);">
-      <div class="modal-header border-bottom border-secondary">
-        <h5 class="modal-title font-weight-bold" id="modalSlotTitle">
-          <i class="bi bi-person-plus-fill text-primary me-2"></i>Alocar Professor
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+      <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+        <h5 class="modal-title font-weight-bold" style="color:var(--blue);">
+          <i class="bi bi-person-plus-fill me-2"></i>Alocar Professor em {{ turma.disciplina_nome }}
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -267,33 +257,46 @@
         <input type="hidden" name="format" value="json">
 
         <div class="modal-body">
-          <div class="alert alert-info py-2 font-weight-bold mb-3" style="font-size:0.9rem;">
-            <i class="bi bi-clock me-1"></i> Dia & Horário: <span id="slotInfoLabel" class="text-primary"></span>
+          <div class="alert alert-info py-2 font-weight-bold mb-3" style="font-size:0.9rem; background:rgba(6,182,212,0.1); border-color:rgba(6,182,212,0.3); color:#67e8f9;">
+            <i class="bi bi-clock me-1"></i> Dia & Horário Selecionado: <span id="slotInfoLabel" style="color:#fff;"></span>
           </div>
 
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Selecione o Professor</label>
-            <select class="form-select" name="professor_id" id="select_professor" onchange="atualizarRotuloSugerido(this)">
+            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">Selecione o Professor *</label>
+            <select class="form-select" name="professor_id" id="select_professor" onchange="atualizarRotuloSugerido(this)" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
               <option value="">-- Limpar / Nenhum Professor --</option>
-              {% for p in professores %}
-              <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
-                {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}Sem disc.{% endif %})
-              </option>
-              {% endfor %}
+              
+              {% if profs_da_disciplina %}
+              <optgroup label="⭐ Professores da Disciplina ({{ turma.disciplina_nome }})">
+                {% for p in profs_da_disciplina %}
+                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  ⭐ {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo }}{% endif %})
+                </option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+
+              <optgroup label="👥 Demais Professores Cadastrados">
+                {% for p in outros_profs %}
+                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo|default:"Prof." }}{% endif %})
+                </option>
+                {% endfor %}
+              </optgroup>
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Rótulo de Exibição na Grade (Nome/Sufixo)</label>
-            <input type="text" class="form-control" name="rotulo_exibicao" id="input_rotulo_exibicao" placeholder="Ex: SANDRA, LUCIANA 1, DANIELA 2">
+            <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">Rótulo / Nome de Exibição na Grade (Ex: LUCIANA 1, DANIELA 2)</label>
+            <input type="text" class="form-control" name="rotulo_exibicao" id="input_rotulo_exibicao" placeholder="Ex: LUCIANA 1, DANIELA 2" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
             <small style="color:var(--text-muted); font-size:0.78rem;">
-              É o nome em texto maiúsculo que aparecerá na célula da planilha (ex: <code>LUCIANA 1</code> para 1ª matrícula ou <code>DANIELA 2</code> para 2ª).
+              É o nome em texto que aparecerá na célula da planilha (ex: <code>LUCIANA 1</code> para 1ª matrícula ou <code>DANIELA 2</code> para 2ª).
             </small>
           </div>
         </div>
 
-        <div class="modal-footer border-top border-secondary justify-content-between">
-          <button type="button" class="btn btn-outline-danger btn-sm" onclick="limparSlotAtual()"><i class="bi bi-eraser me-1"></i> Limpar Horário</button>
+        <div class="modal-footer" style="border-top:1px solid var(--card-border); display:flex; justify-content:space-between;">
+          <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-eraser me-1"></i> Limpar Horário</button>
           <div>
             <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Horário</button>
@@ -352,19 +355,6 @@
     .then(data => {
       if (data.success) {
         if (modalInstance) modalInstance.hide();
-
-        // Atualiza a badge de status e rótulos sem recarregar a página
-        const statusContainer = document.getElementById('status-badge-container');
-        if (data.status_ok) {
-          statusContainer.innerHTML = '<span class="sheet-status-badge-ok">OK</span>';
-        } else {
-          statusContainer.innerHTML = '<span class="sheet-status-badge-pending">' + data.status_display + '</span>';
-        }
-
-        const profLabel = document.getElementById('professores-alocados-label');
-        if (profLabel) profLabel.textContent = data.professores_nomes;
-
-        // Recarrega a página para atualizar o grid com feedback limpo
         window.location.reload();
       } else {
         alert('Erro ao salvar: ' + (data.error || 'Erro desconhecido.'));
