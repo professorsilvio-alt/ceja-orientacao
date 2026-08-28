@@ -42,10 +42,10 @@
     font-size: 0.95rem;
   }
 
-  /* Barra de Copiar e Colar Rápido (Ctrl+C / Ctrl+V) */
+  /* Barra de Copiar e Colar Rápido (Ctrl+C / Ctrl+V e Drag-and-Drop) */
   .copy-paste-bar {
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(59, 130, 246, 0.4);
     border-radius: 10px;
     padding: 10px 16px;
     margin-bottom: 16px;
@@ -56,23 +56,23 @@
   }
 
   .copy-status-badge {
-    background: rgba(34, 197, 94, 0.2);
+    background: rgba(34, 197, 94, 0.25);
     color: #4ade80;
-    border: 1px solid rgba(34, 197, 94, 0.4);
+    border: 1px solid rgba(34, 197, 94, 0.5);
     padding: 4px 12px;
     border-radius: 6px;
     font-weight: 700;
     font-size: 0.85rem;
   }
 
-  /* Tabela de Grade Interativa com Linhas de Grade Destacadas */
+  /* Tabela de Grade Interativa com Linhas de Grade Perfeitamente Definidas */
   .grade-table-container {
     background: var(--card-bg);
-    border: 2px solid rgba(56, 189, 248, 0.4) !important;
+    border: 2px solid #38bdf8 !important;
     border-radius: 12px;
     overflow: hidden;
     width: 100%;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
 
   .grade-table {
@@ -83,24 +83,24 @@
   }
 
   .grade-table th, .grade-table td {
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    padding: 12px 10px;
-    text-align: center;
-    vertical-align: middle;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 10px 6px;
+    text-align: center !important;
+    vertical-align: middle !important;
     font-size: 0.88rem;
     word-break: break-word;
     position: relative;
   }
 
   .grade-table th {
-    background: rgba(30, 41, 59, 0.9);
+    background: rgba(30, 41, 59, 0.95);
     color: #f8fafc;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 0.84rem;
-    padding: 14px 10px;
-    border-bottom: 2px solid rgba(56, 189, 248, 0.5) !important;
+    padding: 14px 8px;
+    border-bottom: 3px solid #38bdf8 !important;
   }
 
   .grade-table th.col-horario, .grade-table td.col-horario {
@@ -108,14 +108,20 @@
     color: #67e8f9;
     font-size: 0.85rem;
     font-weight: 700;
-    border-right: 2px solid rgba(56, 189, 248, 0.3) !important;
+    border-right: 3px solid #38bdf8 !important;
   }
 
   /* Célula Selecionada */
   .cell-selected {
     outline: 3px solid #38bdf8 !important;
     outline-offset: -3px;
-    background-color: rgba(56, 189, 248, 0.2) !important;
+    background-color: rgba(56, 189, 248, 0.25) !important;
+  }
+
+  /* Efeito de Drag over (Arrastar e soltar) */
+  .cell-drag-over {
+    outline: 3px dashed #4ade80 !important;
+    background-color: rgba(34, 197, 94, 0.3) !important;
   }
 
   /* Estado Célula FECHADA (Fora do expediente) */
@@ -130,10 +136,10 @@
 
   /* Estado Célula LIVRE (Clicável com ícone de +) */
   .cell-livre {
-    background-color: rgba(255, 255, 255, 0.015);
+    background-color: rgba(255, 255, 255, 0.02);
     cursor: pointer;
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.15s ease-in-out;
   }
@@ -142,19 +148,44 @@
     color: #60a5fa !important;
   }
 
-  /* Estado Célula ALOCADA (Clicável para editar) */
+  /* Estado Célula ALOCADA (Clicável e Arrastável) */
   .cell-alocada {
-    background-color: rgba(34, 197, 94, 0.15) !important;
-    border: 1px solid rgba(34, 197, 94, 0.5) !important;
+    background-color: rgba(34, 197, 94, 0.18) !important;
+    border: 2px solid rgba(34, 197, 94, 0.6) !important;
     color: #4ade80 !important;
     font-weight: 800 !important;
-    font-size: 0.92rem;
-    cursor: pointer;
+    font-size: 0.9rem;
+    cursor: grab;
     transition: all 0.15s ease-in-out;
-    text-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+    text-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+  }
+  .cell-alocada:active {
+    cursor: grabbing;
   }
   .cell-alocada:hover {
-    background-color: rgba(34, 197, 94, 0.3) !important;
+    background-color: rgba(34, 197, 94, 0.35) !important;
+  }
+
+  /* Botão de Excluir Direto na Célula */
+  .btn-deletar-slot {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 4px;
+
+    opacity: 0.4;
+  }
+  .cell-alocada:hover .btn-deletar-slot {
+    opacity: 1;
+  }
+  .btn-deletar-slot:hover {
+    background: #ef4444;
+    color: #fff;
   }
 
   @media print {
@@ -229,14 +260,14 @@
     </div>
   </div>
 
-  <!-- Barra de Ferramentas: Copiar / Colar Rápido -->
+  <!-- Barra de Ferramentas: Arrastar e Soltar (Tabuleiro) / Copiar e Colar -->
   <div class="copy-paste-bar no-print">
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <span style="font-size:0.88rem; font-weight:800; color:#38bdf8;">
-        <i class="bi bi-clipboard-plus me-1"></i>Alocação Rápida (Ctrl+C / Ctrl+V):
+        <i class="bi bi-arrows-move me-1"></i>Tabuleiro Interativo:
       </span>
       <span id="copy-status-text" style="font-size:0.85rem; color:#cbd5e1; font-weight:500;">
-        Selecione um horário com professor e pressione <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> para copiar e <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd> para colar em outro horário vago!
+        💡 <strong>Arraste e solte</strong> um professor de um horário para outro como no xadrez, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+C</kbd> / <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Ctrl+V</kbd>!
       </span>
     </div>
     <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
@@ -272,15 +303,25 @@
               {% else %}
                 {% if cell.alocacao %}
                 <td class="cell-alocada grid-cell"
+                    draggable="true"
                     data-diacode="{{ cell.dia_code }}"
                     data-dianome="{{ cell.dia_nome }}"
                     data-horainicio="{{ row.hora_inicio }}"
                     data-horafim="{{ row.hora_fim }}"
                     data-profid="{{ cell.alocacao.professor.pk }}"
                     data-rotulo="{{ cell.professor_nome }}"
+                    ondragstart="arrastarInicio(event, this)"
+                    ondragover="arrastarSobre(event, this)"
+                    ondragleave="arrastarSair(this)"
+                    ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
-                    title="Clique para abrir ou copiar (Ctrl+C)">
-                  <i class="bi bi-person-check-fill me-1"></i>{{ cell.professor_nome }}
+                    title="Arraste para outro horário ou clique para editar/remover">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span><i class="bi bi-person-check-fill me-1"></i>{{ cell.professor_nome }}</span>
+                    <button type="button" class="btn-deletar-slot no-print" onclick="deletarSlotDireto(event, '{{ cell.dia_code }}', '{{ row.hora_inicio }}')" title="Excluir este horário">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
                 </td>
                 {% else %}
                 <td class="cell-livre grid-cell"
@@ -290,8 +331,11 @@
                     data-horafim="{{ row.hora_fim }}"
                     data-profid=""
                     data-rotulo=""
+                    ondragover="arrastarSobre(event, this)"
+                    ondragleave="arrastarSair(this)"
+                    ondrop="soltarItem(event, this)"
                     onclick="clicarCelulaGrid(this)"
-                    title="Clique para alocar professor neste horário">
+                    title="Solte um professor arrastado ou clique para alocar">
                   <i class="bi bi-plus-lg opacity-50" style="font-size:1.1rem;"></i>
                 </td>
                 {% endif %}
@@ -311,7 +355,7 @@
     <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
       <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
         <h5 class="modal-title font-weight-bold" style="color:var(--blue);">
-          <i class="bi bi-person-plus-fill me-2"></i>Alocar Professor em {{ turma.disciplina_nome }}
+          <i class="bi bi-person-plus-fill me-2"></i>Alocar / Editar Professor em {{ turma.disciplina_nome }}
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -363,11 +407,11 @@
         </div>
 
         <div class="modal-footer" style="border-top:1px solid var(--card-border); display:flex; justify-content:space-between;">
-          <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-eraser me-1"></i> Limpar Horário</button>
+          <button type="button" class="btn-gestao btn-gestao-danger" onclick="limparSlotAtual()"><i class="bi bi-trash me-1"></i> Deletar Horário</button>
           <div class="d-flex gap-2">
             <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
             <button type="button" class="btn btn-info font-weight-bold" onclick="copiarDoModal()"><i class="bi bi-clipboard-check me-1"></i> Copiar Este Professor</button>
-            <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Horário</button>
+            <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i> Salvar Alteração</button>
           </div>
         </div>
       </form>
@@ -378,7 +422,7 @@
 <script>
   let celulaSelecionada = null;
   let dadosCopiados = null; // { profId, rotulo }
-  const temposRequeridos = {{ turma.tempos_requeridos|default:12 }};
+  let itemArrastado = null; // Dados da célula sendo arrastada
 
   // Carrega a cópia persistente ao carregar a página
   document.addEventListener('DOMContentLoaded', function() {
@@ -393,7 +437,91 @@
     }
   });
 
-  // Função para abrir o modal de forma limpa e confiável em qualquer clique
+  /* ── DRAG AND DROP (Tabuleiro de Xadrez) ── */
+  function arrastarInicio(e, cellElem) {
+    itemArrastado = {
+      diaCode: cellElem.dataset.diacode,
+      horaInicio: cellElem.dataset.horainicio,
+      horaFim: cellElem.dataset.horafim,
+      profId: cellElem.dataset.profid,
+      rotulo: cellElem.dataset.rotulo
+    };
+    e.dataTransfer.setData('text/plain', JSON.stringify(itemArrastado));
+    cellElem.style.opacity = '0.4';
+  }
+
+  function arrastarSobre(e, cellElem) {
+    e.preventDefault();
+    cellElem.classList.add('cell-drag-over');
+  }
+
+  function arrastarSair(cellElem) {
+    cellElem.classList.remove('cell-drag-over');
+  }
+
+  function soltarItem(e, targetElem) {
+    e.preventDefault();
+    targetElem.classList.remove('cell-drag-over');
+    document.querySelectorAll('.grid-cell').forEach(c => c.style.opacity = '1');
+
+    if (!itemArrastado) return;
+
+    const origem = itemArrastado;
+    const destinoDia = targetElem.dataset.diacode;
+    const destinoHoraInicio = targetElem.dataset.horainicio;
+
+    // Se for o mesmo slot, ignora
+    if (origem.diaCode === destinoDia && origem.horaInicio === destinoHoraInicio) return;
+
+    // Move para o novo slot e libera o slot de origem
+    salvarSlotAjax(destinoDia, destinoHoraInicio, targetElem.dataset.horafim, origem.profId, origem.rotulo, function() {
+      // Libera origem
+      salvarSlotAjax(origem.diaCode, origem.horaInicio, origem.horaFim, 'limpar', '', function() {
+        window.location.reload();
+      });
+    });
+  }
+
+  /* ── EXCLUSÃO DIRETA COM 1 CLIQUE ── */
+  function deletarSlotDireto(e, diaCode, horaInicio) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (confirm('Deseja excluir a alocação deste horário?')) {
+      salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', function() {
+        window.location.reload();
+      });
+    }
+  }
+
+  function salvarSlotAjax(diaCode, horaInicio, horaFim, profId, rotulo, callback) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('dia_semana', diaCode);
+    formData.append('hora_inicio', horaInicio);
+    formData.append('hora_fim', horaFim || horaInicio);
+    formData.append('professor_id', profId);
+    formData.append('rotulo_exibicao', rotulo);
+    formData.append('format', 'json');
+
+    fetch('{% url "salvar_alocacao_slot" turma.pk %}', {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        if (callback) callback();
+        else window.location.reload();
+      } else {
+        alert('⚠️ ' + (data.error || 'Erro ao processar alteração.'));
+      }
+    })
+    .catch(() => window.location.reload());
+  }
+
+  /* ── ABRIR MODAL / SELEÇÃO ── */
   function abrirModalAlocacao(cellElem) {
     const diaCode = cellElem.dataset.diacode;
     const diaNome = cellElem.dataset.dianome;
@@ -416,22 +544,19 @@
     modalObj.show();
   }
 
-  // Clique na célula da grade
   function clicarCelulaGrid(cellElem) {
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
     cellElem.classList.add('cell-selected');
     celulaSelecionada = cellElem;
 
     const profId = cellElem.dataset.profid;
-    const rotulo = cellElem.dataset.rotulo;
 
-    // Se já tivermos dados copiados (persistentes) e clicarmos em uma célula LIVRE, cola direto!
+    // Se já tivermos dados COPIADOS explicitamente e clicarmos em uma célula LIVRE, cola!
     if (dadosCopiados && !profId) {
-      colarEmCelula(cellElem, dadosCopiados.profId, dadosCopiados.rotulo);
+      salvarSlotAjax(cellElem.dataset.diacode, cellElem.dataset.horainicio, cellElem.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
       return;
     }
 
-    // Caso contrário, abre a modal de edição/alocação
     abrirModalAlocacao(cellElem);
   }
 
@@ -457,8 +582,9 @@
   }
 
   function exibirBadgeCopia(rotulo) {
-    document.getElementById('copy-actions-container').style.display = 'flex';
-    document.getElementById('copied-label-badge').textContent = '📋 Copiado (Persistente): ' + rotulo;
+    const container = document.getElementById('copy-actions-container');
+    if (container) container.style.display = 'flex';
+    document.getElementById('copied-label-badge').textContent = '📋 Copiado: ' + rotulo;
   }
 
   function limparCopia(e) {
@@ -468,38 +594,10 @@
     }
     dadosCopiados = null;
     localStorage.removeItem('ceja_copied_prof_global');
-    document.getElementById('copy-actions-container').style.display = 'none';
+    localStorage.removeItem('ceja_copied_prof_{{ turma.pk }}');
+    const container = document.getElementById('copy-actions-container');
+    if (container) container.style.display = 'none';
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
-  }
-
-  function colarEmCelula(cellElem, profId, rotulo) {
-    const diaCode = cellElem.dataset.diacode;
-    const horaInicio = cellElem.dataset.horainicio;
-    const horaFim = cellElem.dataset.horafim;
-
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-    formData.append('dia_semana', diaCode);
-    formData.append('hora_inicio', horaInicio);
-    formData.append('hora_fim', horaFim);
-    formData.append('professor_id', profId);
-    formData.append('rotulo_exibicao', rotulo);
-    formData.append('format', 'json');
-
-    fetch('{% url "salvar_alocacao_slot" turma.pk %}', {
-      method: 'POST',
-      body: formData,
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        window.location.reload();
-      } else {
-        alert('⚠️ ' + (data.error || 'Não foi possível alocar o horário.'));
-      }
-    })
-    .catch(() => window.location.reload());
   }
 
   // Atalhos Globais de Teclado (Ctrl+C e Ctrl+V)
@@ -511,7 +609,7 @@
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
       if (celulaSelecionada && dadosCopiados) {
-        colarEmCelula(celulaSelecionada, dadosCopiados.profId, dadosCopiados.rotulo);
+        salvarSlotAjax(celulaSelecionada.dataset.diacode, celulaSelecionada.dataset.horainicio, celulaSelecionada.dataset.horafim, dadosCopiados.profId, dadosCopiados.rotulo);
       }
     }
   });
