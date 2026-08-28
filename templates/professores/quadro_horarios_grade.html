@@ -308,9 +308,9 @@
         💡 Clique no <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">+</kbd> para escolher um professor, ou use <kbd style="background:#1e293b; color:#38bdf8; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">Ctrl+C</kbd> para copiar e colar com 1 clique!
       </span>
     </div>
-    <div id="copy-actions-container" style="display:none;" class="d-flex align-items-center gap-2">
+    <div id="copy-actions-container" class="d-none align-items-center gap-2" style="display:none !important;">
       <span id="copied-label-badge" class="copy-status-badge"></span>
-      <button type="button" class="btn btn-sm btn-danger py-1 px-3 font-weight-bold" style="font-size:0.82rem; border-radius:8px;" onclick="limparCopiaForcado(); return false;" title="Sair do modo de cópia e voltar a escolher professores manualmente (ou pressione Esc)">
+      <button type="button" class="btn btn-sm btn-danger py-1 px-3 font-weight-bold" style="font-size:0.82rem; border-radius:8px; cursor:pointer;" onclick="limparCopiaForcado();" title="Sair do modo de cópia e voltar a escolher professores manualmente (ou pressione Esc)">
         <i class="bi bi-x-circle me-1"></i> Limpar Cópia / Escolher Outro
       </button>
     </div>
@@ -832,8 +832,10 @@
   function exibirBadgeCopia(rotulo) {
     const container = document.getElementById('copy-actions-container');
     if (container) {
+      container.classList.remove('d-none');
+      container.classList.add('d-flex');
       container.style.display = 'flex';
-      container.style.visibility = 'visible';
+      container.setAttribute('style', 'display: flex !important;');
     }
     const badge = document.getElementById('copied-label-badge');
     if (badge) {
@@ -849,11 +851,15 @@
     dadosCopiados = null;
     try {
       localStorage.removeItem('ceja_copied_prof_global');
+      localStorage.removeItem('ceja_copied_prof');
     } catch(e){}
     
     const container = document.getElementById('copy-actions-container');
     if (container) {
+      container.classList.remove('d-flex');
+      container.classList.add('d-none');
       container.style.display = 'none';
+      container.setAttribute('style', 'display: none !important;');
     }
     const statusText = document.getElementById('copy-status-text');
     if (statusText) {
