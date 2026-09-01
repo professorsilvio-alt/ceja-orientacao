@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alimentar o Cérebro — Upload de Documentos{% endblock %}
+{% block nav_cerebro_documentos %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 900px;">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold text-white mb-1">
+        <i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i>Alimentar a Base da Beth
+      </h3>
+      <p class="text-secondary mb-0">Envie novos arquivos ou cole textos/normas para ensinar a orientadora virtual.</p>
+    </div>
+    <a href="{% url 'cerebro_documentos' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Voltar ao Acervo
+    </a>
+  </div>
+
+  <div class="card bg-dark border-secondary p-4 shadow-lg">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        
+        <!-- Título -->
+        <div class="col-md-8">
+          <label class="form-label text-light fw-semibold">Título ou Nome do Documento <span class="text-danger">*</span></label>
+          {{ form.titulo }}
+          <div class="form-text text-secondary">Dê um nome claro para facilitar a identificação pela IA.</div>
+        </div>
+
+        <!-- Categoria -->
+        <div class="col-md-4">
+          <label class="form-label text-light fw-semibold">Categoria <span class="text-danger">*</span></label>
+          {{ form.categoria }}
+        </div>
+
+        <!-- Número da Normativa / Portaria -->
+        <div class="col-md-6">
+          <label class="form-label text-light fw-semibold">Nº da Normativa / Portaria / Resolução</label>
+          {{ form.numero_normativa }}
+          <div class="form-text text-secondary">Ex: Resolução SEEDUC nº 52, Portaria nº 02/2026.</div>
+        </div>
+
+        <!-- Ano de Referência -->
+        <div class="col-md-6">
+          <label class="form-label text-light fw-semibold">Ano de Referência</label>
+          {{ form.ano_referencia }}
+        </div>
+
+        <div class="col-12"><hr class="border-secondary my-2"></div>
+
+        <!-- Arquivo -->
+        <div class="col-12">
+          <label class="form-label text-light fw-semibold">
+            <i class="bi bi-paperclip text-info"></i> Selecionar Arquivo
+          </label>
+          {{ form.arquivo }}
+          <div class="form-text text-secondary">
+            Formatos suportados: <strong>PDF, Word (.docx), Planilhas (.xlsx/.csv), Áudios (.mp3/.wav/.ogg) e Imagens (.png/.jpg)</strong>.
+          </div>
+        </div>
+
+        <!-- Texto Direto -->
+        <div class="col-12">
+          <label class="form-label text-light fw-semibold">
+            <i class="bi bi-fonts text-warning"></i> Ou cole o Texto / Trecho de Lei / Nota Direta
+          </label>
+          {{ form.conteudo_extraido }}
+          <div class="form-text text-secondary">
+            Caso não tenha um arquivo, você pode colar os artigos, resoluções ou orientações diretamente aqui.
+          </div>
+        </div>
+
+        <div class="col-12"><hr class="border-secondary my-2"></div>
+
+        <!-- 🔄 Substituição / Atualização de Normativa -->
+        <div class="col-md-8">
+          <label class="form-label text-warning fw-semibold">
+            <i class="bi bi-arrow-repeat me-1"></i> Este documento substitui/atualiza alguma norma anterior?
+          </label>
+          {{ form.documento_substituido }}
+          <div class="form-text text-warning-emphasis">
+            💡 Ao selecionar um documento anterior, o sistema marcará automaticamente a norma antiga como <strong>Substituída / Revogada</strong>, fazendo com que a Beth priorize a nova regra nas respostas!
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="col-md-4">
+          <label class="form-label text-light fw-semibold">Status do Documento</label>
+          {{ form.status }}
+        </div>
+
+        <!-- Observações -->
+        <div class="col-12">
+          <label class="form-label text-light fw-semibold">Observações Adicionais (opcional)</label>
+          {{ form.observacoes }}
+        </div>
+
+        <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'cerebro_documentos' %}" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary px-4 shadow">
+            <i class="bi bi-check-circle-fill me-1"></i> Salvar e Ingerir no Cérebro
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

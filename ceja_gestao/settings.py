@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'funcionarios',
     'agenda',
     'totem',
+    'orientador_ia',
 ]
 
 MIDDLEWARE = [
@@ -162,3 +163,8 @@ REST_FRAMEWORK = {
 # ============================================================
 SESSION_COOKIE_AGE = 28800  # 8 horas
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# ============================================================
+# GOOGLE GEMINI API (Cérebro do CEJA / Beth)
+# ============================================================
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')

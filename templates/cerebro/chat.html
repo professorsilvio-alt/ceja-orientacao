@@ -1,0 +1,705 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cérebro do CEJA — Beth Orientadora{% endblock %}
+{% block nav_cerebro_chat %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cerebro-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 120px);
+    min-height: 600px;
+  }
+  
+  .cerebro-sidebar {
+    width: 280px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+
+  .cerebro-main {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  .beth-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);
+    border-bottom: 1px solid #312e81;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .beth-avatar-wrapper {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    margin-right: 14px;
+  }
+
+  .beth-avatar-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #818cf8;
+    box-shadow: 0 0 12px rgba(129, 140, 248, 0.5);
+  }
+
+  .beth-status-pulse {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border: 2px solid #0f172a;
+    border-radius: 50%;
+  }
+
+  .chat-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  .message-wrapper {
+    display: flex;
+    gap: 12px;
+    max-width: 85%;
+    animation: fadeInMsg 0.3s ease-in-out;
+  }
+
+  @keyframes fadeInMsg {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message-wrapper.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+
+  .message-wrapper.beth {
+    align-self: flex-start;
+  }
+
+  .msg-bubble {
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .message-wrapper.user .msg-bubble {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  .message-wrapper.beth .msg-bubble {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .msg-bubble p:last-child {
+    margin-bottom: 0;
+  }
+
+  .msg-bubble strong {
+    color: #93c5fd;
+  }
+
+  .msg-bubble ul, .msg-bubble ol {
+    padding-left: 20px;
+    margin-bottom: 8px;
+  }
+
+  .fontes-container {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed #475569;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .fonte-tag {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+  }
+
+  .chat-input-area {
+    padding: 16px 20px;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+  }
+
+  .chat-input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 24px;
+    padding: 6px 12px 6px 18px;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input-box:focus-within {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  .chat-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f8fafc;
+    font-size: 0.95rem;
+    resize: none;
+    max-height: 120px;
+    padding: 8px 0;
+  }
+
+  .btn-mic {
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+  }
+
+  .btn-mic:hover {
+    background: #475569;
+    color: #38bdf8;
+  }
+
+  .btn-mic.recording {
+    background: #ef4444 !important;
+    color: white !important;
+    animation: pulseRecording 1.2s infinite;
+  }
+
+  @keyframes pulseRecording {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+
+  .btn-send {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-send:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  .suggestion-pill {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+    margin: 4px;
+  }
+
+  .suggestion-pill:hover {
+    background: #334155;
+    color: #60a5fa;
+    border-color: #60a5fa;
+  }
+
+  .conversa-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .conversa-item:hover, .conversa-item.active {
+    background: #334155;
+    color: #38bdf8;
+  }
+
+  .btn-voice-speak {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: color 0.2s;
+  }
+
+  .btn-voice-speak:hover {
+    color: #38bdf8;
+  }
+
+  .typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #1e293b;
+    border-radius: 16px;
+    width: fit-content;
+    border: 1px solid #334155;
+  }
+
+  .typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: #60a5fa;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
+
+  .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+  .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+  <div class="cerebro-container">
+    <!-- ── BARRA LATERAL DE CONVERSAS ──────────────────────────── -->
+    <div class="cerebro-sidebar d-none d-md-flex">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="text-light m-0 font-weight-bold"><i class="bi bi-chat-left-text-fill text-primary"></i> Consultas</h6>
+        <a href="{% url 'cerebro_nova_conversa' %}" class="btn btn-sm btn-outline-primary" title="Nova Consulta">
+          <i class="bi bi-plus-lg"></i>
+        </a>
+      </div>
+
+      <a href="{% url 'cerebro_nova_conversa' %}" class="btn btn-primary w-100 mb-3 shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Nova Consulta
+      </a>
+
+      <div class="overflow-auto flex-grow-1">
+        {% for c in conversas %}
+        <a href="{% url 'cerebro_chat_conversa' c.id %}" class="conversa-item {% if c.id == conversa_ativa.id %}active{% endif %}">
+          <i class="bi bi-chat-dots"></i>
+          <span class="text-truncate">{{ c.titulo }}</span>
+        </a>
+        {% empty %}
+        <div class="text-muted small text-center py-4">Nenhuma consulta anterior.</div>
+        {% endfor %}
+      </div>
+
+      <div class="border-top border-secondary pt-3 mt-2">
+        <a href="{% url 'cerebro_documentos' %}" class="btn btn-sm btn-outline-info w-100 mb-2">
+          <i class="bi bi-folder2-open me-1"></i> Acervo de Normas
+        </a>
+        <div class="text-muted small text-center">
+          <span class="badge bg-success-subtle text-success border border-success">{{ total_docs_vigentes }} docs vigentes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ÁREA PRINCIPAL DO CHAT COM A BETH ────────────────────── -->
+    <div class="cerebro-main">
+      
+      <!-- Topo com Identidade da Beth -->
+      <div class="beth-header">
+        <div class="d-flex align-items-center">
+          <div class="beth-avatar-wrapper">
+            <img src="{% static 'beth.png' %}" alt="Avatar Beth" class="beth-avatar-img">
+            <div class="beth-status-pulse" title="Beth Pronta"></div>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="text-white mb-0 fw-bold">Beth</h5>
+              <span class="badge bg-primary-subtle text-primary border border-primary small">Orientadora IA do CEJA</span>
+            </div>
+            <div class="text-secondary small">Cérebro Institucional • Exclusivo para Direção</div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <a href="{% url 'cerebro_upload_documento' %}" class="btn btn-sm btn-outline-light">
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Alimentar Base
+          </a>
+          <a href="{% url 'cerebro_documentos' %}" class="btn btn-sm btn-outline-info">
+            <i class="bi bi-file-earmark-ruled me-1"></i> Normas
+          </a>
+        </div>
+      </div>
+
+      <!-- Histórico de Mensagens -->
+      <div class="chat-messages-area" id="chatMessages">
+        
+        <!-- Boas-vindas Inicial -->
+        <div class="message-wrapper beth">
+          <div class="beth-avatar-wrapper" style="width:36px; height:36px; margin-right:4px;">
+            <img src="{% static 'beth.png' %}" alt="Beth" class="beth-avatar-img" style="width:36px; height:36px;">
+          </div>
+          <div class="msg-bubble">
+            <p>Olá, Direção! 👩‍🏫 Sou a <strong>Beth</strong>, a orientadora virtual do CEJA Profa Rosa Soares.</p>
+            <p>Estou pronta para esclarecer dúvidas, consultar regimentos, normativas vigentes, horários e orientações pedagógicas da nossa escola. Você pode <strong>digitar</strong> ou <strong>falar no microfone</strong>!</p>
+            
+            <div class="mt-3">
+              <div class="text-secondary small mb-2 fw-semibold">Sugestões rápidas de consulta:</div>
+              <span class="suggestion-pill" onclick="enviarSugestao(this.innerText)">Quais são os horários e dias de atendimento?</span>
+              <span class="suggestion-pill" onclick="enviarSugestao(this.innerText)">Como funciona o procedimento de matrícula e documentos?</span>
+              <span class="suggestion-pill" onclick="enviarSugestao(this.innerText)">Quais normas ou resoluções foram atualizadas recentemente?</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensagens Anteriores -->
+        {% for m in mensagens %}
+          {% if m.remetente == 'usuario' %}
+          <div class="message-wrapper user">
+            <div class="msg-bubble">
+              {{ m.conteudo|linebreaksbr }}
+              {% if m.tipo_entrada == 'audio' %}
+              <div class="text-light small mt-1 opacity-75"><i class="bi bi-mic-fill"></i> Pergunta por voz</div>
+              {% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div class="message-wrapper beth">
+            <div class="beth-avatar-wrapper" style="width:36px; height:36px; margin-right:4px;">
+              <img src="{% static 'beth.png' %}" alt="Beth" class="beth-avatar-img" style="width:36px; height:36px;">
+            </div>
+            <div class="msg-bubble">
+              <div class="conteudo-ia">{{ m.conteudo|linebreaksbr }}</div>
+              
+              {% if m.fontes_consultadas %}
+              <div class="fontes-container">
+                <span class="small text-muted me-1"><i class="bi bi-bookmark-check-fill text-info"></i> Fontes:</span>
+                {% for f in m.fontes_consultadas %}
+                <span class="fonte-tag" title="{{ f.categoria }} - Status: {{ f.status }}">
+                  <i class="bi bi-file-earmark-text"></i> {{ f.titulo }} {% if f.normativa %}({{ f.normativa }}){% endif %}
+                </span>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <button class="btn-voice-speak" onclick="falarTexto(this)" title="Ouvir resposta da Beth">
+                <i class="bi bi-volume-up"></i> Ouvir
+              </button>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+
+        <!-- Indicador de Digitação -->
+        <div class="typing-indicator" id="typingIndicator">
+          <span></span><span></span><span></span>
+          <small class="text-secondary ms-2">Beth está consultando as normas...</small>
+        </div>
+
+      </div>
+
+      <!-- Barra de Entrada e Microfone -->
+      <div class="chat-input-area">
+        <div id="recordingStatus" class="text-danger small mb-2 fw-bold d-none">
+          <i class="bi bi-record-fill me-1"></i> Ouvindo sua voz... Fale agora!
+        </div>
+
+        <div class="chat-input-box">
+          <textarea 
+            id="chatInput" 
+            class="chat-textarea" 
+            rows="1" 
+            placeholder="Pergunte à Beth sobre normativas, regimento, horários ou procedimentos..."
+            onkeydown="tratarEnter(event)"
+          ></textarea>
+
+          <button id="btnMicrofone" class="btn-mic" onclick="toggleGravacaoVoz()" title="Falar por microfone">
+            <i class="bi bi-mic-fill"></i>
+          </button>
+
+          <button id="btnEnviar" class="btn-send" onclick="enviarMensagem()" title="Enviar mensagem">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<!-- Biblioteca Marked.js para renderização de Markdown fluida -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  const CONVERSA_ID = {{ conversa_ativa.id }};
+  const URL_ENVIAR_MSG = "{% url 'cerebro_api_enviar_mensagem' %}";
+  const CSRF_TOKEN = "{{ csrf_token }}";
+
+  let recognition = null;
+  let gravando = false;
+
+  // Inicializar Web Speech API para microfone
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = function(event) {
+      const transcricao = event.results[0][0].transcript;
+      const input = document.getElementById('chatInput');
+      input.value = transcricao;
+      pararGravacao();
+      enviarMensagem('audio');
+    };
+
+    recognition.onerror = function(event) {
+      console.warn('Erro no reconhecimento de voz:', event.error);
+      pararGravacao();
+      alert('Não foi possível capturar sua voz. Verifique a permissão do microfone.');
+    };
+
+    recognition.onend = function() {
+      pararGravacao();
+    };
+  }
+
+  function toggleGravacaoVoz() {
+    if (!recognition) {
+      alert('Seu navegador não suporta reconhecimento de voz direto. Digite sua pergunta.');
+      return;
+    }
+
+    if (!gravando) {
+      try {
+        recognition.start();
+        gravando = true;
+        document.getElementById('btnMicrofone').classList.add('recording');
+        document.getElementById('recordingStatus').classList.remove('d-none');
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      recognition.stop();
+      pararGravacao();
+    }
+  }
+
+  function pararGravacao() {
+    gravando = false;
+    document.getElementById('btnMicrofone').classList.remove('recording');
+    document.getElementById('recordingStatus').classList.add('d-none');
+  }
+
+  function tratarEnter(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensagem();
+    }
+  }
+
+  function enviarSugestao(texto) {
+    document.getElementById('chatInput').value = texto;
+    enviarMensagem();
+  }
+
+  async function enviarMensagem(tipoEntrada = 'texto') {
+    const input = document.getElementById('chatInput');
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Adicionar bolha do usuário
+    adicionarBolhaUsuario(texto, tipoEntrada);
+
+    // Exibir digitando
+    const typing = document.getElementById('typingIndicator');
+    typing.style.display = 'flex';
+    rolarParaFinal();
+
+    try {
+      const response = await fetch(URL_ENVIAR_MSG, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          conversa_id: CONVERSA_ID,
+          mensagem: texto,
+          tipo_entrada: tipoEntrada
+        })
+      });
+
+      const data = await response.json();
+      typing.style.display = 'none';
+
+      if (data.sucesso) {
+        adicionarBolhaBeth(data.resposta, data.fontes);
+      } else {
+        adicionarBolhaBeth('❌ Desculpe, tive um problema ao consultar: ' + (data.erro || 'Erro desconhecido.'));
+      }
+    } catch (err) {
+      typing.style.display = 'none';
+      adicionarBolhaBeth('❌ Erro de conexão com o servidor do Cérebro.');
+    }
+
+    rolarParaFinal();
+  }
+
+  function adicionarBolhaUsuario(texto, tipo) {
+    const chat = document.getElementById('chatMessages');
+    const wrap = document.createElement('div');
+    wrap.className = 'message-wrapper user';
+
+    let audioTag = tipo === 'audio' ? '<div class="text-light small mt-1 opacity-75"><i class="bi bi-mic-fill"></i> Pergunta por voz</div>' : '';
+
+    wrap.innerHTML = `
+      <div class="msg-bubble">
+        ${escapeHtml(texto).replace(/\n/g, '<br>')}
+        ${audioTag}
+      </div>
+    `;
+    chat.insertBefore(wrap, document.getElementById('typingIndicator'));
+  }
+
+  function adicionarBolhaBeth(respostaMarkdown, fontes = []) {
+    const chat = document.getElementById('chatMessages');
+    const wrap = document.createElement('div');
+    wrap.className = 'message-wrapper beth';
+
+    let htmlConteudo = typeof marked !== 'undefined' ? marked.parse(respostaMarkdown) : respostaMarkdown.replace(/\n/g, '<br>');
+
+    let fontesHtml = '';
+    if (fontes && fontes.length > 0) {
+      fontesHtml = `
+        <div class="fontes-container">
+          <span class="small text-muted me-1"><i class="bi bi-bookmark-check-fill text-info"></i> Fontes:</span>
+          ${fontes.map(f => `
+            <span class="fonte-tag" title="${f.categoria} - Status: ${f.status}">
+              <i class="bi bi-file-earmark-text"></i> ${f.titulo} ${f.normativa ? '(' + f.normativa + ')' : ''}
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    wrap.innerHTML = `
+      <div class="beth-avatar-wrapper" style="width:36px; height:36px; margin-right:4px;">
+        <img src="{% static 'beth.png' %}" alt="Beth" class="beth-avatar-img" style="width:36px; height:36px;">
+      </div>
+      <div class="msg-bubble">
+        <div class="conteudo-ia">${htmlConteudo}</div>
+        ${fontesHtml}
+        <button class="btn-voice-speak" onclick="falarTexto(this)" title="Ouvir resposta da Beth">
+          <i class="bi bi-volume-up"></i> Ouvir
+        </button>
+      </div>
+    `;
+    chat.insertBefore(wrap, document.getElementById('typingIndicator'));
+  }
+
+  function rolarParaFinal() {
+    const chat = document.getElementById('chatMessages');
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function falarTexto(btn) {
+    if (!('speechSynthesis' in window)) {
+      alert('Seu navegador não suporta síntese de voz.');
+      return;
+    }
+    const bubble = btn.closest('.msg-bubble');
+    const texto = bubble.querySelector('.conteudo-ia').innerText;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.05;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // Ajustar rolagem inicial
+  document.addEventListener('DOMContentLoaded', () => {
+    rolarParaFinal();
+  });
+</script>
+{% endblock %}

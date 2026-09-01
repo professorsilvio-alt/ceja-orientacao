@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Acervo de Conhecimento e Normativas — Cérebro do CEJA{% endblock %}
+{% block nav_cerebro_documentos %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Cabeçalho -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+      <h3 class="fw-bold text-white mb-1">
+        <i class="bi bi-folder2-open text-primary me-2"></i>Acervo de Conhecimento da Beth
+      </h3>
+      <p class="text-secondary mb-0">Base de documentos, regimentos, normativas e áudios que alimentam o Cérebro do CEJA.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'cerebro_chat' %}" class="btn btn-outline-light">
+        <i class="bi bi-chat-heart-fill text-primary me-1"></i> Falar com a Beth
+      </a>
+      <a href="{% url 'cerebro_upload_documento' %}" class="btn btn-primary shadow-sm">
+        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Adicionar Documento / Norma
+      </a>
+    </div>
+  </div>
+
+  <!-- Cards de Resumo -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary p-3 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-secondary small fw-semibold">DOCUMENTOS TOTAIS</div>
+            <div class="fs-3 fw-bold text-white">{{ total_geral }}</div>
+          </div>
+          <div class="fs-1 text-primary opacity-50"><i class="bi bi-files"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-dark border-success p-3 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-success small fw-semibold">NORMAS VIGENTES / ATIVAS</div>
+            <div class="fs-3 fw-bold text-success">{{ total_vigentes }}</div>
+          </div>
+          <div class="fs-1 text-success opacity-50"><i class="bi bi-check-circle-fill"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-dark border-warning p-3 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-warning small fw-semibold">REVOGADOS / SUBSTITUÍDOS</div>
+            <div class="fs-3 fw-bold text-warning">{{ total_substituidos }}</div>
+          </div>
+          <div class="fs-1 text-warning opacity-50"><i class="bi bi-arrow-repeat"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros e Busca -->
+  <div class="card bg-dark border-secondary p-3 mb-4">
+    <form method="GET" class="row g-3 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-secondary border-secondary text-light"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" value="{{ busca }}" class="form-control bg-dark text-white border-secondary" placeholder="Buscar por título ou normativa...">
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <select name="status" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+          <option value="todos" {% if status_filtro == 'todos' %}selected{% endif %}>Todos os Status</option>
+          <option value="vigente" {% if status_filtro == 'vigente' %}selected{% endif %}>✅ Somente Vigentes</option>
+          <option value="substituido" {% if status_filtro == 'substituido' %}selected{% endif %}>🔄 Somente Substituídos</option>
+          <option value="arquivado" {% if status_filtro == 'arquivado' %}selected{% endif %}>📦 Somente Arquivados</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select name="categoria" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+          <option value="">Todas as Categorias</option>
+          {% for cat_val, cat_label in categorias %}
+          <option value="{{ cat_val }}" {% if categoria_filtro == cat_val %}selected{% endif %}>{{ cat_label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-funnel-fill me-1"></i> Filtrar</button>
+        {% if busca or status_filtro != 'todos' or categoria_filtro %}
+        <a href="{% url 'cerebro_documentos' %}" class="btn btn-outline-danger" title="Limpar Filtros"><i class="bi bi-x-lg"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabela de Documentos -->
+  <div class="card bg-dark border-secondary shadow-sm overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead class="table-secondary text-uppercase small">
+          <tr>
+            <th>Documento / Normativa</th>
+            <th>Categoria</th>
+            <th>Formato</th>
+            <th>Status</th>
+            <th>Substituição / Histórico</th>
+            <th>Cadastrado em</th>
+            <th class="text-end">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in documentos %}
+          <tr>
+            <td>
+              <div class="fw-bold text-white fs-6">{{ doc.titulo }}</div>
+              {% if doc.numero_normativa %}
+              <span class="badge bg-info-subtle text-info border border-info small">
+                <i class="bi bi-hash"></i> {{ doc.numero_normativa }}
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-secondary">{{ doc.get_categoria_display }}</span>
+            </td>
+            <td>
+              {% if doc.tipo_arquivo == 'pdf' %}
+              <span class="badge bg-danger-subtle text-danger border border-danger"><i class="bi bi-filetype-pdf"></i> PDF</span>
+              {% elif doc.tipo_arquivo == 'docx' %}
+              <span class="badge bg-primary-subtle text-primary border border-primary"><i class="bi bi-filetype-docx"></i> Word</span>
+              {% elif doc.tipo_arquivo == 'xlsx' %}
+              <span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-filetype-xlsx"></i> Planilha</span>
+              {% elif doc.tipo_arquivo == 'audio' %}
+              <span class="badge bg-warning-subtle text-warning border border-warning"><i class="bi bi-mic-fill"></i> Áudio</span>
+              {% elif doc.tipo_arquivo == 'imagem' %}
+              <span class="badge bg-info-subtle text-info border border-info"><i class="bi bi-image"></i> Imagem</span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-light border border-secondary"><i class="bi bi-file-text"></i> Texto/Nota</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if doc.status == 'vigente' %}
+              <span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i> Vigente</span>
+              {% elif doc.status == 'substituido' %}
+              <span class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i> Substituído</span>
+              {% else %}
+              <span class="badge bg-secondary"><i class="bi bi-box-seam me-1"></i> Arquivado</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if doc.documento_substituido %}
+              <div class="small text-warning">
+                <i class="bi bi-arrow-return-right"></i> Substitui: <strong>{{ doc.documento_substituido.titulo }}</strong>
+              </div>
+              {% elif doc.substituidores.exists %}
+              <div class="small text-danger">
+                <i class="bi bi-exclamation-triangle"></i> Substituído por: 
+                {% for sub in doc.substituidores.all %}
+                <strong>{{ sub.titulo }}</strong>
+                {% endfor %}
+              </div>
+              {% else %}
+              <span class="text-secondary small">—</span>
+              {% endif %}
+            </td>
+            <td class="text-secondary small">
+              {{ doc.criado_em|date:"d/m/Y H:i" }}
+            </td>
+            <td class="text-end">
+              <div class="btn-group">
+                <a href="{% url 'cerebro_detalhe_documento' doc.id %}" class="btn btn-sm btn-outline-light" title="Ver / Editar Detalhes">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'cerebro_reprocessar_documento' doc.id %}" class="btn btn-sm btn-outline-info" title="Reprocessar Texto e IA">
+                  <i class="bi bi-arrow-clockwise"></i>
+                </a>
+                <a href="{% url 'cerebro_excluir_documento' doc.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja remover este documento da base de conhecimento da Beth?')" title="Excluir">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-secondary">
+              <i class="bi bi-folder-x fs-1 d-block mb-2"></i>
+              Nenhum documento cadastrado com os filtros selecionados.<br>
+              <a href="{% url 'cerebro_upload_documento' %}" class="btn btn-sm btn-primary mt-3">
+                <i class="bi bi-plus-lg me-1"></i> Adicionar Primeiro Documento
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

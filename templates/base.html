@@ -102,9 +102,15 @@
           <i class="bi bi-grid-3x3-gap-fill"></i> Quadro de Horários
         </a>
       </li>
+      <li class="sidebar-section">Inteligência & Gestão</li>
       <li>
-        <a href="{% url 'configuracao_escola' %}" class="sidebar-link {% block nav_configuracao %}{% endblock %}">
-          <i class="bi bi-gear-fill"></i> Configuração da Escola
+        <a href="{% url 'cerebro_chat' %}" class="sidebar-link {% block nav_cerebro_chat %}{% endblock %}" style="color: #60a5fa; font-weight: 600;">
+          <i class="bi bi-cpu-fill" style="color: #38bdf8;"></i> Cérebro do CEJA (Beth)
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'cerebro_documentos' %}" class="sidebar-link {% block nav_cerebro_documentos %}{% endblock %}">
+          <i class="bi bi-folder-check"></i> Acervo de Normas & IA
         </a>
       </li>
       {% endif %}

@@ -106,6 +106,36 @@
 </div>
 
 {% if usuario.perfil == 'diretor' or usuario.is_superuser %}
+
+<!-- ── BANNER CÉREBRO DO CEJA (BETH IA) ── -->
+<div class="card border-0 mb-4 shadow-lg overflow-hidden" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #312e81 !important; border-radius: 16px;">
+  <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div style="position: relative; width: 64px; height: 64px; flex-shrink: 0;">
+        <img src="{% static 'beth.png' %}" alt="Beth IA" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #818cf8; box-shadow: 0 0 16px rgba(129, 140, 248, 0.4);">
+        <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #22c55e; border: 2px solid #0f172a; border-radius: 50%;"></span>
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <h5 class="text-white mb-0 fw-bold">Beth — Cérebro do CEJA</h5>
+          <span class="badge bg-primary-subtle text-primary border border-primary small">Orientadora IA</span>
+        </div>
+        <p class="text-secondary mb-0 small" style="max-width: 580px;">
+          Tire dúvidas sobre regimentos, resoluções vigentes, matrícula, horários e orientações da escola com respostas em texto e voz.
+        </p>
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-shrink-0">
+      <a href="{% url 'cerebro_documentos' %}" class="btn btn-outline-light btn-sm px-3 py-2">
+        <i class="bi bi-folder-check me-1"></i> Acervo de Normas
+      </a>
+      <a href="{% url 'cerebro_chat' %}" class="btn btn-primary btn-sm px-3 py-2 shadow">
+        <i class="bi bi-chat-dots-fill me-1"></i> Consultar a Beth
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- ── CARDS DE ESTATÍSTICAS (GRID UNIFORME DE 5 COLUNAS) ── -->
 <div class="stat-cards-grid mb-4">
   <div>

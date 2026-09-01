@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ doc.titulo }} — Cérebro do CEJA{% endblock %}
+{% block nav_cerebro_documentos %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 1000px;">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold text-white mb-1">
+        <i class="bi bi-file-earmark-text text-primary me-2"></i>{{ doc.titulo }}
+      </h3>
+      <p class="text-secondary mb-0">
+        Cadastrado em {{ doc.criado_em|date:"d/m/Y H:i" }} {% if doc.criado_por %}por {{ doc.criado_por.nome_completo }}{% endif %}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'cerebro_reprocessar_documento' doc.id %}" class="btn btn-outline-info">
+        <i class="bi bi-arrow-clockwise me-1"></i> Reprocessar Texto
+      </a>
+      <a href="{% url 'cerebro_documentos' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+      </a>
+    </div>
+  </div>
+
+  <div class="card bg-dark border-secondary p-4 shadow-lg mb-4">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label text-light fw-semibold">Título do Documento</label>
+          {{ form.titulo }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-light fw-semibold">Categoria</label>
+          {{ form.categoria }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-light fw-semibold">Nº Normativa</label>
+          {{ form.numero_normativa }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-light fw-semibold">Ano Referência</label>
+          {{ form.ano_referencia }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label text-light fw-semibold">Status</label>
+          {{ form.status }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label text-warning fw-semibold">Substitui / Atualiza Norma Anterior</label>
+          {{ form.documento_substituido }}
+        </div>
+
+        {% if doc.arquivo %}
+        <div class="col-12">
+          <div class="p-3 bg-dark-subtle border border-secondary rounded d-flex justify-content-between align-items-center">
+            <div>
+              <i class="bi bi-file-earmark-check text-success fs-5 me-2"></i>
+              <strong class="text-white">Arquivo Anexado:</strong>
+              <span class="text-secondary ms-2">{{ doc.arquivo.name }}</span>
+            </div>
+            <a href="{{ doc.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-download me-1"></i> Baixar Arquivo
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="col-12">
+          <label class="form-label text-light fw-semibold">Texto Extraído / Conhecimento Ingerido</label>
+          {{ form.conteudo_extraido }}
+          <div class="form-text text-secondary">
+            Este é o texto exato que a Beth utiliza para responder às dúvidas da Direção. Você pode refinar ou adicionar anotações manualmente se desejar.
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label text-light fw-semibold">Observações</label>
+          {{ form.observacoes }}
+        </div>
+
+        <div class="col-12 mt-4 d-flex justify-content-between">
+          <a href="{% url 'cerebro_excluir_documento' doc.id %}" class="btn btn-outline-danger" onclick="return confirm('Deseja realmente excluir este documento do Cérebro?')">
+            <i class="bi bi-trash me-1"></i> Excluir Documento
+          </a>
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-save me-1"></i> Salvar Alterações
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
