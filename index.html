@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>CEJA Profa Rosa Soares - Autoatendimento</title>
   <meta name="description"
     content="Totem de autoatendimento do CEJA Professora Rosa Soares, Mesquita-RJ. Consulte horários, avaliações, matrícula e muito mais.">
@@ -117,7 +118,10 @@
             WhatsApp</a>
           <a href="https://instagram.com/ceja_mesquita" target="_blank"
             class="home-quick-link home-quick-link--insta">📸 Instagram</a>
-          <button id="btn-ponto-modal" type="button" onclick="abrirPontoModal(event)" class="home-quick-link home-quick-link--ponto" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-color: #38bdf8; font-weight: 700;">🖐️ Ponto Eletrônico</button>
+          <button id="btn-ponto-modal" type="button" onclick="abrirPontoModal(event)"
+            class="home-quick-link home-quick-link--ponto"
+            style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-color: #38bdf8; font-weight: 700;">🖐️
+            Ponto Eletrônico</button>
           <button id="btn-admin-panel" class="home-quick-link home-quick-link--admin">⚙️ Admin</button>
           <button id="btn-fullscreen" class="home-quick-link"
             style="background: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.2);">🔲 Tela Cheia</button>
@@ -520,7 +524,9 @@
             <div id="login-error-msg" class="error-msg hidden">⚠️ Senha incorreta. Tente novamente.</div>
             <button type="submit" class="btn-kiosk btn-kiosk--primary w-100">Entrar no Painel 🔑</button>
             <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
-              <button type="button" onclick="closeAdminModal(); abrirPontoModal(event);" class="btn-kiosk btn-kiosk--accent w-100" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
+              <button type="button" onclick="closeAdminModal(); abrirPontoModal(event);"
+                class="btn-kiosk btn-kiosk--accent w-100"
+                style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
                 🖐️ Registro de Ponto RH (Terceirizados)
               </button>
             </div>
@@ -596,14 +602,16 @@
             🔑 Digite a sua senha de ponto (PIN) para se identificar:
           </p>
 
-          <div class="form-group-admin" style="margin-bottom: 16px; max-width: 360px; margin-left: auto; margin-right: auto;">
+          <div class="form-group-admin"
+            style="margin-bottom: 16px; max-width: 360px; margin-left: auto; margin-right: auto;">
             <div style="display: flex; gap: 8px;">
               <input type="password" id="ponto-pin-input" readonly placeholder="••••" maxlength="12">
               <button type="button" id="btn-ponto-pin-backspace" title="Apagar caractere">⌫</button>
             </div>
 
             <!-- Teclado Numérico Visual -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 280px; margin: 20px auto 0 auto; justify-items: center;">
+            <div
+              style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 280px; margin: 20px auto 0 auto; justify-items: center;">
               <button type="button" class="btn-ponto-key" data-key="1">1</button>
               <button type="button" class="btn-ponto-key" data-key="2">2</button>
               <button type="button" class="btn-ponto-key" data-key="3">3</button>
@@ -619,7 +627,8 @@
             </div>
           </div>
 
-          <div id="ponto-pin-error" class="error-msg hidden" style="margin-top: 16px; font-size: 14px;">⚠️ PIN não reconhecido. Tente novamente.</div>
+          <div id="ponto-pin-error" class="error-msg hidden" style="margin-top: 16px; font-size: 14px;">⚠️ PIN não
+            reconhecido. Tente novamente.</div>
         </div>
       </div>
 
@@ -636,34 +645,47 @@
         <div class="modal-body" style="padding: 20px; text-align: center;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <span style="font-weight: 700; font-size: 13px; color: #38bdf8;">📷 Confirmação por Câmera</span>
-            <span id="ponto-camera-status" class="badge-table" style="background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid #22c55e;">Câmera Ativa</span>
+            <span id="ponto-camera-status" class="badge-table"
+              style="background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid #22c55e;">Câmera Ativa</span>
           </div>
 
-          <div style="position: relative; max-width: 360px; aspect-ratio: 4/3; margin: 0 auto 16px auto; background: #0f172a; border-radius: 12px; overflow: hidden; border: 2px solid rgba(56,189,248,0.4);">
-            <video id="ponto-webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+          <div
+            style="position: relative; max-width: 360px; aspect-ratio: 4/3; margin: 0 auto 16px auto; background: #0f172a; border-radius: 12px; overflow: hidden; border: 2px solid rgba(56,189,248,0.4);">
+            <video id="ponto-webcam" autoplay playsinline muted
+              style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
             <canvas id="ponto-canvas" style="display: none;"></canvas>
-            <div style="position: absolute; inset: 16px; border: 2px dashed rgba(56,189,248,0.5); border-radius: 50%; pointer-events: none; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 11px; color: #fff; background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;">Posicione seu rosto aqui</span>
+            <div
+              style="position: absolute; inset: 16px; border: 2px dashed rgba(56,189,248,0.5); border-radius: 50%; pointer-events: none; display: flex; align-items: center; justify-content: center;">
+              <span
+                style="font-size: 11px; color: #fff; background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;">Posicione
+                seu rosto aqui</span>
             </div>
           </div>
 
-          <p style="font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 12px;">Selecione o tipo de registro:</p>
+          <p style="font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 12px;">Selecione o tipo de
+            registro:</p>
 
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ENTRADA" style="background: linear-gradient(135deg, #16a34a, #15803d); color: #fff;">
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ENTRADA"
+              style="background: linear-gradient(135deg, #16a34a, #15803d); color: #fff;">
               🟢 ENTRADA
             </button>
-            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ALMOCO_SAIDA" style="background: linear-gradient(135deg, #d97706, #b45309); color: #fff;">
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ALMOCO_SAIDA"
+              style="background: linear-gradient(135deg, #d97706, #b45309); color: #fff;">
               🟡 SAÍDA ALMOÇO
             </button>
-            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ALMOCO_RETORNO" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="ALMOCO_RETORNO"
+              style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">
               🔵 RETORNO ALMOÇO
             </button>
-            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="SAIDA" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff;">
+            <button type="button" class="btn-kiosk btn-ponto-action" data-tipo="SAIDA"
+              style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff;">
               🔴 SAÍDA (CASA)
             </button>
           </div>
-          <div id="ponto-camera-error" class="error-msg hidden" style="margin-top: 16px; font-size: 14px; text-align: center; padding: 10px 14px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+          <div id="ponto-camera-error" class="error-msg hidden"
+            style="margin-top: 16px; font-size: 14px; text-align: center; padding: 10px 14px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); border-radius: 8px; color: #f87171; font-weight: 600;">
+          </div>
         </div>
       </div>
 
@@ -671,11 +693,15 @@
       <div id="ponto-screen-success" class="admin-modal-content hidden">
         <div class="modal-body" style="padding: 36px 24px; text-align: center;">
           <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
-          <h2 id="ponto-res-tipo" style="color: #4ade80; font-size: 22px; font-weight: 800; margin-bottom: 8px;">ENTRADA REGISTRADA</h2>
-          <p id="ponto-res-nome" style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px;">Nome do Funcionário</p>
-          <p id="ponto-res-data-hora" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">27/08/2026 às 17:50:00</p>
+          <h2 id="ponto-res-tipo" style="color: #4ade80; font-size: 22px; font-weight: 800; margin-bottom: 8px;">ENTRADA
+            REGISTRADA</h2>
+          <p id="ponto-res-nome" style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px;">Nome do
+            Funcionário</p>
+          <p id="ponto-res-data-hora" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">
+            27/08/2026 às 17:50:00</p>
 
-          <div style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); padding: 14px; border-radius: 10px; margin-bottom: 24px; font-size: 13px; color: #38bdf8; text-align: left;">
+          <div
+            style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); padding: 14px; border-radius: 10px; margin-bottom: 24px; font-size: 13px; color: #38bdf8; text-align: left;">
             ✉️ <strong id="ponto-res-email">Comprovante enviado por e-mail.</strong>
           </div>
 
