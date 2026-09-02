@@ -4,12 +4,16 @@ import json
 from django.conf import settings
 from .models import DocumentoCerebro, FragmentoConhecimento
 
+import sys
+
 try:
     from google import genai
     from google.genai import types
     GENAI_AVAILABLE = True
-except ImportError:
+    GENAI_IMPORT_ERROR = ""
+except Exception as e:
     GENAI_AVAILABLE = False
+    GENAI_IMPORT_ERROR = str(e)
 
 
 def obter_cliente_gemini(retornar_erro=False):
@@ -20,7 +24,8 @@ def obter_cliente_gemini(retornar_erro=False):
     from pathlib import Path
 
     if not GENAI_AVAILABLE:
-        msg = "A biblioteca 'google-genai' não está instalada no ambiente Python do servidor. No terminal, execute: pip install google-genai"
+        py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+        msg = f"A biblioteca 'google-genai' não está no Python {py_ver} do servidor ({GENAI_IMPORT_ERROR}). No terminal execute: python{py_ver} -m pip install --user google-genai"
         return (None, msg) if retornar_erro else None
 
     # Configuração de proxy para conexões de saída em contas gratuitas do PythonAnywhere
