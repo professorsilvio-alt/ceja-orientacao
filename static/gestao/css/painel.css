@@ -983,12 +983,235 @@ form input[type="file"]::file-selector-button:hover,
   border-color: #38bdf8 !important;
 }
 
-@media (max-width: 768px) {
-  .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
-  .sidebar.collapsed { transform: translateX(0); }
-  .main-content { margin-left: 0; }
-  .page-content { padding: 16px; }
-  .stat-value { font-size: 1.6rem; }
-  .calendario-grid { grid-template-columns: repeat(7, 1fr); font-size: 0.7rem; }
-  .cal-day { min-height: 50px; }
+/* ── SIDEBAR BACKDROP & RESPONSIVIDADE COMPLETA ─────────────── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.sidebar-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── TABLETS E SMARTPHONES (<= 991px) ───────────────────────── */
+@media (max-width: 991.98px) {
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  /* Sidebar como Drawer móvel */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100% !important;
+    z-index: 1050 !important;
+    transform: translateX(-100%) !important;
+    box-shadow: none;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  /* Main content ocupa 100% da tela */
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 100% !important;
+  }
+
+  /* Topbar compacta */
+  .topbar {
+    padding: 0 14px;
+    height: 56px;
+    gap: 10px;
+  }
+
+  .topbar-breadcrumb {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-clock {
+    display: none; /* Oculta relógio no mobile para dar espaço aos botões essenciais */
+  }
+
+  /* Conteúdo e cabeçalho da página */
+  .page-content {
+    padding: 14px 12px 24px;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .page-header > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-title {
+    font-size: 1.25rem !important;
+  }
+
+  .page-subtitle {
+    font-size: 0.8rem !important;
+  }
+
+  /* Cards e Grids */
+  .card-gestao {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .stat-card {
+    padding: 14px !important;
+  }
+
+  .stat-value {
+    font-size: 1.5rem !important;
+  }
+
+  .stat-label {
+    font-size: 0.72rem !important;
+  }
+
+  /* Tabelas com rolagem suave no toque */
+  .table-responsive {
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 12px;
+  }
+
+  .table-responsive .table {
+    margin-bottom: 0 !important;
+  }
+
+  .table-responsive th,
+  .table-responsive td {
+    padding: 10px 12px !important;
+    white-space: nowrap;
+  }
+
+  /* Calendário do Auditório no tablet/celular */
+  .calendario-grid {
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 3px !important;
+  }
+
+  .cal-header {
+    font-size: 0.68rem !important;
+    padding: 6px 0 !important;
+  }
+
+  .cal-day {
+    min-height: 56px !important;
+    padding: 4px 3px !important;
+    border-radius: 6px !important;
+  }
+
+  .cal-day-num {
+    font-size: 0.7rem !important;
+    margin-bottom: 2px !important;
+  }
+
+  .cal-evento {
+    font-size: 0.6rem !important;
+    padding: 2px 4px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 2px !important;
+    border-radius: 3px !important;
+  }
+
+  /* Botões e Ações */
+  .btn-gestao {
+    padding: 8px 14px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Previne zoom automático indesejado no iOS Safari em inputs */
+  input[type="text"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  input[type="email"],
+  input[type="number"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── SMARTPHONES PEQUENOS (<= 576px) ────────────────────────── */
+@media (max-width: 575.98px) {
+  .page-content {
+    padding: 12px 8px 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .calendario-grid {
+    gap: 2px !important;
+  }
+
+  .cal-header {
+    font-size: 0.62rem !important;
+    padding: 4px 0 !important;
+  }
+
+  .cal-day {
+    min-height: 48px !important;
+    padding: 2px !important;
+  }
+
+  .cal-day-num {
+    font-size: 0.68rem !important;
+  }
+
+  .cal-evento {
+    font-size: 0.55rem !important;
+    padding: 1px 3px !important;
+  }
+
+  .btn-gestao {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-dialog {
+    margin: 10px;
+  }
 }

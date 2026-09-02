@@ -25,6 +25,9 @@
 <body class="painel-body">
 
   {% if user.is_authenticated %}
+  <!-- Backdrop para fechar menu no mobile -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
   <!-- ── SIDEBAR ──────────────────────────────────────────── -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -206,14 +209,40 @@
     setInterval(atualizarRelogio, 1000);
     atualizarRelogio();
 
-    // Toggle sidebar
+    // Toggle sidebar responsivo (desktop e mobile)
     const toggle = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('sidebar');
     const main = document.getElementById('main-content');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    function fecharSidebarMobile() {
+      if (sidebar) sidebar.classList.remove('mobile-open');
+      if (backdrop) backdrop.classList.remove('show');
+    }
+
+    function toggleSidebar() {
+      if (window.innerWidth <= 991.98) {
+        if (sidebar) sidebar.classList.toggle('mobile-open');
+        if (backdrop) backdrop.classList.toggle('show');
+      } else {
+        if (sidebar) sidebar.classList.toggle('collapsed');
+        if (main) main.classList.toggle('expanded');
+      }
+    }
+
     if (toggle) {
-      toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        main.classList.toggle('expanded');
+      toggle.addEventListener('click', toggleSidebar);
+    }
+    if (backdrop) {
+      backdrop.addEventListener('click', fecharSidebarMobile);
+    }
+
+    // Fechar gaveta no mobile ao tocar em qualquer link da sidebar
+    if (sidebar) {
+      sidebar.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 991.98) fecharSidebarMobile();
+        });
       });
     }
 
