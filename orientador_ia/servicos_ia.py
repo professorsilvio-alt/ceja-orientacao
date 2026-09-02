@@ -198,28 +198,234 @@ def buscar_contexto_relevante(pergunta: str, max_fragmentos: int = 8) -> tuple[s
     return contexto_str, fontes
 
 
+def carregar_horarios_dados_escola():
+    """Lê e processa a lista de horários dos professores a partir do dados_escola.js."""
+    from pathlib import Path
+    base_dir = getattr(settings, 'BASE_DIR', None)
+    caminhos = []
+    if base_dir:
+        caminhos.append(Path(base_dir) / 'dados_escola.js')
+    caminhos.append(Path('dados_escola.js'))
+    caminhos.append(Path.cwd() / 'dados_escola.js')
+    caminhos.append(Path(__file__).resolve().parent.parent / 'dados_escola.js')
+    caminhos.append(Path('/home/cejarosasoares/ceja-orientacao/dados_escola.js'))
+
+    for p in caminhos:
+        try:
+            if p.exists():
+                txt = p.read_text(encoding='utf-8')
+                m = re.search(r"//\s*HORARIOS_SYNC_START[\s\S]*?horarioProfessores\s*:\s*(\[[\s\S]*?\])\s*,\s*//\s*HORARIOS_SYNC_END", txt)
+                if not m:
+                    m = re.search(r"horarioProfessores\s*:\s*(\[[\s\S]*?\n\s*\])\s*,", txt)
+                if m:
+                    raw = m.group(1)
+                    clean = re.sub(r"//.*", "", raw)
+                    for key in ['nome', 'foto', 'disciplinas', 'horarios', 'dia', 'inicio', 'fim', 'local']:
+                        clean = re.sub(rf'\b{key}\s*:', f'"{key}":', clean)
+                    clean = re.sub(r',\s*([\]}])', r'\1', clean)
+                    return json.loads(clean)
+        except Exception as e:
+            print(f"[Aviso carregar dados_escola.js]: {e}")
+    return []
+
+
+def buscar_dados_sistema(pergunta: str) -> tuple[str, list[dict]]:
+    """
+    Consulta os dados operacionais em tempo real do CEJA:
+    - Quadro de horários dos professores e cabines de atendimento
+    - Cadastro de professores (matrícula, disciplina, situação, tempo de escola)
+    - Registros de Presença (faltas, atrasos, saídas antecipadas, ausências justificadas)
+    - Funcionários administrativos e terceirizados
+    - Reservas do auditório
+    """
+    from django.utils import timezone
+    from django.db.models import Q
+    from pathlib import Path
+
+    pergunta_lower = pergunta.lower()
+    termos = [t for t in re.findall(r'\w+', pergunta_lower) if len(t) > 2]
+    blocos = []
+    fontes = []
+
+    # 1. Professores e Horários de Atendimento
+    try:
+        from professores.models import Professor, HorarioProfessor
+        horarios_js = carregar_horarios_dados_escola()
+        professores_mencionados = []
+
+        nomes_prof_js = {}
+        for p in horarios_js:
+            nome_p = p.get('nome', '').lower()
+            nome_sem_prefixo = re.sub(r'^prof(a|\.ª|\.|ª)?\s*', '', nome_p).strip()
+            partes_nome = [w for w in nome_sem_prefixo.split() if len(w) > 2]
+            nomes_prof_js[nome_p] = partes_nome
+
+        algum_prof_citado = False
+        for nome_p, partes in nomes_prof_js.items():
+            if any(re.search(rf'\b{re.escape(parte)}\b', pergunta_lower) for parte in partes):
+                algum_prof_citado = True
+                break
+
+        for p in horarios_js:
+            nome_p = p.get('nome', '').lower()
+            partes = nomes_prof_js.get(nome_p, [])
+            nome_citado = any(re.search(rf'\b{re.escape(parte)}\b', pergunta_lower) for parte in partes)
+
+            if algum_prof_citado:
+                if nome_citado:
+                    professores_mencionados.append(p)
+            else:
+                discs_p = [d.lower() for d in p.get('disciplinas', [])]
+                disciplina_citada = any(
+                    (d in pergunta_lower or any(re.search(rf'\b{re.escape(w)}\b', pergunta_lower) for w in re.findall(r'\w+', d) if len(w) > 3))
+                    for d in discs_p
+                )
+                dias_p = [h.get('dia', '').lower() for h in p.get('horarios', [])]
+                dias_perguntados = [dia for dia in ['segunda', 'terça', 'terca', 'quarta', 'quinta', 'sexta'] if dia in pergunta_lower]
+                dia_citado = any(any(dp.startswith(dia[:3]) for dp in dias_p) for dia in dias_perguntados)
+
+                geral = any(g in pergunta_lower for g in ['todos os professores', 'quadro de horários', 'escala completa', 'quem atende', 'grade de horários'])
+                if disciplina_citada or (dia_citado and any(k in pergunta_lower for k in ['quem', 'prof', 'horario', 'cabine'])) or geral:
+                    professores_mencionados.append(p)
+
+        # Cadastro no banco Django
+        professores_bd = Professor.objects.filter(ativo=True)
+        if algum_prof_citado:
+            q_obj = Q()
+            for p in professores_mencionados:
+                for parte in nomes_prof_js.get(p.get('nome', '').lower(), []):
+                    q_obj |= Q(nome_completo__icontains=parte)
+            professores_bd = professores_bd.filter(q_obj)
+        else:
+            professores_bd = Professor.objects.none()
+
+        if professores_mencionados or professores_bd.exists():
+            texto_profs = ["--- SISTEMA: QUADRO DE PROFESSORES E HORÁRIOS DE ATENDIMENTO ---"]
+            for p in professores_mencionados:
+                h_lista = []
+                for h in p.get('horarios', []):
+                    h_lista.append(f"{h.get('dia')}: {h.get('inicio')} às {h.get('fim')} ({h.get('local')})")
+                horarios_str = " | ".join(h_lista) if h_lista else "Nenhum horário cadastrado"
+                texto_profs.append(f"• {p.get('nome')} | Disciplina(s): {', '.join(p.get('disciplinas', []))} | Horários no Totem: {horarios_str}")
+
+            for p in professores_bd[:5]:
+                texto_profs.append(
+                    f"• Cadastro Funcional: {p.nome_completo} | Matrícula: {p.matricula} | Cargo: {p.cargo} | "
+                    f"Disciplina: {p.disciplina_ingresso} | Carga Horária: {p.ch_total or 'N/I'}h | "
+                    f"Situação: {p.get_situacao_matricula_1_display()} | Tempo na escola: {p.tempo_na_escola}"
+                )
+            blocos.append("\n".join(texto_profs))
+            fontes.append({'id': 'sistema_professores', 'titulo': 'Quadro de Horários e Cadastro Docente', 'categoria': 'Sistema / Horários'})
+    except Exception as e:
+        print(f"[Aviso buscar professores]: {e}")
+
+    # 2. Registros de Presença (Faltas, Atrasos, Ausências Justificadas)
+    try:
+        from agenda.models import RegistroPresenca
+        presencas = RegistroPresenca.objects.all()
+        deve_incluir_presenca = False
+
+        if termos:
+            q_pres = Q()
+            for t in termos:
+                q_pres |= Q(nome_funcionario__icontains=t) | Q(motivo__icontains=t)
+            presencas_filtradas = presencas.filter(q_pres)
+            if presencas_filtradas.exists():
+                presencas = presencas_filtradas
+                deve_incluir_presenca = True
+            elif any(palavra in pergunta_lower for palavra in ['falta', 'faltas', 'atraso', 'atrasos', 'presenca', 'presença', 'ausencia', 'ausência', 'frequencia', 'frequência', 'assiduidade']):
+                deve_incluir_presenca = True
+                presencas = presencas[:12]
+        
+        if deve_incluir_presenca or any(palavra in pergunta_lower for palavra in ['falta', 'faltas', 'atraso', 'atrasos', 'assiduidade']):
+            texto_pres = ["--- SISTEMA: REGISTROS DE PRESENÇA, FALTAS E ATRASOS ---"]
+            if presencas.exists():
+                for reg in presencas[:15]:
+                    horario_info = f" (Horário: {reg.hora_chegada or reg.hora_saida})" if (reg.hora_chegada or reg.hora_saida) else ""
+                    just_info = "Justificado" if reg.justificado else "Não justificado"
+                    motivo_info = f" - Motivo: {reg.motivo}" if reg.motivo else ""
+                    obs_info = f" [Obs: {reg.observacoes}]" if reg.observacoes else ""
+                    texto_pres.append(
+                        f"• {reg.data.strftime('%d/%m/%Y')} — {reg.nome_funcionario} ({reg.get_tipo_funcionario_display()}): "
+                        f"{reg.get_tipo_display()}{horario_info} | {just_info}{motivo_info}{obs_info}"
+                    )
+            else:
+                texto_pres.append("• Nenhum registro de falta, ausência ou atraso foi encontrado no sistema para os critérios consultados.")
+            blocos.append("\n".join(texto_pres))
+            fontes.append({'id': 'sistema_presenca', 'titulo': 'Módulo de Registro de Frequência e Presença', 'categoria': 'Sistema / Frequência'})
+    except Exception as e:
+        print(f"[Aviso buscar presenças]: {e}")
+
+    # 3. Funcionários Administrativos e Terceirizados
+    try:
+        from funcionarios.models import FuncionarioAdministrativo, FuncionarioTerceirizado
+        if any(palavra in pergunta_lower for palavra in ['administrativo', 'secretaria', 'direcao', 'direção', 'terceirizado', 'limpeza', 'porteiro', 'vigilante', 'ate', 'coordenador', 'orientador']):
+            texto_func = ["--- SISTEMA: EQUIPE ADMINISTRATIVA E TERCEIRIZADA ---"]
+            for a in FuncionarioAdministrativo.objects.all()[:8]:
+                texto_func.append(f"• Adm: {a.nome_completo} | Cargo: {a.cargo} | Função: {a.funcao_atual or a.cargo} | Situação: {a.get_situacao_matricula_1_display()}")
+            for tr in FuncionarioTerceirizado.objects.all()[:8]:
+                texto_func.append(f"• Terceirizado: {tr.nome_completo} | Função: {tr.cargo_funcao} | Empresa: {tr.empresa_contratante}")
+            blocos.append("\n".join(texto_func))
+            fontes.append({'id': 'sistema_funcionarios', 'titulo': 'Quadro de Funcionários Administrativos e Terceirizados', 'categoria': 'Sistema / Pessoal'})
+    except Exception as e:
+        print(f"[Aviso buscar funcionários]: {e}")
+
+    # 4. Reservas de Auditório
+    try:
+        from agenda.models import ReservaAuditorio
+        if any(palavra in pergunta_lower for palavra in ['auditorio', 'auditório', 'evento', 'oficina', 'palestra', 'reuniao', 'reunião']):
+            texto_aud = ["--- SISTEMA: AGENDA DO AUDITÓRIO ---"]
+            reservas = ReservaAuditorio.objects.filter(data__gte=timezone.now().date()).order_by('data', 'hora_inicio')[:10]
+            if reservas.exists():
+                for r in reservas:
+                    texto_aud.append(f"• {r.data.strftime('%d/%m/%Y')} {r.hora_inicio.strftime('%H:%M')}-{r.hora_fim.strftime('%H:%M')}: {r.titulo} ({r.get_tipo_display()}) - Resp: {r.responsavel} | Status: {r.get_status_display()}")
+            else:
+                texto_aud.append("• Não há reservas futuras cadastradas para o auditório no momento.")
+            blocos.append("\n".join(texto_aud))
+            fontes.append({'id': 'sistema_auditorio', 'titulo': 'Agenda de Reservas do Auditório', 'categoria': 'Sistema / Agenda'})
+    except Exception as e:
+        print(f"[Aviso buscar reservas]: {e}")
+
+    return "\n\n".join(blocos), fontes
+
+
 def gerar_resposta_beth(pergunta: str, historico_mensagens: list[dict] = None) -> dict:
     """
-    Processa a pergunta utilizando RAG + Gemini API com a persona da Orientadora Beth.
+    Processa a pergunta utilizando RAG + dados em tempo real do sistema + Gemini API com a persona da Orientadora Beth.
     """
-    contexto, fontes = buscar_contexto_relevante(pergunta)
-    
+    contexto_docs, fontes_docs = buscar_contexto_relevante(pergunta)
+    contexto_sistema, fontes_sistema = buscar_dados_sistema(pergunta)
+
+    partes_contexto = []
+    if contexto_sistema:
+        partes_contexto.append(contexto_sistema)
+    if contexto_docs:
+        partes_contexto.append(contexto_docs)
+
+    contexto = "\n\n".join(partes_contexto)
+    fontes = fontes_sistema + fontes_docs
+
     system_instruction = (
         "Você é a **Beth**, Orientadora Virtual e Cérebro de Gestão do **CEJA Profa Rosa Soares**.\n"
         "Seu papel é orientar exclusivamente a **Direção da escola**, fornecendo respostas claras, "
-        "precisas, formais porém acolhedoras, baseadas estritamente nos documentos, normativas, "
-        "regimentos, leis, horários e orientações cadastrados na base de conhecimento da escola.\n\n"
+        "precisas, formais porém acolhedoras.\n\n"
+        "Você tem acesso integral e prioritário aos DADOS EM TEMPO REAL DO SISTEMA ESCOLAR "
+        "(quadro de horários dos professores, cabines de atendimento, registros de faltas e atrasos, "
+        "frequência funcional, equipe administrativa e terceirizada, pontos e agenda do auditório) "
+        "bem como ao acervo de DOCUMENTOS VIGENTES (regimentos, resoluções, normas e notas técnicas).\n\n"
         "Diretrizes:\n"
-        "1. Baseie suas respostas prioritariamente nos DOCUMENTOS VIGENTES fornecidos no contexto.\n"
-        "2. Se uma norma foi atualizada ou revogada, alerte a Direção sobre a vigência da nova regra.\n"
-        "3. Sempre que citar uma informação, indique a fonte ou número da normativa correspondente.\n"
-        "4. Se a resposta não constar na base de documentos, informe educadamente que a informação "
-        "ainda não foi cadastrada no seu acervo e sugira que a Direção faça o upload do respectivo documento.\n"
-        "5. Formate as respostas com elegância, usando Markdown (tópicos, negrito, tabelas quando útil)."
+        "1. Para perguntas sobre horários, escalas, professores, faltas, atrasos ou funcionários, use "
+        "imediatamente as informações extraídas do sistema apresentadas no contexto.\n"
+        "2. Se a consulta for sobre a assiduidade de um professor/funcionário e o sistema informar que não há registros de faltas ou atrasos, "
+        "informe claramente à Direção que a pessoa está com assiduidade 100% regular (sem faltas/atrasos cadastrados).\n"
+        "3. Baseie suas respostas sobre normas e regulamentos nos DOCUMENTOS VIGENTES fornecidos no contexto.\n"
+        "4. Se uma norma foi atualizada ou revogada, alerte a Direção sobre a vigência da nova regra.\n"
+        "5. Sempre cite a fonte das informações (ex: 'De acordo com o Quadro de Horários da Escola', 'Conforme o Módulo de Presença', etc.).\n"
+        "6. Formate as respostas com elegância, usando Markdown (tópicos, negrito, tabelas quando útil)."
     )
 
     prompt_completo = f"""CONHECIMENTO DISPONÍVEL DO CEJA:
-{contexto if contexto else "Nenhum documento cadastrado no momento."}
+{contexto if contexto else "Nenhum documento ou dado específico cadastrado no momento."}
 
 PERGUNTA DA DIREÇÃO:
 {pergunta}
@@ -240,7 +446,7 @@ PERGUNTA DA DIREÇÃO:
             )
         else:
             resposta_texto = (
-                f"Olá! Eu sou a **Beth**. Encontrei os seguintes documentos vigentes relacionados à sua consulta:\n\n"
+                f"Olá! Eu sou a **Beth**. Encontrei os seguintes registros e documentos vigentes relacionados à sua consulta:\n\n"
                 + "\n".join([f"- **{f['titulo']}** ({f['categoria']})" for f in fontes])
                 + f"\n\n{aviso_diag}"
             )
