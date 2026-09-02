@@ -113,14 +113,20 @@ const ANO = {{ ano }};
 const HOJE_STR = '{{ hoje|date:"Y-m-d" }}';
 const MESES_NOMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const IS_DIRETOR = {{ is_diretor|yesno:"true,false" }};
+const RESERVAS_INICIAIS = {{ reservas_json|default:"[]"|safe }};
 
-// Exibe o nome do mês
-document.getElementById('nome-mes').textContent = MESES_NOMES[MES - 1];
+// Monta o calendário imediatamente com os dados pré-carregados
+montarCalendario(RESERVAS_INICIAIS);
 
-// Carrega reservas e monta o calendário
+// Sincroniza via fetch caso haja alterações
 fetch(`/agenda/auditorio/json/?mes=${MES}&ano=${ANO}`)
   .then(r => r.json())
-  .then(data => montarCalendario(data.reservas));
+  .then(data => {
+    if (data && data.reservas) {
+      montarCalendario(data.reservas);
+    }
+  })
+  .catch(err => console.warn('Aviso sincronização auditorio:', err));
 
 function montarCalendario(reservas) {
   const grid = document.getElementById('calendario');

@@ -148,8 +148,24 @@ def view_agenda_auditorio(request):
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ]
 
+    import json
+    reservas_data = []
+    for r in reservas:
+        reservas_data.append({
+            'id': r.id,
+            'titulo': r.titulo,
+            'tipo': r.tipo,
+            'data': r.data.isoformat(),
+            'hora_inicio': r.hora_inicio.strftime('%H:%M'),
+            'hora_fim': r.hora_fim.strftime('%H:%M'),
+            'responsavel': r.responsavel,
+            'status': r.status,
+        })
+    reservas_json = json.dumps(reservas_data)
+
     return render(request, 'agenda/auditorio.html', {
         'reservas': reservas,
+        'reservas_json': reservas_json,
         'proximas': proximas,
         'mes': mes,
         'ano': ano,
