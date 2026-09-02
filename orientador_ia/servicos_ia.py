@@ -166,31 +166,39 @@ PERGUNTA DA DIREÇÃO:
             'fontes': fontes
         }
 
-    try:
-        # Utiliza o modelo gemini-2.5-flash do novo SDK google-genai
-        response = cliente.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt_completo,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                temperature=0.2,
+    # Modelos recomendados em ordem de preferência
+    modelos_candidatos = ['gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-latest']
+    ultimo_erro = None
+
+    for modelo in modelos_candidatos:
+        try:
+            response = cliente.models.generate_content(
+                model=modelo,
+                contents=prompt_completo,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.2,
+                )
             )
-        )
-        return {
-            'resposta': response.text,
-            'fontes': fontes
-        }
-    except Exception as e:
-        print(f"[Erro chamada Gemini]: {e}")
-        # Fallback inteligente se houver erro temporário de cota/rede
-        return {
-            'resposta': (
-                f"Olá! Eu sou a **Beth**. Ocorreu uma oscilação na conexão com a inteligência ({str(e)[:100]}), "
-                f"mas encontrei estes documentos de referência na nossa base:\n\n"
-                + "\n".join([f"- **{f['titulo']}** ({f['categoria']})" for f in fontes])
-            ),
-            'fontes': fontes
-        }
+            return {
+                'resposta': response.text,
+                'fontes': fontes
+            }
+        except Exception as e:
+            print(f"[Aviso modelo {modelo}]: {e}")
+            ultimo_erro = e
+            continue
+
+    print(f"[Erro chamada Gemini]: {ultimo_erro}")
+    # Fallback inteligente se houver erro temporário de cota/rede
+    return {
+        'resposta': (
+            f"Olá! Eu sou a **Beth**. Ocorreu uma oscilação na conexão com a inteligência ({str(ultimo_erro)[:100]}), "
+            f"mas encontrei estes documentos de referência na nossa base:\n\n"
+            + "\n".join([f"- **{f['titulo']}** ({f['categoria']})" for f in fontes])
+        ),
+        'fontes': fontes
+    }
 
 
 def processar_audio_para_texto(caminho_audio: str) -> str:
@@ -201,16 +209,22 @@ def processar_audio_para_texto(caminho_audio: str) -> str:
     if not cliente or not os.path.exists(caminho_audio):
         return ""
         
+    modelos_audio = ['gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.6-flash']
     try:
         arquivo_gemini = cliente.files.upload(file=caminho_audio)
-        resposta = cliente.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[
-                arquivo_gemini,
-                "Transcreva fielmente todo o áudio a seguir em português do Brasil e resuma os principais pontos caso seja uma orientação administrativa/pedagógica:"
-            ]
-        )
-        return resposta.text
+        for modelo in modelos_audio:
+            try:
+                resposta = cliente.models.generate_content(
+                    model=modelo,
+                    contents=[
+                        arquivo_gemini,
+                        "Transcreva fielmente todo o áudio a seguir em português do Brasil e resuma os principais pontos caso seja uma orientação administrativa/pedagógica:"
+                    ]
+                )
+                return resposta.text
+            except Exception:
+                continue
+        return "[Áudio recebido - Transcrição temporariamente indisponível]"
     except Exception as e:
         print(f"[Erro transcrição áudio]: {e}")
         return f"[Áudio recebido - Transcrição indisponível: {e}]"

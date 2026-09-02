@@ -6,10 +6,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Carrega variáveis do arquivo .env
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Carrega variáveis do arquivo .env a partir do diretório raiz do projeto
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-chave-dev-mude-em-producao')
 
@@ -20,6 +20,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '.pythonanywhere.com',
 ]
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # ============================================================
 # APLICAÇÕES INSTALADAS
