@@ -12,10 +12,23 @@ except ImportError:
     GENAI_AVAILABLE = False
 
 
-def obter_cliente_gemini():
-    """Retorna uma instância do cliente Google GenAI configurada com a chave do .env."""
+def obter_cliente_gemini(retornar_erro=False):
+    """
+    Retorna o cliente Google GenAI ou (cliente, erro_msg) com diagnóstico preciso.
+    Compatível com ambiente local e PythonAnywhere.
+    """
+    from pathlib import Path
+
     if not GENAI_AVAILABLE:
-        return None
+        msg = "A biblioteca 'google-genai' não está instalada no ambiente Python do servidor. No terminal, execute: pip install google-genai"
+        return (None, msg) if retornar_erro else None
+
+    # Configuração de proxy para conexões de saída em contas gratuitas do PythonAnywhere
+    base_url = getattr(settings, 'BASE_URL', '') or os.getenv('BASE_URL', '')
+    if 'pythonanywhere' in base_url.lower() or 'PYTHONANYWHERE_DOMAIN' in os.environ:
+        os.environ.setdefault('http_proxy', 'http://proxy.server:3128')
+        os.environ.setdefault('https_proxy', 'http://proxy.server:3128')
+
     api_key = getattr(settings, 'GEMINI_API_KEY', None) or os.getenv('GEMINI_API_KEY', '')
     if not api_key:
         try:
@@ -28,13 +41,44 @@ def obter_cliente_gemini():
             api_key = os.getenv('GEMINI_API_KEY', '')
         except Exception:
             pass
+
+    # Leitura direta do arquivo .env como garantia caso dotenv não tenha populado os.environ
     if not api_key:
-        return None
+        caminhos_tentativas = []
+        base_dir = getattr(settings, 'BASE_DIR', None)
+        if base_dir:
+            caminhos_tentativas.append(Path(base_dir) / '.env')
+        caminhos_tentativas.append(Path.cwd() / '.env')
+        caminhos_tentativas.append(Path(__file__).resolve().parent.parent / '.env')
+        caminhos_tentativas.append(Path('/home/cejarosasoares/ceja-orientacao/.env'))
+
+        for p in caminhos_tentativas:
+            try:
+                if p.exists():
+                    with open(p, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            linha = line.strip()
+                            if linha.startswith('GEMINI_API_KEY='):
+                                chave = linha.split('=', 1)[1].strip().strip('"\'')
+                                if chave:
+                                    api_key = chave
+                                    break
+                    if api_key:
+                        break
+            except Exception:
+                pass
+
+    if not api_key:
+        msg = "Chave GEMINI_API_KEY não localizada no arquivo .env do servidor."
+        return (None, msg) if retornar_erro else None
+
     try:
-        return genai.Client(api_key=api_key)
+        client = genai.Client(api_key=api_key)
+        return (client, None) if retornar_erro else client
     except Exception as e:
-        print(f"[Aviso Gemini Client]: {e}")
-        return None
+        msg = f"Falha ao inicializar o cliente Gemini: {str(e)[:120]}"
+        print(f"[Aviso Gemini Client]: {msg}")
+        return (None, msg) if retornar_erro else None
 
 
 def buscar_contexto_relevante(pergunta: str, max_fragmentos: int = 8) -> tuple[str, list[dict]]:
@@ -154,23 +198,24 @@ PERGUNTA DA DIREÇÃO:
 {pergunta}
 """
 
-    cliente = obter_cliente_gemini()
+    cliente, motivo_erro = obter_cliente_gemini(retornar_erro=True)
     
     if not cliente:
-        # Modo de contingência caso a chave ainda não tenha sido inserida no .env
+        # Modo de contingência com mensagem diagnóstica precisa
+        aviso_diag = f"*(Modo offline: {motivo_erro})*"
         if not contexto:
             resposta_texto = (
                 "Olá! Eu sou a **Beth**, a orientadora virtual do CEJA Profa Rosa Soares. 👩‍🏫\n\n"
                 "Ainda não encontrei documentos cadastrados na minha base de conhecimento. "
                 "Por favor, acesse a aba **'Acervo de Documentos'** e envie os primeiros arquivos "
                 "(PDFs, Word, planilhas, resoluções ou notas de texto) para que eu possa orientar a Direção!\n\n"
-                "*(Dica: configure também a sua chave `GEMINI_API_KEY` no arquivo `.env` para ativar todo o meu potencial de inteligência)*."
+                + aviso_diag
             )
         else:
             resposta_texto = (
                 f"Olá! Eu sou a **Beth**. Encontrei os seguintes documentos vigentes relacionados à sua consulta:\n\n"
                 + "\n".join([f"- **{f['titulo']}** ({f['categoria']})" for f in fontes])
-                + "\n\n*(Para sínteses aprofundadas com inteligência generativa em tempo real, certifique-se de configurar a chave `GEMINI_API_KEY` no `.env`)*."
+                + f"\n\n{aviso_diag}"
             )
         return {
             'resposta': resposta_texto,
