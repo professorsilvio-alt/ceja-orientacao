@@ -18,6 +18,17 @@ def obter_cliente_gemini():
         return None
     api_key = getattr(settings, 'GEMINI_API_KEY', None) or os.getenv('GEMINI_API_KEY', '')
     if not api_key:
+        try:
+            from dotenv import load_dotenv
+            base_dir = getattr(settings, 'BASE_DIR', None)
+            if base_dir:
+                load_dotenv(base_dir / '.env')
+            else:
+                load_dotenv()
+            api_key = os.getenv('GEMINI_API_KEY', '')
+        except Exception:
+            pass
+    if not api_key:
         return None
     try:
         return genai.Client(api_key=api_key)
