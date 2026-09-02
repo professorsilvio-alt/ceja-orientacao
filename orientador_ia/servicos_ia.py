@@ -16,17 +16,10 @@ def tentar_importar_genai():
     if GENAI_AVAILABLE and genai is not None:
         return True
 
-    # Injeta diretórios de pacotes do usuário no sys.path (essencial para virtualenvs no PythonAnywhere)
-    caminhos_extras = [
-        os.path.expanduser(f"~/.local/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"),
-        os.path.expanduser("~/.local/lib/python3.10/site-packages"),
-        os.path.expanduser("~/.local/lib/python3.11/site-packages"),
-        os.path.expanduser("~/.local/lib/python3.12/site-packages"),
-        os.path.expanduser("~/.local/lib/python3.13/site-packages"),
-    ]
-    for c in caminhos_extras:
-        if os.path.exists(c) and c not in sys.path:
-            sys.path.insert(0, c)
+    # Injeta apenas o diretório de pacotes da versão EXATA do Python em execução
+    caminho_user = os.path.expanduser(f"~/.local/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages")
+    if os.path.exists(caminho_user) and caminho_user not in sys.path:
+        sys.path.insert(0, caminho_user)
 
     try:
         from google import genai as g_genai
