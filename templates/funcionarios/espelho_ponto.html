@@ -125,27 +125,9 @@
           </td>
           <td class="text-center">
             {% if r.foto %}
-            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalFoto{{ r.pk }}">
+            <button type="button" class="btn btn-sm btn-outline-info" onclick="abrirModalFoto('{{ r.foto.url }}', '{{ r.funcionario.nome_curto|escapejs }}', '{{ r.data_hora|date:"d/m/Y H:i:s" }}', '{{ r.ip_origem|default:"Local"|escapejs }}')">
               <i class="bi bi-camera-fill me-1"></i> Ver Foto
             </button>
-
-            <!-- Modal Visualização da Foto -->
-            <div class="modal fade" id="modalFoto{{ r.pk }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content" style="background:#1e293b; color:#fff; border:1px solid #38bdf8;">
-                  <div class="modal-header border-secondary">
-                    <h6 class="modal-title fw-bold"><i class="bi bi-camera-fill me-1"></i> Foto da Batida — {{ r.funcionario.nome_curto }}</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body text-center p-2">
-                    <img src="{{ r.foto.url }}" alt="Foto do Ponto" class="img-fluid rounded border border-secondary" style="max-height:400px; width:auto;">
-                    <div class="mt-2 text-muted" style="font-size:0.8rem;">
-                      Capturada em {{ r.data_hora|date:"d/m/Y H:i:s" }} | IP: {{ r.ip_origem|default:"Local" }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             {% else %}
             <span class="text-muted" style="font-size:0.8rem;">Sem Foto</span>
             {% endif %}
@@ -232,4 +214,32 @@
     </table>
   </div>
 </div>
+
+<!-- Modal Único de Visualização de Foto (Sob demanda, ultra-rápido) -->
+<div class="modal fade" id="modalFotoUnico" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#1e293b; color:#fff; border:1px solid #38bdf8; border-radius:12px;">
+      <div class="modal-header border-secondary">
+        <h6 class="modal-title fw-bold" id="modalFotoTitulo"><i class="bi bi-camera-fill me-1"></i> Foto da Batida</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-3">
+        <img id="modalFotoImg" src="" alt="Foto do Ponto" class="img-fluid rounded border border-secondary" style="max-height:420px; width:auto;">
+        <div class="mt-2 text-muted" id="modalFotoLegenda" style="font-size:0.8rem;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirModalFoto(url, nome, dataHora, ip) {
+  const img = document.getElementById('modalFotoImg');
+  img.src = url;
+  document.getElementById('modalFotoTitulo').innerHTML = '<i class="bi bi-camera-fill me-1"></i> Foto da Batida — ' + nome;
+  document.getElementById('modalFotoLegenda').innerText = 'Capturada em ' + dataHora + ' | IP: ' + ip;
+  const modalEl = document.getElementById('modalFotoUnico');
+  const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+  modalInstance.show();
+}
+</script>
 {% endblock %}

@@ -187,7 +187,9 @@ from .utils import enviar_email_confirmacao_ponto
 
 def view_terminal_ponto(request):
     """Interface do Terminal para bater ponto (Totem / Computador da escola)."""
-    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).only(
+        'id', 'nome_completo', 'empresa_contratante', 'cargo_funcao'
+    ).order_by('nome_completo')
     return render(request, 'funcionarios/bater_ponto.html', {
         'terceirizados': terceirizados,
         'agora': timezone.now(),
@@ -374,8 +376,10 @@ def api_validar_pin(request):
 @verificar_primeiro_acesso
 def view_espelho_ponto(request):
     """Painel do RH para visualização do espelho de ponto dos terceirizados."""
-    registros = RegistroPontoTerceirizado.objects.select_related('funcionario').all()
-    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
+    registros = RegistroPontoTerceirizado.objects.select_related('funcionario').order_by('-data_hora')
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).only(
+        'id', 'nome_completo', 'empresa_contratante'
+    ).order_by('nome_completo')
 
     # Filtros
     funcionario_id = request.GET.get('funcionario')
@@ -396,7 +400,7 @@ def view_espelho_ponto(request):
     total_hoje = RegistroPontoTerceirizado.objects.filter(data_hora__date=hoje).count()
 
     return render(request, 'funcionarios/espelho_ponto.html', {
-        'registros': registros[:200],  # Limita as 200 mais recentes
+        'registros': registros[:100],  # Limita as 100 mais recentes para máxima velocidade
         'terceirizados': terceirizados,
         'total_hoje': total_hoje,
         'funcionario_selecionado': funcionario_id,

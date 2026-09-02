@@ -231,27 +231,52 @@
     document.getElementById('pin-input').value = '';
   }
 
-  // Inicialização da Câmera Webcam
+  // Inicialização da Câmera Webcam (Otimizada e Não-Bloqueante)
   const video = document.getElementById('webcam');
   const canvas = document.getElementById('canvas');
   const statusCamera = document.getElementById('status-camera');
 
   async function iniciarWebcam() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (statusCamera) {
+        statusCamera.className = "badge bg-secondary";
+        statusCamera.innerHTML = '<i class="bi bi-camera-video-off me-1"></i>Câmera Indisponível';
+      }
+      return;
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' },
+      // Timeout de segurança de 2.5s para não prender o carregamento do terminal
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout câmera")), 2500)
+      );
+
+      const cameraPromise = navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
         audio: false
       });
+
+      const stream = await Promise.race([cameraPromise, timeoutPromise]);
       video.srcObject = stream;
-      statusCamera.className = "badge bg-success";
-      statusCamera.innerHTML = '<i class="bi bi-camera-fill me-1"></i>Câmera Ativa';
+      if (statusCamera) {
+        statusCamera.className = "badge bg-success";
+        statusCamera.innerHTML = '<i class="bi bi-camera-fill me-1"></i>Câmera Ativa';
+      }
     } catch (err) {
-      console.warn("Câmera não permitida ou indisponível:", err);
-      statusCamera.className = "badge bg-warning text-dark";
-      statusCamera.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i>Sem Câmera';
+      console.warn("Câmera não iniciada imediatamente:", err);
+      if (statusCamera) {
+        statusCamera.className = "badge bg-warning text-dark";
+        statusCamera.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i>Sem Câmera';
+      }
     }
   }
-  iniciarWebcam();
+
+  // Executa após o DOM estar pronto para abrir a tela instantaneamente
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(iniciarWebcam, 50));
+  } else {
+    setTimeout(iniciarWebcam, 50);
+  }
 
   // Captura foto do canvas em base64
   function capturarFoto() {
