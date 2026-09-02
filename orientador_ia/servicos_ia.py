@@ -6,14 +6,43 @@ from .models import DocumentoCerebro, FragmentoConhecimento
 
 import sys
 
-try:
-    from google import genai
-    from google.genai import types
-    GENAI_AVAILABLE = True
-    GENAI_IMPORT_ERROR = ""
-except Exception as e:
-    GENAI_AVAILABLE = False
-    GENAI_IMPORT_ERROR = str(e)
+GENAI_AVAILABLE = False
+GENAI_IMPORT_ERROR = ""
+genai = None
+types = None
+
+def tentar_importar_genai():
+    global GENAI_AVAILABLE, GENAI_IMPORT_ERROR, genai, types
+    if GENAI_AVAILABLE and genai is not None:
+        return True
+
+    # Injeta diretórios de pacotes do usuário no sys.path (essencial para virtualenvs no PythonAnywhere)
+    caminhos_extras = [
+        os.path.expanduser(f"~/.local/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"),
+        os.path.expanduser("~/.local/lib/python3.10/site-packages"),
+        os.path.expanduser("~/.local/lib/python3.11/site-packages"),
+        os.path.expanduser("~/.local/lib/python3.12/site-packages"),
+        os.path.expanduser("~/.local/lib/python3.13/site-packages"),
+    ]
+    for c in caminhos_extras:
+        if os.path.exists(c) and c not in sys.path:
+            sys.path.insert(0, c)
+
+    try:
+        from google import genai as g_genai
+        from google.genai import types as g_types
+        genai = g_genai
+        types = g_types
+        GENAI_AVAILABLE = True
+        GENAI_IMPORT_ERROR = ""
+        return True
+    except Exception as e:
+        GENAI_AVAILABLE = False
+        GENAI_IMPORT_ERROR = str(e)
+        return False
+
+# Tentativa inicial
+tentar_importar_genai()
 
 
 def obter_cliente_gemini(retornar_erro=False):
@@ -23,9 +52,9 @@ def obter_cliente_gemini(retornar_erro=False):
     """
     from pathlib import Path
 
-    if not GENAI_AVAILABLE:
+    if not tentar_importar_genai():
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
-        msg = f"A biblioteca 'google-genai' não está no Python {py_ver} do servidor ({GENAI_IMPORT_ERROR}). No terminal execute: python{py_ver} -m pip install --user google-genai"
+        msg = f"A biblioteca 'google-genai' não pôde ser carregada no Python {py_ver} ({GENAI_IMPORT_ERROR})."
         return (None, msg) if retornar_erro else None
 
     # Configuração de proxy para conexões de saída em contas gratuitas do PythonAnywhere
