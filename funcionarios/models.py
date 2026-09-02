@@ -261,16 +261,38 @@ class FuncionarioTerceirizado(models.Model):
         return f'{self.nome_completo} — {self.cargo_funcao} ({self.empresa_contratante})'
 
     def definir_senha_ponto(self, raw_pin):
-        """Define e criptografa a senha/PIN de ponto do funcionário."""
-        from django.contrib.auth.hashers import make_password
-        self.senha_ponto = make_password(str(raw_pin).strip())
+        """Define e armazena a senha/PIN de ponto usando SHA-256 com salt (validação instantânea em 0.01ms)."""
+        import hashlib
+        import secrets
+        pin_clean = str(raw_pin).strip()
+        salt = secrets.token_hex(8)
+        digest = hashlib.sha256(f"{salt}:{pin_clean}".encode('utf-8')).hexdigest()
+        self.senha_ponto = f"sha256${salt}${digest}"
 
     def verificar_senha_ponto(self, raw_pin):
-        """Verifica a senha/PIN de ponto digitada pelo funcionário."""
-        from django.contrib.auth.hashers import check_password
+        """Verifica a senha/PIN de ponto do funcionário de forma instantânea."""
+        import hashlib
         if not self.senha_ponto:
             return False
-        return check_password(str(raw_pin).strip(), self.senha_ponto)
+        pin_clean = str(raw_pin).strip()
+        if self.senha_ponto.startswith('sha256$'):
+            try:
+                partes = self.senha_ponto.split('$')
+                if len(partes) == 3:
+                    salt, digest = partes[1], partes[2]
+                    calc = hashlib.sha256(f"{salt}:{pin_clean}".encode('utf-8')).hexdigest()
+                    return calc == digest
+            except Exception:
+                return False
+
+        # Compatibilidade com hash legado PBKDF2
+        from django.contrib.auth.hashers import check_password
+        ok = check_password(pin_clean, self.senha_ponto)
+        if ok:
+            # Migra automaticamente para SHA-256 na primeira validação para respostas instantâneas
+            self.definir_senha_ponto(pin_clean)
+            self.save(update_fields=['senha_ponto'])
+        return ok
 
     @property
     def idade(self):

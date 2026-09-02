@@ -230,7 +230,9 @@ def api_registrar_ponto(request):
 
     if not func:
         # Busca automática pelo PIN caso funcionario_id esteja ausente ou nulo
-        terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
+        terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).only(
+            'id', 'nome_completo', 'cargo_funcao', 'empresa_contratante', 'senha_ponto', 'email'
+        )
         for f in terceirizados:
             if f.senha_ponto and f.verificar_senha_ponto(pin):
                 func = f
@@ -352,7 +354,9 @@ def api_validar_pin(request):
             return _json_cors_response({'success': False, 'error': 'Funcionário não encontrado.'})
 
     # Busca automática pelo PIN entre todos os terceirizados ativos
-    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True)
+    terceirizados = FuncionarioTerceirizado.objects.filter(ativo=True).only(
+        'id', 'nome_completo', 'cargo_funcao', 'empresa_contratante', 'senha_ponto'
+    )
     funcionario_encontrado = None
 
     for func in terceirizados:

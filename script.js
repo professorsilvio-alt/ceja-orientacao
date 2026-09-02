@@ -974,7 +974,14 @@ document.addEventListener('DOMContentLoaded', () => {
     ? 'https://cejarosasoares.pythonanywhere.com'
     : '';
 
-  async function validarPinTotem() {
+  let validandoPin = false;
+  async function validarPinTotem(e) {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    }
+    if (validandoPin) return;
+
     const pin = pontoPinInput ? pontoPinInput.value.trim() : '';
 
     if (!pin) {
@@ -983,6 +990,13 @@ document.addEventListener('DOMContentLoaded', () => {
         pontoPinError.classList.remove('hidden');
       }
       return;
+    }
+
+    validandoPin = true;
+    const btnOriginalHtml = btnPontoPinSubmit ? btnPontoPinSubmit.innerHTML : '';
+    if (btnPontoPinSubmit) {
+      btnPontoPinSubmit.disabled = true;
+      btnPontoPinSubmit.innerHTML = '<span>⏳ Validando...</span>';
     }
 
     const formData = new FormData();
@@ -1016,29 +1030,49 @@ document.addEventListener('DOMContentLoaded', () => {
         pontoPinError.textContent = '⚠️ Erro ao conectar ao servidor. Tente novamente.';
         pontoPinError.classList.remove('hidden');
       }
+    } finally {
+      validandoPin = false;
+      if (btnPontoPinSubmit) {
+        btnPontoPinSubmit.disabled = false;
+        btnPontoPinSubmit.innerHTML = btnOriginalHtml;
+      }
     }
   }
 
   if (btnPontoPinSubmit) {
     btnPontoPinSubmit.addEventListener('click', validarPinTotem);
-    btnPontoPinSubmit.addEventListener('touchend', validarPinTotem);
   }
 
   async function iniciarWebcamPonto() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (pontoCameraStatus) {
+        pontoCameraStatus.textContent = 'Sem Câmera';
+        pontoCameraStatus.style.background = 'rgba(234,179,8,0.2)';
+        pontoCameraStatus.style.color = '#facc15';
+      }
+      return;
+    }
+
     try {
-      webcamStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' },
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout webcam")), 2500));
+      const getMedia = navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
         audio: false
       });
-      pontoWebcam.srcObject = webcamStream;
-      pontoCameraStatus.textContent = 'Câmera Ativa';
-      pontoCameraStatus.style.background = 'rgba(34,197,94,0.2)';
-      pontoCameraStatus.style.color = '#4ade80';
+      webcamStream = await Promise.race([getMedia, timeout]);
+      if (pontoWebcam) pontoWebcam.srcObject = webcamStream;
+      if (pontoCameraStatus) {
+        pontoCameraStatus.textContent = 'Câmera Ativa';
+        pontoCameraStatus.style.background = 'rgba(34,197,94,0.2)';
+        pontoCameraStatus.style.color = '#4ade80';
+      }
     } catch (err) {
       console.warn("Câmera indisponível no totem:", err);
-      pontoCameraStatus.textContent = 'Sem Câmera';
-      pontoCameraStatus.style.background = 'rgba(234,179,8,0.2)';
-      pontoCameraStatus.style.color = '#facc15';
+      if (pontoCameraStatus) {
+        pontoCameraStatus.textContent = 'Sem Câmera';
+        pontoCameraStatus.style.background = 'rgba(234,179,8,0.2)';
+        pontoCameraStatus.style.color = '#facc15';
+      }
     }
   }
 
