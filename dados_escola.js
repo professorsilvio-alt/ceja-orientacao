@@ -106,6 +106,15 @@ const DADOS_ESCOLA = {
       ]
     },
     {
+      nome: "Prof. Mário -glp",
+      foto: "",
+      disciplinas: ["História"],
+      horarios: [
+        { dia: "Quarta-feira", inicio: "08:50", fim: "15:30", local: "Cabine de Ciências Humanas" },
+        { dia: "Sexta-feira", inicio: "11:20", fim: "13:50", local: "Cabine de Ciências Humanas" }
+      ]
+    },
+    {
       nome: "Prof. Rafael Maia",
       foto: "",
       disciplinas: ["Filosofia", "Sociologia"],
@@ -219,15 +228,6 @@ const DADOS_ESCOLA = {
       horarios: [
         { dia: "Terça-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Linguagens" },
         { dia: "Quinta-feira", inicio: "11:20", fim: "16:20", local: "Cabine de Linguagens" }
-      ]
-    },
-    {
-      nome: "Prof.ª Fabiane",
-      foto: "",
-      disciplinas: ["História"],
-      horarios: [
-        { dia: "Quarta-feira", inicio: "08:50", fim: "13:50", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "08:50", fim: "13:00", local: "Cabine de Ciências Humanas" }
       ]
     },
     {
