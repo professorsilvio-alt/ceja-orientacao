@@ -700,6 +700,16 @@ def view_grade_turma(request, pk):
                     else:
                         prof_nome = p1 or p2
 
+            prof_id_val = ''
+            if aloc and aloc.professor:
+                v1 = getattr(aloc, 'vinculo_matricula_1', 1) or 1
+                prof_id_val = f"{aloc.professor.pk}:{v1}" if aloc.professor.acumulacao_nesta_escola else str(aloc.professor.pk)
+
+            prof2_id_val = ''
+            if aloc and aloc.professor_2:
+                v2 = getattr(aloc, 'vinculo_matricula_2', 1) or 1
+                prof2_id_val = f"{aloc.professor_2.pk}:{v2}" if aloc.professor_2.acumulacao_nesta_escola else str(aloc.professor_2.pk)
+
             row_cells.append({
                 'dia_code': dia_code,
                 'dia_nome': dia_nome,
@@ -708,8 +718,10 @@ def view_grade_turma(request, pk):
                 'is_fechada': is_fechada,
                 'alocacao': aloc,
                 'professor_nome': prof_nome,
-                'prof_id': aloc.professor.pk if (aloc and aloc.professor) else '',
-                'prof2_id': aloc.professor_2.pk if (aloc and aloc.professor_2) else '',
+                'prof_id': prof_id_val,
+                'prof2_id': prof2_id_val,
+                'vinculo1': getattr(aloc, 'vinculo_matricula_1', 1) if aloc else 1,
+                'vinculo2': getattr(aloc, 'vinculo_matricula_2', 1) if aloc else 1,
             })
         
         # Só exibe a linha no quadro se houver funcionamento em pelo menos 1 dia
@@ -728,10 +740,40 @@ def view_grade_turma(request, pk):
     outros_profs = []
     for p in all_profs:
         p_disc = (p.disciplina_ingresso or '').lower()
-        if disc_nome and (disc_nome in p_disc or p_disc in disc_nome or any(w in disc_nome for w in p_disc.split() if len(w) > 3)):
-            profs_da_disciplina.append(p)
+        is_disc = disc_nome and (disc_nome in p_disc or p_disc in disc_nome or any(w in disc_nome for w in p_disc.split() if len(w) > 3))
+        
+        # Cria opções: se tiver acumulação na mesma escola, gera Mat. 1 e Mat. 2
+        itens_prof = []
+        if p.acumulacao_nesta_escola:
+            itens_prof.append({
+                'val': f"{p.pk}:1",
+                'nome_completo': f"{p.nome_completo} (1ª Matrícula: {p.matricula})",
+                'nome_curto': f"{p.nome_curto} (Mat. 1)",
+                'cargo_disc': p.disciplina_ingresso or p.cargo or '1ª Mat.',
+                'mat_label': '1ª Mat.'
+            })
+            mat2_disc = p.disciplina_ingresso_acumulacao or p.cargo_acumulacao or p.disciplina_ingresso or '2ª Mat.'
+            itens_prof.append({
+                'val': f"{p.pk}:2",
+                'nome_completo': f"{p.nome_completo} (2ª Matrícula: {p.matricula_acumulacao or 'Acum'})",
+                'nome_curto': f"{p.nome_curto} (Mat. 2)",
+                'cargo_disc': mat2_disc,
+                'mat_label': '2ª Mat.'
+            })
         else:
-            outros_profs.append(p)
+            itens_prof.append({
+                'val': str(p.pk),
+                'nome_completo': p.nome_completo,
+                'nome_curto': p.nome_curto,
+                'cargo_disc': p.disciplina_ingresso or p.cargo or 'Prof.',
+                'mat_label': ''
+            })
+
+        for item in itens_prof:
+            if is_disc:
+                profs_da_disciplina.append(item)
+            else:
+                outros_profs.append(item)
 
     return render(request, 'professores/quadro_horarios_grade.html', {
         'turma': turma,
@@ -819,22 +861,40 @@ def view_salvar_alocacao_slot(request, pk):
                 return redirect('grade_turma', pk=turma.pk)
 
             prof1 = None
+            vinculo1 = 1
             if professor_id and professor_id != 'limpar':
-                prof1 = Professor.objects.filter(pk=professor_id).first()
+                raw_p1 = str(professor_id)
+                if ':' in raw_p1:
+                    pid_str, vinc_str = raw_p1.split(':', 1)
+                    prof1 = Professor.objects.filter(pk=pid_str).first()
+                    vinculo1 = 2 if vinc_str == '2' else 1
+                else:
+                    prof1 = Professor.objects.filter(pk=raw_p1).first()
+                    v1_req = request.POST.get('vinculo_matricula_1')
+                    vinculo1 = 2 if v1_req == '2' else 1
 
             prof2 = None
+            vinculo2 = 1
             if professor_2_id and professor_2_id != 'limpar':
-                prof2 = Professor.objects.filter(pk=professor_2_id).first()
+                raw_p2 = str(professor_2_id)
+                if ':' in raw_p2:
+                    pid_str, vinc_str = raw_p2.split(':', 1)
+                    prof2 = Professor.objects.filter(pk=pid_str).first()
+                    vinculo2 = 2 if vinc_str == '2' else 1
+                else:
+                    prof2 = Professor.objects.filter(pk=raw_p2).first()
+                    v2_req = request.POST.get('vinculo_matricula_2')
+                    vinculo2 = 2 if v2_req == '2' else 1
 
             if not rotulo_exibicao:
-                if prof1 and prof2:
-                    rotulo = f'{prof1.nome_curto.upper()} / {prof2.nome_curto.upper()}'
-                elif prof1:
-                    rotulo = prof1.nome_curto.upper()
-                elif prof2:
-                    rotulo = prof2.nome_curto.upper()
-                else:
-                    rotulo = ''
+                parts = []
+                if prof1:
+                    suffix1 = f' (Mat. {vinculo1})' if prof1.acumulacao_nesta_escola else ''
+                    parts.append(f'{prof1.nome_curto.upper()}{suffix1}')
+                if prof2:
+                    suffix2 = f' (Mat. {vinculo2})' if prof2.acumulacao_nesta_escola else ''
+                    parts.append(f'{prof2.nome_curto.upper()}{suffix2}')
+                rotulo = ' / '.join(parts)
             else:
                 rotulo = rotulo_exibicao
 
@@ -845,7 +905,9 @@ def view_salvar_alocacao_slot(request, pk):
                 defaults={
                     'hora_fim': hora_fim_str or hora_inicio_str,
                     'professor': prof1,
+                    'vinculo_matricula_1': vinculo1,
                     'professor_2': prof2,
+                    'vinculo_matricula_2': vinculo2,
                     'rotulo_exibicao': rotulo
                 }
             )

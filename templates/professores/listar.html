@@ -97,7 +97,7 @@
             <span class="badge bg-info text-dark ms-1" style="font-size:0.72rem;" title="{{ prof.tempos_aula }} tempos de aula na 1ª matrícula">{{ prof.tempos_aula }}t</span>
             {% endif %}
             {% if prof.matricula_acumulacao %}
-            <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ prof.matricula_acumulacao }}{% if prof.tempos_aula_acumulacao %} <span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;" title="{{ prof.tempos_aula_acumulacao }} tempos de aula na 2ª matrícula">{{ prof.tempos_aula_acumulacao }}t</span>{% endif %}</span>
+            <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ prof.matricula_acumulacao }}{% if prof.acumulacao_nesta_escola %} <span class="badge bg-primary text-white ms-1" style="font-size:0.65rem;" title="2ª Matrícula leciona nesta escola (CEJA)">CEJA</span>{% endif %}{% if prof.tempos_aula_acumulacao %} <span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;" title="{{ prof.tempos_aula_acumulacao }} tempos de aula na 2ª matrícula">{{ prof.tempos_aula_acumulacao }}t</span>{% endif %}</span>
             {% endif %}
           </td>
           <td>{{ prof.data_ingresso_unidade|date:"d/m/Y"|default:"—" }}</td>

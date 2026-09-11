@@ -441,8 +441,8 @@
               {% if profs_da_disciplina %}
               <optgroup label="⭐ Professores da Disciplina ({{ turma.disciplina_nome }})">
                 {% for p in profs_da_disciplina %}
-                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
-                  ⭐ {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo }}{% endif %})
+                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  ⭐ {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
               </optgroup>
@@ -450,8 +450,8 @@
 
               <optgroup label="👥 Demais Professores Cadastrados">
                 {% for p in outros_profs %}
-                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
-                  {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo|default:"Prof." }}{% endif %})
+                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
               </optgroup>
@@ -469,8 +469,8 @@
               {% if profs_da_disciplina %}
               <optgroup label="⭐ Professores da Disciplina ({{ turma.disciplina_nome }})">
                 {% for p in profs_da_disciplina %}
-                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
-                  ⭐ {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo }}{% endif %})
+                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  ⭐ {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
               </optgroup>
@@ -478,8 +478,8 @@
 
               <optgroup label="👥 Demais Professores Cadastrados">
                 {% for p in outros_profs %}
-                <option value="{{ p.pk }}" data-nomecurto="{{ p.nome_curto|upper }}">
-                  {{ p.nome_completo }} ({% if p.disciplina_ingresso %}{{ p.disciplina_ingresso }}{% else %}{{ p.cargo|default:"Prof." }}{% endif %})
+                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                  {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
               </optgroup>

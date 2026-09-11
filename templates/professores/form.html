@@ -65,6 +65,18 @@
         <label class="form-label">Situação 2ª Mat.</label>
         {{ form.situacao_matricula_2 }}
       </div>
+      <div class="col-md-4">
+        <label class="form-label" style="color:#38bdf8; font-weight:700;"><i class="bi bi-geo-alt-fill me-1"></i>Local da 2ª Matrícula</label>
+        <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); height:42px;">
+          <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+            {{ form.acumulacao_nesta_escola }}
+            <label class="form-check-label text-white fw-bold mb-0" for="id_acum_nesta_escola" style="font-size:0.82rem; cursor:pointer;">
+              Leciona nesta escola (CEJA)
+            </label>
+          </div>
+        </div>
+        <small class="text-muted" style="font-size:0.72rem;">Se desmarcado, significa que a 2ª matrícula é em outra escola/órgão.</small>
+      </div>
       <div class="col-md-2">
         <label class="form-label">CH 2ª Mat. (Horas)</label>
         {{ form.ch_total_acumulacao }}
@@ -73,11 +85,11 @@
         <label class="form-label" style="color:#fde047; font-weight:700;"><i class="bi bi-clock-history me-1"></i>Tempos 2ª Mat.</label>
         {{ form.tempos_aula_acumulacao }}
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <label class="form-label">Cargo (2ª Matrícula)</label>
         {{ form.cargo_acumulacao }}
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <label class="form-label">Disciplina de Ingresso (2ª Matrícula)</label>
         {{ form.disciplina_ingresso_acumulacao }}
       </div>

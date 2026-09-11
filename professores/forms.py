@@ -86,7 +86,7 @@ class ProfessorForm(forms.ModelForm):
         model = Professor
         fields = [
             'cpf', 'id_vinculo', 'matricula', 'situacao_matricula_1', 'ch_total', 'tempos_aula',
-            'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2',
+            'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2', 'acumulacao_nesta_escola',
             'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao',
             'nome_completo', 'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
             'data_admissao', 'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
@@ -102,6 +102,7 @@ class ProfessorForm(forms.ModelForm):
             'id_vinculo_acumulacao': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/1', 'id': 'id_vinc_acum'}),
             'matricula_acumulacao': forms.TextInput(attrs={'id': 'id_mat_acum'}),
             'situacao_matricula_2': forms.Select(attrs={'id': 'id_sit_mat2'}),
+            'acumulacao_nesta_escola': forms.CheckboxInput(attrs={'id': 'id_acum_nesta_escola', 'class': 'form-check-input'}),
             'cargo_acumulacao': forms.TextInput(attrs={'id': 'id_cargo_acum'}),
             'disciplina_ingresso_acumulacao': forms.TextInput(attrs={'id': 'id_disc_acum'}),
             'funcao_acumulacao': forms.TextInput(attrs={'id': 'id_func_acum'}),

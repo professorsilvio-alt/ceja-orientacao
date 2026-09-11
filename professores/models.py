@@ -118,6 +118,11 @@ class Professor(models.Model):
         verbose_name='Tempos de Aula (2ª Matrícula)',
         help_text='Quantidade de tempos semanais de aula lecionados na escola pela 2ª matrícula.'
     )
+    acumulacao_nesta_escola = models.BooleanField(
+        default=False,
+        verbose_name='2ª Matrícula leciona nesta escola (CEJA)?',
+        help_text='Marque se o professor leciona com as duas matrículas nesta unidade escolar.'
+    )
     data_admissao_acumulacao = models.DateField(
         null=True, blank=True, verbose_name='Data Admissão (2ª Matrícula)'
     )
@@ -583,9 +588,19 @@ class AlocacaoHorarioTurma(models.Model):
         Professor, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='alocacoes_horario', verbose_name='1º Professor (Principal)'
     )
+    vinculo_matricula_1 = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name='Vínculo/Matrícula do 1º Professor (1 ou 2)',
+        help_text='Indica se a alocação do 1º professor refere-se à sua 1ª matrícula ou à 2ª matrícula.'
+    )
     professor_2 = models.ForeignKey(
         Professor, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='alocacoes_horario_secundario', verbose_name='2º Professor (Co-regência / Apoio)'
+    )
+    vinculo_matricula_2 = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name='Vínculo/Matrícula do 2º Professor (1 ou 2)',
+        help_text='Indica se a alocação do 2º professor refere-se à sua 1ª matrícula ou à 2ª matrícula.'
     )
     rotulo_exibicao = models.CharField(
         max_length=150, blank=True, verbose_name='Rótulo de Exibição',

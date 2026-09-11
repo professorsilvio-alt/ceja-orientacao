@@ -13,9 +13,9 @@ class HorarioInline(admin.TabularInline):
 class ProfessorAdmin(admin.ModelAdmin):
     list_display = [
         'classificacao', 'nome_completo', 'cargo',
-        'disciplina_ingresso', 'matricula', 'tempos_aula', 'tempos_aula_acumulacao', 'ativo'
+        'disciplina_ingresso', 'matricula', 'tempos_aula', 'tempos_aula_acumulacao', 'acumulacao_nesta_escola', 'ativo'
     ]
-    list_filter = ['cargo', 'disciplina_ingresso', 'ativo']
+    list_filter = ['cargo', 'disciplina_ingresso', 'acumulacao_nesta_escola', 'ativo']
     search_fields = ['nome_completo', 'cpf', 'matricula', 'matricula_acumulacao']
     ordering = ['classificacao', 'nome_completo']
     readonly_fields = ['tempo_na_escola', 'criado_em', 'atualizado_em']
@@ -26,7 +26,7 @@ class ProfessorAdmin(admin.ModelAdmin):
             'fields': (
                 'cpf', 'nome_completo', 'foto',
                 'matricula', 'ch_total', 'tempos_aula',
-                'matricula_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao'
+                'matricula_acumulacao', 'acumulacao_nesta_escola', 'ch_total_acumulacao', 'tempos_aula_acumulacao'
             )
         }),
         ('Cargo e Disciplinas', {
