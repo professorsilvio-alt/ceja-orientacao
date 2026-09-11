@@ -113,6 +113,11 @@ class Professor(models.Model):
     ch_total_acumulacao = models.PositiveIntegerField(
         null=True, blank=True, verbose_name='CH Total (2ª Matrícula)'
     )
+    tempos_aula_acumulacao = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name='Tempos de Aula (2ª Matrícula)',
+        help_text='Quantidade de tempos semanais de aula lecionados na escola pela 2ª matrícula.'
+    )
     data_admissao_acumulacao = models.DateField(
         null=True, blank=True, verbose_name='Data Admissão (2ª Matrícula)'
     )
@@ -148,7 +153,12 @@ class Professor(models.Model):
     ch_planejamento = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Planejamento')
     ch_regencia = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Regência')
     ch_complementacao = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Complementação')
-    ch_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Total')
+    ch_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Total (1ª Matrícula)')
+    tempos_aula = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name='Tempos de Aula (1ª Matrícula)',
+        help_text='Quantidade de tempos semanais de aula lecionados na escola pela 1ª matrícula.'
+    )
     acumulacao = models.CharField(max_length=100, blank=True, verbose_name='Acumulação')
 
     # ── Dados Pessoais & Endereço ─────────────────────────
@@ -222,6 +232,15 @@ class Professor(models.Model):
         if len(partes) >= 2:
             return f'{partes[0]} {partes[-1]}'
         return self.nome_completo
+
+    @property
+    def total_tempos_aula(self):
+        """Retorna a soma dos tempos de aula lecionados na escola (1ª e 2ª matrículas)."""
+        t1 = self.tempos_aula or 0
+        t2 = self.tempos_aula_acumulacao or 0
+        if self.tempos_aula is None and self.tempos_aula_acumulacao is None:
+            return None
+        return t1 + t2
 
 
 class Disciplina(models.Model):
