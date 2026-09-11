@@ -753,6 +753,18 @@ class AlocacaoHorarioTurma(models.Model):
         ordering = ['dia_semana', 'hora_inicio']
         unique_together = ['turma', 'dia_semana', 'hora_inicio']
 
+    @property
+    def duracao_minutos(self):
+        if self.hora_inicio and self.hora_fim:
+            t_inicio = self.hora_inicio.hour * 60 + self.hora_inicio.minute
+            t_fim = self.hora_fim.hour * 60 + self.hora_fim.minute
+            return max(0, t_fim - t_inicio)
+        return 50
+
+    @property
+    def duracao_horas(self):
+        return round(self.duracao_minutos / 60.0, 2)
+
     def __str__(self):
         if self.rotulo_exibicao:
             prof = self.rotulo_exibicao

@@ -1,5 +1,6 @@
 from datetime import time
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -361,11 +362,15 @@ def view_editar_professor(request, pk):
 @verificar_primeiro_acesso
 def view_horarios_professor(request, pk):
     """
-    Permite ao professor informar sua disponibilidade de horário.
+    Permite ao professor informar sua disponibilidade/expediente de horário
+    e visualizar todas as suas aulas alocadas no Quadro de Horários da escola.
     Diretor pode ver e aprovar os horários de todos.
     """
     professor = get_object_or_404(Professor, pk=pk)
-    ano = request.GET.get('ano', timezone.now().year)
+    try:
+        ano = int(request.GET.get('ano', timezone.now().year))
+    except (ValueError, TypeError):
+        ano = timezone.now().year
 
     # Professores só podem ver/editar seus próprios horários
     if request.user.perfil == 'professor':
@@ -373,7 +378,45 @@ def view_horarios_professor(request, pk):
             messages.error(request, 'Você só pode editar seus próprios horários.')
             return redirect('dashboard')
 
+    # 1. Horários manuais / expediente / atendimento
     horarios = professor.horarios.filter(ano_letivo=ano).order_by('dia_semana', 'hora_inicio')
+
+    # 2. Aulas alocadas no Quadro de Horários das Turmas (Grade Curricular)
+    alocacoes_qs = AlocacaoHorarioTurma.objects.filter(
+        Q(professor=professor) | Q(professor_2=professor),
+        turma__configuracao__ano_letivo=ano
+    ).select_related('turma', 'turma__configuracao', 'turma__configuracao__unidade', 'professor', 'professor_2')
+
+    dia_order = {'seg': 1, 'ter': 2, 'qua': 3, 'qui': 4, 'sex': 5, 'sab': 6, 'dom': 7}
+    alocacoes = sorted(
+        alocacoes_qs,
+        key=lambda x: (dia_order.get(x.dia_semana, 99), x.hora_inicio)
+    )
+
+    for al in alocacoes:
+        if al.professor == professor:
+            al.minha_matricula = al.vinculo_matricula_1
+            al.parceiro = al.professor_2
+        else:
+            al.minha_matricula = al.vinculo_matricula_2
+            al.parceiro = al.professor
+        al.eh_coregencia = bool(al.professor and al.professor_2)
+
+    total_tempos_alocados = len(alocacoes)
+    tempos_mat1 = sum(1 for al in alocacoes if al.minha_matricula == 1)
+    tempos_mat2 = sum(1 for al in alocacoes if al.minha_matricula == 2)
+    tempos_esperados = professor.total_tempos_aula
+
+    minutos_aulas = sum(al.duracao_minutos for al in alocacoes)
+    horas_aulas = round(minutos_aulas / 60.0, 1)
+
+    minutos_admin = sum(h.duracao_minutos for h in horarios)
+    horas_admin = round(minutos_admin / 60.0, 1)
+
+    total_minutos = minutos_aulas + minutos_admin
+    total_horas = round(total_minutos / 60.0, 1)
+    ch_esperada = professor.ch_administrativa or professor.ch_total or 0
+    pct_cumprida = min(100, int((total_horas / ch_esperada) * 100)) if ch_esperada else 0
 
     # Pré-configura tipo_atividade e local sugerido para servidores administrativos
     initial_data = {'ano_letivo': ano}
@@ -397,16 +440,18 @@ def view_horarios_professor(request, pk):
         horario.aprovado = False  # Requer aprovação do diretor
         horario.save()
         messages.success(request, 'Horário adicionado. Aguardando aprovação da direção.')
-        return redirect('horarios_professor', pk=professor.pk)
-
-    total_minutos = sum(h.duracao_minutos for h in horarios)
-    total_horas = round(total_minutos / 60.0, 1)
-    ch_esperada = professor.ch_administrativa or professor.ch_total or 0
-    pct_cumprida = min(100, int((total_horas / ch_esperada) * 100)) if ch_esperada else 0
+        return redirect(f"{reverse('horarios_professor', kwargs={'pk': professor.pk})}?ano={ano}")
 
     return render(request, 'professores/horarios.html', {
         'professor': professor,
         'horarios': horarios,
+        'alocacoes': alocacoes,
+        'total_tempos_alocados': total_tempos_alocados,
+        'tempos_mat1': tempos_mat1,
+        'tempos_mat2': tempos_mat2,
+        'tempos_esperados': tempos_esperados,
+        'horas_aulas': horas_aulas,
+        'horas_admin': horas_admin,
         'form': form,
         'ano': ano,
         'total_horas': total_horas,
@@ -422,17 +467,17 @@ def view_aprovar_horario(request, horario_pk):
     horario.aprovado = True
     horario.save(update_fields=['aprovado'])
     messages.success(request, f'Horário de {horario.professor.nome_curto} aprovado.')
-    return redirect('horarios_professor', pk=horario.professor.pk)
+    return redirect(f"{reverse('horarios_professor', kwargs={'pk': horario.professor.pk})}?ano={horario.ano_letivo}")
 
 
 @diretor_required
 def view_remover_horario(request, horario_pk):
     horario = get_object_or_404(HorarioProfessor, pk=horario_pk)
     prof_pk = horario.professor.pk
-    if request.method == 'POST':
-        horario.delete()
-        messages.success(request, 'Horário removido.')
-    return redirect('horarios_professor', pk=prof_pk)
+    ano_letivo = horario.ano_letivo
+    horario.delete()
+    messages.success(request, 'Horário removido.')
+    return redirect(f"{reverse('horarios_professor', kwargs={'pk': prof_pk})}?ano={ano_letivo}")
 
 
 @diretor_required

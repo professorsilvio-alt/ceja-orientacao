@@ -40,28 +40,42 @@
       <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
         {% if professor.is_desviado_administrativo %}
           {% if professor.abrangencia_desvio == 'mat1' %}
-            Desvio administrativo aplicado à <strong>1ª Matrícula</strong>. A 2ª Matrícula continua lecionando em sala de aula. Registre aqui o expediente da função administrativa.
+            Desvio administrativo aplicado à <strong>1ª Matrícula</strong>. A 2ª Matrícula continua lecionando em sala de aula.
           {% elif professor.abrangencia_desvio == 'mat2' %}
-            Desvio administrativo aplicado à <strong>2ª Matrícula</strong>. A 1ª Matrícula continua lecionando em sala de aula. Registre aqui o expediente da função administrativa.
+            Desvio administrativo aplicado à <strong>2ª Matrícula</strong>. A 1ª Matrícula continua lecionando em sala de aula.
           {% else %}
-            Servidor com <strong>ambas as matrículas</strong> dedicadas à gestão escolar integral. Registre aqui os horários do expediente administrativo semanal.
+            Servidor com <strong>ambas as matrículas</strong> dedicadas à gestão escolar integral.
           {% endif %}
         {% else %}
-          Horários semanais de atendimento/regência cadastrados na unidade escolar para o ano letivo {{ ano }}.
+          Horários semanais de regência e expediente cadastrados na unidade escolar para o ano letivo {{ ano }}.
         {% endif %}
       </div>
     </div>
 
     <div class="d-flex align-items-center gap-4 flex-wrap">
       <div class="text-center">
-        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Carga Horária Prevista</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Carga Prevista</div>
         <div style="font-size:1.2rem; font-weight:800; color:#fde047;">{{ ch_esperada }}h <span style="font-size:0.8rem; font-weight:400; color:var(--text-muted);">/ sem.</span></div>
       </div>
+      {% if tempos_esperados > 0 or total_tempos_alocados > 0 %}
       <div class="text-center">
-        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Horas Cadastradas</div>
-        <div style="font-size:1.2rem; font-weight:800; color:{% if total_horas >= ch_esperada and ch_esperada > 0 %}#4ade80{% else %}#38bdf8{% endif %};">{{ total_horas }}h</div>
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Tempos em Sala</div>
+        <div style="font-size:1.2rem; font-weight:800; color:{% if total_tempos_alocados >= tempos_esperados and tempos_esperados > 0 %}#4ade80{% else %}#38bdf8{% endif %};">
+          {{ total_tempos_alocados }} <span style="font-size:0.8rem; font-weight:400; color:var(--text-muted);">/ {{ tempos_esperados }}</span>
+        </div>
+        {% if professor.matricula_acumulacao and professor.acumulacao_nesta_escola %}
+        <div style="font-size:0.68rem; color:var(--text-muted);">M1: {{ tempos_mat1 }} | M2: {{ tempos_mat2 }}</div>
+        {% endif %}
       </div>
-      <div style="min-width:140px;">
+      {% endif %}
+      <div class="text-center">
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Total Horas</div>
+        <div style="font-size:1.2rem; font-weight:800; color:{% if total_horas >= ch_esperada and ch_esperada > 0 %}#4ade80{% else %}#38bdf8{% endif %};">{{ total_horas }}h</div>
+        {% if total_tempos_alocados > 0 and horas_admin > 0 %}
+        <div style="font-size:0.68rem; color:var(--text-muted);">{{ horas_aulas }}h sala + {{ horas_admin }}h exp.</div>
+        {% endif %}
+      </div>
+      <div style="min-width:130px;">
         <div class="d-flex justify-content-between" style="font-size:0.75rem; margin-bottom:3px; color:var(--text-muted);">
           <span>Cumprimento</span>
           <span style="font-weight:700; color:#fff;">{{ pct_cumprida }}%</span>
@@ -75,12 +89,103 @@
 </div>
 
 <div class="row g-3">
-  <!-- Lista de horários -->
+  <!-- Coluna da Esquerda: Aulas do Quadro + Horários de Expediente -->
   <div class="col-md-7">
+
+    <!-- 1. AULAS ALOCADAS NO QUADRO DE HORÁRIOS (GRADE ESCOLAR) -->
+    <div class="card-gestao mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-grid-3x3-gap-fill" style="color:var(--cyan); font-size:1.1rem;"></i>
+          <h6 style="font-weight:700; margin:0;">Aulas Alocadas no Quadro de Horários</h6>
+        </div>
+        <span class="badge" style="background:rgba(56,189,248,0.15); color:var(--cyan); border:1px solid rgba(56,189,248,0.3); font-size:0.78rem;">
+          {{ total_tempos_alocados }} tempo(s) / {{ horas_aulas }}h
+        </span>
+      </div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
+        Aulas atribuídas diretamente no <strong>Quadro de Horários das Turmas</strong> para o ano letivo {{ ano }}.
+      </div>
+
+      {% if alocacoes %}
+      <div class="d-flex flex-column gap-2">
+        {% for al in alocacoes %}
+        <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px 14px; border-left:3px solid var(--cyan);">
+          <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span style="font-weight:700; color:#fff; font-size:0.92rem;">{{ al.get_dia_semana_display }}</span>
+                <span class="badge bg-dark border border-secondary text-info" style="font-size:0.72rem; font-family:monospace;">
+                  {{ al.turma.codigo_turma }}
+                </span>
+                {% if professor.matricula_acumulacao and professor.acumulacao_nesta_escola %}
+                  {% if al.minha_matricula == 2 %}
+                    <span class="badge" style="background:#0284c7; color:#fff; font-size:0.68rem;">2ª Matrícula</span>
+                  {% else %}
+                    <span class="badge" style="background:#4f46e5; color:#fff; font-size:0.68rem;">1ª Matrícula</span>
+                  {% endif %}
+                {% endif %}
+                {% if al.eh_coregencia %}
+                  <span class="badge" style="background:#059669; color:#fff; font-size:0.68rem;">
+                    <i class="bi bi-people-fill me-1"></i>Co-regência com {{ al.parceiro.nome_curto }}
+                  </span>
+                {% endif %}
+              </div>
+              
+              <div style="color:var(--text-secondary); font-size:0.88rem; margin-top:4px;">
+                <i class="bi bi-clock me-1" style="color:var(--cyan);"></i><strong>{{ al.hora_inicio|time:"H:i" }} – {{ al.hora_fim|time:"H:i" }}</strong>
+                <span style="color:var(--text-muted); font-size:0.78rem;" class="ms-1">({{ al.duracao_minutos }} min)</span>
+              </div>
+
+              <div style="font-size:0.84rem; color:#f1f5f9; margin-top:4px;">
+                <i class="bi bi-book me-1" style="color:var(--yellow);"></i><strong>{{ al.turma.disciplina_nome }}</strong>
+                {% if al.turma.area %}
+                  <span class="badge bg-secondary text-light ms-1" style="font-size:0.68rem;">{{ al.turma.area }}</span>
+                {% endif %}
+              </div>
+
+              {% if al.rotulo_exibicao %}
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                <i class="bi bi-tag me-1"></i>Rótulo no quadro: <em>{{ al.rotulo_exibicao }}</em>
+              </div>
+              {% endif %}
+              
+              <div style="color:var(--text-muted); font-size:0.75rem; margin-top:3px;">
+                <i class="bi bi-geo-alt me-1"></i>{{ al.turma.configuracao.unidade.nome|default:"CEJA Principal" }}
+              </div>
+            </div>
+
+            <div>
+              <a href="{% url 'grade_turma' al.turma.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:4px 10px; font-size:0.74rem;" title="Ver Grade da Turma">
+                <i class="bi bi-grid-3x3-gap me-1"></i>Ver Grade
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px 0; background:rgba(255,255,255,0.02); border-radius:8px;">
+        <i class="bi bi-calendar-x" style="font-size:1.8rem; display:block; margin-bottom:8px; color:var(--text-muted);"></i>
+        Nenhuma aula alocada no Quadro de Horários para {{ ano }}.
+        <div style="font-size:0.75rem; margin-top:6px;">
+          As aulas são atribuídas no menu <a href="{% url 'quadro_horarios' %}" style="color:var(--cyan); text-decoration:underline;">Quadro de Horários</a> pela Direção.
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- 2. HORÁRIOS DE EXPEDIENTE / ATENDIMENTO / GABINETE -->
     <div class="card-gestao">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 style="font-weight:700; margin:0;">Horários cadastrados em {{ ano }}</h6>
-        <span class="badge bg-dark border border-secondary text-light">{{ horarios.count }} horário(s) / {{ total_horas }}h</span>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-clock-history" style="color:var(--yellow); font-size:1.1rem;"></i>
+          <h6 style="font-weight:700; margin:0;">Expediente Administrativo / Outras Atividades</h6>
+        </div>
+        <span class="badge bg-dark border border-secondary text-light">{{ horarios.count }} registro(s) / {{ horas_admin }}h</span>
+      </div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
+        Horários de expediente interno, atendimento extraclasse, coordenação ou gabinete.
       </div>
       {% if horarios %}
       {% for h in horarios %}
@@ -132,9 +237,9 @@
       </div>
       {% endfor %}
       {% else %}
-      <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:24px 0;">
-        <i class="bi bi-clock" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
-        Nenhum horário cadastrado para {{ ano }}.
+      <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:16px 0; margin:0;">
+        <i class="bi bi-clock" style="font-size:1.8rem; display:block; margin-bottom:6px;"></i>
+        Nenhum expediente administrativo cadastrado para {{ ano }}.
       </p>
       {% endif %}
     </div>
