@@ -168,6 +168,20 @@ class HorarioProfessorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         aplicar_estilo_campos(self)
+        if self.is_bound and self.data and 'dia_semana' in self.data:
+            data = self.data.copy()
+            val = str(data['dia_semana']).lower().strip()
+            mapping = {
+                'seg': 'segunda', 'segunda': 'segunda',
+                'ter': 'terca', 'terca': 'terca',
+                'qua': 'quarta', 'quarta': 'quarta',
+                'qui': 'quinta', 'quinta': 'quinta',
+                'sex': 'sexta', 'sexta': 'sexta',
+                'sab': 'sabado', 'sabado': 'sabado',
+            }
+            if val in mapping:
+                data['dia_semana'] = mapping[val]
+            self.data = data
 
     def clean(self):
         cleaned = super().clean()

@@ -12,7 +12,7 @@ from usuarios.views import diretor_required, verificar_primeiro_acesso
 from .models import (
     Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, 
     Disciplina, UnidadeEscolar, TurmaComponente, AlocacaoHorarioTurma, 
-    recalcular_classificacao_professores
+    recalcular_classificacao_professores, LOCAL_CHOICES, TIPO_ATIVIDADE_CHOICES
 )
 from .forms import (
     ProfessorForm, HorarioProfessorForm, ConfiguracaoEscolaForm, 
@@ -523,6 +523,9 @@ def view_horarios_professor(request, pk):
         'ch_esperada': ch_esperada,
         'pct_cumprida': pct_cumprida,
         'is_diretor': request.user.perfil == 'diretor' or request.user.is_superuser,
+        'unidades': UnidadeEscolar.objects.all(),
+        'local_choices': LOCAL_CHOICES,
+        'tipo_atividade_choices': TIPO_ATIVIDADE_CHOICES,
     })
 
 
@@ -533,6 +536,27 @@ def view_aprovar_horario(request, horario_pk):
     horario.save(update_fields=['aprovado'])
     messages.success(request, f'Horário de {horario.professor.nome_curto} aprovado.')
     return redirect(f"{reverse('horarios_professor', kwargs={'pk': horario.professor.pk})}?ano={horario.ano_letivo}")
+
+
+@diretor_required
+def view_editar_horario(request, horario_pk):
+    horario = get_object_or_404(HorarioProfessor, pk=horario_pk)
+    prof_pk = horario.professor.pk
+    ano_letivo = horario.ano_letivo
+
+    if request.method == 'POST':
+        form = HorarioProfessorForm(request.POST, instance=horario)
+        if form.is_valid():
+            h = form.save()
+            messages.success(request, f'Horário de {h.get_dia_semana_display()} atualizado com sucesso!')
+            return redirect(f"{reverse('horarios_professor', kwargs={'pk': prof_pk})}?ano={h.ano_letivo}")
+        else:
+            errors = ' '.join(f'{field}: {", ".join(errs)}' for field, errs in form.errors.items())
+            messages.error(request, f'Erro ao atualizar horário: {errors}')
+            return redirect(f"{reverse('horarios_professor', kwargs={'pk': prof_pk})}?ano={ano_letivo}")
+
+    # Fallback GET
+    return redirect(f"{reverse('horarios_professor', kwargs={'pk': prof_pk})}?ano={ano_letivo}")
 
 
 @diretor_required

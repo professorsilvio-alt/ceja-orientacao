@@ -259,6 +259,11 @@
                       </form>
                       {% endif %}
                       {% if is_diretor %}
+                      <!-- Botão Editar Horário -->
+                      <button type="button" class="btn-gestao btn-gestao-primary" style="padding:3px 8px; font-size:0.7rem;"
+                        data-bs-toggle="modal" data-bs-target="#modalEditarHorario{{ h.pk }}" title="Editar Horário">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
                       <form method="post" action="{% url 'remover_horario' h.pk %}" style="margin:0;">
                         {% csrf_token %}
                         <button type="submit" class="btn-gestao btn-gestao-danger" style="padding:3px 8px; font-size:0.7rem;"
@@ -289,12 +294,90 @@
         {% endfor %}
       </div>
 
+      <!-- CARD DE EXPEDIENTE ADMINISTRATIVO / OUTRAS ATIVIDADES -->
+      {% if horarios %}
+      <div class="card-gestao mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history" style="color:var(--yellow); font-size:1.15rem;"></i>
+            <h6 style="font-weight:700; margin:0;">Expediente Administrativo / Outras Atividades</h6>
+          </div>
+          <span class="badge bg-dark border border-secondary text-light">{{ horarios.count }} registro(s) / {{ horas_admin }}h</span>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
+          Horários de expediente interno, atendimento extraclasse, coordenação ou gabinete.
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+          {% for h in horarios %}
+          <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px 16px; border-left:3px solid {% if h.aprovado %}var(--green){% else %}var(--yellow){% endif %};">
+            <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+              <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <span style="font-weight:700; color:#fff;">{{ h.get_dia_semana_display }}</span>
+                  {% if h.tipo_atividade == 'administrativa' %}
+                  <span class="badge" style="background:#7c3aed; color:#fff; font-size:0.68rem; padding:2px 6px;">Expediente Administrativo</span>
+                  {% elif h.tipo_atividade == 'planejamento' %}
+                  <span class="badge bg-secondary text-light" style="font-size:0.68rem; padding:2px 6px;">Planejamento</span>
+                  {% elif h.tipo_atividade == 'docencia' %}
+                  <span class="badge bg-info text-dark" style="font-size:0.68rem; padding:2px 6px;">Regência / Atendimento</span>
+                  {% else %}
+                  <span class="badge bg-dark text-muted border border-secondary" style="font-size:0.68rem; padding:2px 6px;">{{ h.get_tipo_atividade_display }}</span>
+                  {% endif %}
+                </div>
+                <div style="color:var(--text-secondary); font-size:0.88rem; margin-top:2px;">
+                  <i class="bi bi-clock me-1"></i>{{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}
+                  <span style="color:var(--cyan); font-size:0.8rem; font-weight:600;" class="ms-1">({{ h.duracao_horas }}h)</span>
+                </div>
+                <div style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">
+                  <i class="bi bi-geo-alt me-1"></i>{{ h.get_local_display }}{% if h.local_descricao %} — {{ h.local_descricao }}{% endif %}
+                  {% if h.unidade %} <span class="badge bg-dark text-muted ms-1" style="font-size:0.7rem;">{{ h.unidade.nome }}</span>{% endif %}
+                </div>
+              </div>
+
+              <div class="d-flex flex-column gap-1 align-items-end">
+                <span class="badge-gestao {% if h.aprovado %}badge-success{% else %}badge-warning{% endif %}">
+                  {% if h.aprovado %}✅ Aprovado{% else %}⏳ Pendente{% endif %}
+                </span>
+                <div class="d-flex gap-1 mt-1">
+                  {% if is_diretor and not h.aprovado %}
+                  <form method="post" action="{% url 'aprovar_horario' h.pk %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-gestao btn-gestao-success" style="padding:4px 9px; font-size:0.72rem;" title="Aprovar">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                  {% if is_diretor %}
+                  <!-- Botão Editar Horário -->
+                  <button type="button" class="btn-gestao btn-gestao-primary" style="padding:4px 9px; font-size:0.72rem;"
+                    data-bs-toggle="modal" data-bs-target="#modalEditarHorario{{ h.pk }}" title="Editar Horário">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <!-- Botão Excluir Horário -->
+                  <form method="post" action="{% url 'remover_horario' h.pk %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-gestao btn-gestao-danger" style="padding:4px 9px; font-size:0.72rem;"
+                      onclick="return confirm('Remover este horário?')" title="Remover">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
     {% else %}
       <div class="card-gestao text-center" style="padding:32px 16px;">
         <i class="bi bi-calendar-x" style="font-size:2.2rem; color:var(--text-muted); display:block; margin-bottom:8px;"></i>
-        <h6 style="color:#fff; font-weight:700;">Nenhuma aula alocada para {{ ano }}</h6>
+        <h6 style="color:#fff; font-weight:700;">Nenhuma aula ou expediente para {{ ano }}</h6>
         <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">
-          As aulas são atribuídas pela Direção no menu <a href="{% url 'quadro_horarios' %}" style="color:var(--cyan); text-decoration:underline;">Quadro de Horários</a>.
+          As aulas são atribuídas no menu <a href="{% url 'quadro_horarios' %}" style="color:var(--cyan); text-decoration:underline;">Quadro de Horários</a>.
         </p>
       </div>
     {% endif %}
@@ -359,4 +442,86 @@
     </div>
   </div>
 </div>
+
+<!-- MODAIS DE EDIÇÃO DE HORÁRIO -->
+{% for h in horarios %}
+<div class="modal fade" id="modalEditarHorario{{ h.pk }}" tabindex="-1" aria-labelledby="modalLabel{{ h.pk }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:14px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+      <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,0.1);">
+        <h6 class="modal-title" id="modalLabel{{ h.pk }}" style="font-weight:700; color:#fff;">
+          <i class="bi bi-pencil-square me-2" style="color:var(--cyan);"></i>Editar Horário — {{ h.get_dia_semana_display }}
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="post" action="{% url 'editar_horario' h.pk %}">
+        {% csrf_token %}
+        <div class="modal-body" style="padding:18px 20px;">
+          <div class="mb-3">
+            <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Unidade Escolar</label>
+            <select name="unidade" class="form-select" style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+              <option value="">---------</option>
+              {% for u in unidades %}
+                <option value="{{ u.pk }}" {% if h.unidade_id == u.pk %}selected{% endif %}>{{ u.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Ano letivo</label>
+              <input type="number" name="ano_letivo" class="form-control" value="{{ h.ano_letivo }}" required min="2020" max="2099" style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+            </div>
+            <div class="col-6">
+              <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Tipo de Atividade</label>
+              <select name="tipo_atividade" class="form-select" style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+                {% for t_k, t_name in tipo_atividade_choices %}
+                  <option value="{{ t_k }}" {% if h.tipo_atividade == t_k %}selected{% endif %}>{{ t_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Dia da semana</label>
+            <select name="dia_semana" class="form-select" required style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+              <option value="seg" {% if h.dia_semana_codigo == 'seg' %}selected{% endif %}>Segunda-feira</option>
+              <option value="ter" {% if h.dia_semana_codigo == 'ter' %}selected{% endif %}>Terça-feira</option>
+              <option value="qua" {% if h.dia_semana_codigo == 'qua' %}selected{% endif %}>Quarta-feira</option>
+              <option value="qui" {% if h.dia_semana_codigo == 'qui' %}selected{% endif %}>Quinta-feira</option>
+              <option value="sex" {% if h.dia_semana_codigo == 'sex' %}selected{% endif %}>Sexta-feira</option>
+              <option value="sab" {% if h.dia_semana_codigo == 'sab' %}selected{% endif %}>Sábado</option>
+              <option value="dom" {% if h.dia_semana_codigo == 'dom' %}selected{% endif %}>Domingo</option>
+            </select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Horário de Início</label>
+              <input type="time" name="hora_inicio" class="form-control" value="{{ h.hora_inicio|time:'H:i' }}" required style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+            </div>
+            <div class="col-6">
+              <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Horário de Fim</label>
+              <input type="time" name="hora_fim" class="form-control" value="{{ h.hora_fim|time:'H:i' }}" required style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Local / Setor</label>
+            <select name="local" class="form-select" required style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+              {% for loc_k, loc_name in local_choices %}
+                <option value="{{ loc_k }}" {% if h.local == loc_k %}selected{% endif %}>{{ loc_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" style="font-size:0.82rem; color:var(--text-secondary); font-weight:600;">Descrição complementar</label>
+            <input type="text" name="local_descricao" class="form-control" value="{{ h.local_descricao|default:'' }}" placeholder="Ex: Sala 204, Gabinete, etc." style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid rgba(255,255,255,0.1); padding:12px 20px;">
+          <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-gestao btn-gestao-primary"><i class="bi bi-check-lg me-1"></i>Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
 {% endblock %}
