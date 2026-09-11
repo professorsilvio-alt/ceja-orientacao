@@ -375,5 +375,6 @@ class RegistroPontoTerceirizado(models.Model):
         ordering = ['-data_hora']
 
     def __str__(self):
-        return f'{self.funcionario.nome_curto} - {self.get_tipo_display()} em {self.data_hora.strftime("%d/%m/%Y %H:%M:%S")}'
+        dt_local = timezone.localtime(self.data_hora) if timezone.is_aware(self.data_hora) else self.data_hora
+        return f'{self.funcionario.nome_curto} - {self.get_tipo_display()} em {dt_local.strftime("%d/%m/%Y %H:%M:%S")}'
 

@@ -67,7 +67,7 @@ def fetch_csv(gid):
     return r.read().decode('utf-8')
 
 def normalize_name(raw):
-  name = re.sub(r'\s+\d+$', '', raw).strip()
+  name = re.sub(r'[\s\-_]+(glp|\d+)$', '', raw, flags=re.I).strip()
   cap = ' '.join(
     w if w.lower() in ('de','da','do','dos','das','e') else w.capitalize()
     for w in name.split()

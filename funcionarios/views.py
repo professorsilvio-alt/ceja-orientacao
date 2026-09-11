@@ -249,7 +249,7 @@ def api_registrar_ponto(request):
         return _json_cors_response({'success': False, 'error': 'Tipo de batida de ponto inválido.'})
 
     # Bloqueia registros duplicados do mesmo tipo no mesmo dia para o funcionário
-    hoje = timezone.now().date()
+    hoje = timezone.localtime(timezone.now()).date()
     registro_existente = RegistroPontoTerceirizado.objects.filter(
         funcionario=func,
         tipo=tipo,
@@ -257,7 +257,7 @@ def api_registrar_ponto(request):
     ).first()
 
     if registro_existente:
-        horario_str = registro_existente.data_hora.strftime("%H:%M:%S")
+        horario_str = timezone.localtime(registro_existente.data_hora).strftime("%H:%M:%S")
         tipo_display = registro_existente.get_tipo_display()
         return _json_cors_response({
             'success': False,
@@ -469,8 +469,31 @@ def view_folha_ponto_kratus(request, pk=None):
     _, num_dias = calendar.monthrange(ano, mes)
     dias_semana_str = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 
+    # Intervalo do mês com margem de 1 dia para cobrir diferenças de fuso horário
+    dt_inicio = datetime.datetime(ano, mes, 1, 0, 0, 0) - datetime.timedelta(days=1)
+    if mes == 12:
+        dt_fim = datetime.datetime(ano + 1, 1, 2, 23, 59, 59)
+    else:
+        dt_fim = datetime.datetime(ano, mes + 1, 2, 23, 59, 59)
+
     folhas = []
     for func in funcionarios:
+        regs = RegistroPontoTerceirizado.objects.filter(
+            funcionario=func,
+            data_hora__gte=dt_inicio,
+            data_hora__lte=dt_fim
+        ).order_by('data_hora')
+
+        # Agrupa registros no fuso horário local correto (America/Sao_Paulo)
+        pontos_por_dia = {}
+        for r in regs:
+            dt_local = timezone.localtime(r.data_hora)
+            if dt_local.year == ano and dt_local.month == mes:
+                d_num = dt_local.day
+                if d_num not in pontos_por_dia:
+                    pontos_por_dia[d_num] = {}
+                pontos_por_dia[d_num][r.tipo] = dt_local.strftime("%H:%M")
+
         dias_mes = []
         for dia in range(1, num_dias + 1):
             dt = datetime.date(ano, mes, dia)
@@ -478,9 +501,7 @@ def view_folha_ponto_kratus(request, pk=None):
             is_sabado = (w == 5)
             is_domingo = (w == 6)
 
-            # Buscar registros de ponto do dia
-            regs = RegistroPontoTerceirizado.objects.filter(funcionario=func, data_hora__date=dt)
-            ponto_map = {r.tipo: r.data_hora.strftime("%H:%M") for r in regs}
+            ponto_map = pontos_por_dia.get(dia, {})
 
             dias_mes.append({
                 'dia_str': f"{dia:02d}",

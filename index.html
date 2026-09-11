@@ -345,13 +345,24 @@
           <h2>🗓️ Horário Semanal da Escola</h2>
           <p>Consulte as disciplinas e professores disponíveis em cada dia da semana.</p>
         </div>
-        <div class="horarios-filters"
-          style="display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 5px;">
-          <button class="btn-filter active" data-filter="dia">Por Dia</button>
-          <button class="btn-filter" data-filter="professor">Por Professor</button>
-          <button class="btn-filter" data-filter="disciplina">Por Disciplina</button>
+        <div class="horarios-top-bar">
+          <div class="horarios-filters">
+            <button class="btn-filter active" data-filter="dia">Por Dia</button>
+            <button class="btn-filter" data-filter="professor">Por Professor</button>
+            <button class="btn-filter" data-filter="disciplina">Por Disciplina</button>
+          </div>
+          <div class="horarios-sync-panel">
+            <div id="horarios-sync-status" class="sync-status-badge">
+              <span class="status-dot online"></span>
+              <span id="sync-status-text">Planilha online</span>
+            </div>
+            <button id="btn-sync-horarios" class="btn-refresh-horarios" type="button" title="Atualizar horários da planilha online">
+              <span class="btn-refresh-icon">🔄</span>
+              <span class="btn-refresh-text">Atualizar</span>
+            </button>
+          </div>
         </div>
-        <!-- Renderizado dinamicamente via JS a partir de dados_escola.js -->
+        <!-- Renderizado dinamicamente via JS a partir de dados_escola.js / Google Sheets -->
         <div id="horarios-container" class="horarios-container"></div>
       </div>
 
@@ -802,8 +813,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="dados_escola.js?v=20260827_v10"></script>
-  <script src="script.js?v=20260827_v10"></script>
+  <script src="dados_escola.js?v=20260911_v1"></script>
+  <script src="sync_client.js?v=20260911_v1"></script>
+  <script src="script.js?v=20260911_v1"></script>
 </body>
 
 </html>

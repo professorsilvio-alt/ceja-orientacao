@@ -60,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
       renderedScreens.add(targetId);
     }
 
+    if (targetId === 'screen-horarios') {
+      renderHorarios();
+      if (window.CEJA_SYNC) {
+        window.CEJA_SYNC.syncHorariosOnline();
+      }
+    }
+
     // Exit current
     if (current) {
       current.classList.add('exit');
@@ -179,6 +186,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  const btnSyncHorarios = document.getElementById('btn-sync-horarios');
+  if (btnSyncHorarios) {
+    btnSyncHorarios.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.CEJA_SYNC) {
+        window.CEJA_SYNC.syncHorariosOnline({ force: true });
+      }
+    });
+  }
+
+  window.addEventListener('ceja-horarios-updated', () => {
+    if (currentScreen === 'screen-horarios' || renderedScreens.has('screen-horarios')) {
+      renderHorarios();
+    }
+  });
+
+  // Consulta automática em segundo plano logo após carregar a página
+  setTimeout(() => {
+    if (window.CEJA_SYNC) {
+      window.CEJA_SYNC.syncHorariosOnline();
+    }
+  }, 1200);
 
   function renderHorarios() {
     if (!horariosContainer || typeof DADOS_ESCOLA === 'undefined') return;

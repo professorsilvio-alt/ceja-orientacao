@@ -9,6 +9,17 @@ param(
     [string]$DadosEscolaPath = (Join-Path $PSScriptRoot "dados_escola.js")
 )
 
+# Prioriza execucao via Python (mais robusto com UTF-8)
+$pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+if ($pythonCmd) {
+    $pyScript = Join-Path $PSScriptRoot "sync_horarios.py"
+    if (Test-Path $pyScript) {
+        Write-Host "Executando via Python ($($pythonCmd.Source))..." -ForegroundColor Cyan
+        & "$($pythonCmd.Source)" "$pyScript"
+        exit $LASTEXITCODE
+    }
+}
+
 $SPREADSHEET_ID = '1a2XewE5KNuadI8zUbi15r5n06roJb-wa'
 
 $ABAS = @(

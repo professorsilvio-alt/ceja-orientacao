@@ -102,16 +102,8 @@ const DADOS_ESCOLA = {
       disciplinas: ["História"],
       horarios: [
         { dia: "Segunda-feira", inicio: "13:50", fim: "20:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "13:50", fim: "17:10", local: "Cabine de Ciências Humanas" }
-      ]
-    },
-    {
-      nome: "Prof. Mário -glp",
-      foto: "",
-      disciplinas: ["História"],
-      horarios: [
         { dia: "Quarta-feira", inicio: "08:50", fim: "15:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Sexta-feira", inicio: "11:20", fim: "13:50", local: "Cabine de Ciências Humanas" }
+        { dia: "Sexta-feira", inicio: "11:20", fim: "17:10", local: "Cabine de Ciências Humanas" }
       ]
     },
     {
@@ -183,7 +175,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Alessandra",
+      nome: "Profª Alessandra",
       foto: "",
       disciplinas: ["Ciências/Biologia", "Química"],
       horarios: [
@@ -194,7 +186,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Daniela",
+      nome: "Profª Daniela",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -204,7 +196,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Delma",
+      nome: "Profª Delma",
       foto: "",
       disciplinas: ["Ciências/Biologia"],
       horarios: [
@@ -214,7 +206,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Elaine",
+      nome: "Profª Elaine",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -222,7 +214,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Eliane",
+      nome: "Profª Eliane",
       foto: "",
       disciplinas: ["Educação Física"],
       horarios: [
@@ -231,7 +223,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Luciana",
+      nome: "Profª Luciana",
       foto: "",
       disciplinas: ["Inglês", "Português"],
       horarios: [
@@ -241,7 +233,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Luciana Cavalcante",
+      nome: "Profª Luciana Cavalcante",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -249,7 +241,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Marcela",
+      nome: "Profª Marcela",
       foto: "",
       disciplinas: ["Química"],
       horarios: [
@@ -257,7 +249,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Sandra",
+      nome: "Profª Sandra",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -268,7 +260,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof.ª Viviane",
+      nome: "Profª Viviane",
       foto: "",
       disciplinas: ["Química"],
       horarios: [
