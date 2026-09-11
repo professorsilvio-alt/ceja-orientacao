@@ -86,8 +86,9 @@ class ProfessorForm(forms.ModelForm):
         model = Professor
         fields = [
             'cpf', 'id_vinculo', 'matricula', 'situacao_matricula_1', 'ch_total', 'tempos_aula',
+            'em_desvio_funcao', 'funcao_administrativa', 'ch_administrativa',
             'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2', 'acumulacao_nesta_escola',
-            'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao',
+            'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'funcao_administrativa_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao',
             'nome_completo', 'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
             'data_admissao', 'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
             'email', 'telefone', 'celular', 'foto', 'ativo', 'observacoes',
@@ -97,8 +98,11 @@ class ProfessorForm(forms.ModelForm):
             'id_vinculo': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/2', 'id': 'id_vinculo_prof'}),
             'matricula': forms.TextInput(attrs={'id': 'id_matricula'}),
             'situacao_matricula_1': forms.Select(attrs={'id': 'id_sit_mat1'}),
-            'ch_total': forms.NumberInput(attrs={'id': 'id_ch_total', 'placeholder': 'Ex: 16, 20, 30'}),
-            'tempos_aula': forms.NumberInput(attrs={'id': 'id_tempos_aula', 'placeholder': 'Ex: 12, 16'}),
+            'ch_total': forms.NumberInput(attrs={'id': 'id_ch_total', 'placeholder': 'Ex: 16, 20, 30, 40'}),
+            'tempos_aula': forms.NumberInput(attrs={'id': 'id_tempos_aula', 'placeholder': 'Ex: 12, 16 (0 se administrativo)'}),
+            'em_desvio_funcao': forms.CheckboxInput(attrs={'id': 'id_em_desvio_funcao', 'class': 'form-check-input'}),
+            'funcao_administrativa': forms.Select(attrs={'id': 'id_funcao_adm'}),
+            'ch_administrativa': forms.NumberInput(attrs={'id': 'id_ch_adm', 'placeholder': 'Ex: 40, 30, 20'}),
             'id_vinculo_acumulacao': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/1', 'id': 'id_vinc_acum'}),
             'matricula_acumulacao': forms.TextInput(attrs={'id': 'id_mat_acum'}),
             'situacao_matricula_2': forms.Select(attrs={'id': 'id_sit_mat2'}),
@@ -106,7 +110,8 @@ class ProfessorForm(forms.ModelForm):
             'cargo_acumulacao': forms.TextInput(attrs={'id': 'id_cargo_acum'}),
             'disciplina_ingresso_acumulacao': forms.TextInput(attrs={'id': 'id_disc_acum'}),
             'funcao_acumulacao': forms.TextInput(attrs={'id': 'id_func_acum'}),
-            'ch_total_acumulacao': forms.NumberInput(attrs={'id': 'id_ch_acum', 'placeholder': 'Ex: 16, 20'}),
+            'funcao_administrativa_acumulacao': forms.Select(attrs={'id': 'id_func_adm_acum'}),
+            'ch_total_acumulacao': forms.NumberInput(attrs={'id': 'id_ch_acum', 'placeholder': 'Ex: 16, 20, 40'}),
             'tempos_aula_acumulacao': forms.NumberInput(attrs={'id': 'id_tempos_acum', 'placeholder': 'Ex: 12, 16'}),
             'nome_completo': forms.TextInput(attrs={'id': 'id_nome_prof'}),
             'cargo': forms.TextInput(attrs={'id': 'id_cargo'}),
@@ -134,6 +139,9 @@ class ProfessorForm(forms.ModelForm):
         self.fields['data_admissao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
+        self.fields['funcao_administrativa'].required = False
+        self.fields['ch_administrativa'].required = False
+        self.fields['funcao_administrativa_acumulacao'].required = False
         aplicar_estilo_campos(self)
 
     def clean_cpf(self):
@@ -146,9 +154,10 @@ class ProfessorForm(forms.ModelForm):
 class HorarioProfessorForm(forms.ModelForm):
     class Meta:
         model = HorarioProfessor
-        fields = ['unidade', 'ano_letivo', 'dia_semana', 'hora_inicio', 'hora_fim', 'local', 'local_descricao']
+        fields = ['unidade', 'ano_letivo', 'dia_semana', 'tipo_atividade', 'hora_inicio', 'hora_fim', 'local', 'local_descricao']
         widgets = {
             'unidade': forms.Select(attrs={'id': 'id_unidade_horario'}),
+            'tipo_atividade': forms.Select(attrs={'id': 'id_tipo_atividade_h'}),
             'hora_inicio': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_inicio_h'}),
             'hora_fim': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_fim_h'}),
             'ano_letivo': forms.NumberInput(attrs={'min': 2020, 'max': 2099, 'id': 'id_ano_letivo_h'}),

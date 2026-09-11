@@ -298,6 +298,21 @@
     </div>
   </div>
 
+  {% if profs_administrativos %}
+  <div class="alert py-2 px-3 mb-3 d-flex align-items-center justify-content-between no-print" style="background:rgba(15,23,42,0.7); border:1px solid rgba(168,85,247,0.35); border-radius:8px; font-size:0.82rem; color:#cbd5e1;">
+    <div>
+      <i class="bi bi-shield-shaded me-1" style="color:#c084fc;"></i>
+      <strong style="color:#e9d5ff;">Servidores em Função Administrativa / Gestão ({{ profs_administrativos|length }}):</strong>
+      {% for pa in profs_administrativos %}
+        <span class="badge ms-1" style="background:#4c1d95; color:#e9d5ff; font-size:0.75rem;" title="{{ pa.get_funcao_administrativa_display }} — Carga Horária: {{ pa.ch_administrativa|default:pa.ch_total }}h">
+          {{ pa.nome_curto }} ({{ pa.get_funcao_administrativa_display }})
+        </span>
+      {% endfor %}
+      <span class="text-muted ms-2">— cumprem expediente administrativo e não participam da alocação de turmas.</span>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Barra de Ferramentas: Tabuleiro Interativo & Modo Pintura Rápida (Cópia Contínua) -->
   <div class="copy-paste-bar no-print">
     <div class="d-flex align-items-center gap-2 flex-wrap" style="flex:1;">

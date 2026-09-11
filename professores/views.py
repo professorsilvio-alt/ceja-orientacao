@@ -374,7 +374,22 @@ def view_horarios_professor(request, pk):
             return redirect('dashboard')
 
     horarios = professor.horarios.filter(ano_letivo=ano).order_by('dia_semana', 'hora_inicio')
-    form = HorarioProfessorForm(request.POST or None, initial={'ano_letivo': ano})
+
+    # Pré-configura tipo_atividade e local sugerido para servidores administrativos
+    initial_data = {'ano_letivo': ano}
+    if professor.is_desviado_administrativo:
+        initial_data['tipo_atividade'] = 'administrativa'
+        local_map = {
+            'diretor_geral': 'direcao_geral',
+            'diretor_adjunto': 'direcao_adjunta',
+            'coordenador_pedagogico': 'coordenacao_pedagogica',
+            'orientador_educacional': 'orientacao_educacional',
+            'assistente_departamento_pessoal': 'departamento_pessoal',
+        }
+        if professor.funcao_administrativa in local_map:
+            initial_data['local'] = local_map[professor.funcao_administrativa]
+
+    form = HorarioProfessorForm(request.POST or None, initial=initial_data)
 
     if request.method == 'POST' and form.is_valid():
         horario = form.save(commit=False)
@@ -384,11 +399,19 @@ def view_horarios_professor(request, pk):
         messages.success(request, 'Horário adicionado. Aguardando aprovação da direção.')
         return redirect('horarios_professor', pk=professor.pk)
 
+    total_minutos = sum(h.duracao_minutos for h in horarios)
+    total_horas = round(total_minutos / 60.0, 1)
+    ch_esperada = professor.ch_administrativa or professor.ch_total or 0
+    pct_cumprida = min(100, int((total_horas / ch_esperada) * 100)) if ch_esperada else 0
+
     return render(request, 'professores/horarios.html', {
         'professor': professor,
         'horarios': horarios,
         'form': form,
         'ano': ano,
+        'total_horas': total_horas,
+        'ch_esperada': ch_esperada,
+        'pct_cumprida': pct_cumprida,
         'is_diretor': request.user.perfil == 'diretor' or request.user.is_superuser,
     })
 
@@ -733,7 +756,27 @@ def view_grade_turma(request, pk):
                 'cells': row_cells
             })
 
-    all_profs = Professor.objects.filter(ativo=True).order_by('nome_completo')
+    from django.db.models import Q
+    # Servidores docentes para alocação em sala de aula (exclui quem está em desvio/função administrativa)
+    all_profs = Professor.objects.filter(ativo=True).exclude(
+        em_desvio_funcao=True
+    ).exclude(
+        funcao_administrativa__in=[
+            'diretor_geral', 'diretor_adjunto', 'coordenador_pedagogico',
+            'orientador_educacional', 'assistente_departamento_pessoal'
+        ]
+    ).order_by('nome_completo')
+
+    profs_administrativos = Professor.objects.filter(
+        ativo=True
+    ).filter(
+        Q(em_desvio_funcao=True) |
+        Q(funcao_administrativa__in=[
+            'diretor_geral', 'diretor_adjunto', 'coordenador_pedagogico',
+            'orientador_educacional', 'assistente_departamento_pessoal'
+        ])
+    ).order_by('nome_completo')
+
     disc_nome = (turma.disciplina_nome or '').lower()
 
     profs_da_disciplina = []
@@ -784,6 +827,7 @@ def view_grade_turma(request, pk):
         'professores': all_profs,
         'profs_da_disciplina': profs_da_disciplina,
         'outros_profs': outros_profs,
+        'profs_administrativos': profs_administrativos,
     })
 
 

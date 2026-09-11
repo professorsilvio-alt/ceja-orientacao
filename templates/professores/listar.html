@@ -82,6 +82,12 @@
           </td>
           <td>
             <div style="font-weight:600;">{{ prof.nome_completo }}</div>
+            {% if prof.is_desviado_administrativo %}
+            <span class="badge" style="background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; font-size:0.72rem; padding:2px 8px; font-weight:700; margin-top:2px; display:inline-block;">
+              <i class="bi bi-shield-shaded me-1"></i>{{ prof.get_funcao_administrativa_display|default:"Administrativo" }}
+              {% if prof.ch_administrativa %}({{ prof.ch_administrativa }}h){% elif prof.ch_total %}({{ prof.ch_total }}h){% endif %}
+            </span>
+            {% endif %}
           </td>
           <td style="font-size:0.82rem; font-weight:600; color:#fde047;">
             {{ prof.id_vinculo|default:"—" }}
@@ -90,7 +96,12 @@
             {% endif %}
           </td>
           <td style="font-size:0.85rem;">{{ prof.disciplina_ingresso|default:"—" }}</td>
-          <td style="font-size:0.85rem;">{{ prof.cargo|default:"—" }}</td>
+          <td style="font-size:0.85rem;">
+            {{ prof.cargo|default:"—" }}
+            {% if prof.is_desviado_administrativo %}
+            <div style="font-size:0.75rem; color:#c084fc; font-weight:600;">Desvio Administrativo</div>
+            {% endif %}
+          </td>
           <td style="font-family:monospace; font-size:0.82rem;">
             {{ prof.matricula }}
             {% if prof.tempos_aula %}

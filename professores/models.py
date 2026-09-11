@@ -44,6 +44,23 @@ DIA_SEMANA_CHOICES = [
     ('sabado', 'Sábado'),
 ]
 
+FUNCAO_ADMINISTRATIVA_CHOICES = [
+    ('', 'Nenhuma / Regência em Sala (Docente)'),
+    ('diretor_geral', 'Diretor Geral'),
+    ('diretor_adjunto', 'Diretor Adjunto'),
+    ('coordenador_pedagogico', 'Coordenador Pedagógico'),
+    ('orientador_educacional', 'Orientador Educacional'),
+    ('assistente_departamento_pessoal', 'Assistente de Departamento Pessoal'),
+    ('outro', 'Outra Função Administrativa'),
+]
+
+TIPO_ATIVIDADE_CHOICES = [
+    ('docencia', 'Regência / Atendimento em Sala ou Cabine'),
+    ('administrativa', 'Expediente Administrativo / Direção / Coordenação'),
+    ('planejamento', 'Planejamento / Atividade Extraclasse'),
+    ('outro', 'Outro'),
+]
+
 LOCAL_CHOICES = [
     ('cabine_linguagens', 'Cabine de Linguagens'),
     ('cabine_matematica', 'Cabine de Matemática'),
@@ -51,6 +68,11 @@ LOCAL_CHOICES = [
     ('cabine_ciencias_humanas', 'Cabine de Ciências Humanas'),
     ('auditorio', 'Auditório'),
     ('secretaria', 'Secretaria'),
+    ('direcao_geral', 'Direção Geral / Gabinete'),
+    ('direcao_adjunta', 'Direção Adjunta'),
+    ('coordenacao_pedagogica', 'Coordenação Pedagógica'),
+    ('orientacao_educacional', 'Orientação Educacional'),
+    ('departamento_pessoal', 'Departamento Pessoal / RH'),
     ('outro', 'Outro'),
 ]
 
@@ -110,6 +132,11 @@ class Professor(models.Model):
     funcao_acumulacao = models.CharField(
         max_length=150, blank=True, verbose_name='Função (2ª Matrícula)'
     )
+    funcao_administrativa_acumulacao = models.CharField(
+        max_length=50, choices=FUNCAO_ADMINISTRATIVA_CHOICES, blank=True, default='',
+        verbose_name='Função Administrativa (2ª Matrícula)',
+        help_text='Função administrativa da 2ª matrícula, caso atue em desvio de função.'
+    )
     ch_total_acumulacao = models.PositiveIntegerField(
         null=True, blank=True, verbose_name='CH Total (2ª Matrícula)'
     )
@@ -136,6 +163,23 @@ class Professor(models.Model):
     funcao = models.CharField(max_length=150, blank=True, verbose_name='Função')
     tipo_funcao = models.CharField(max_length=100, blank=True, verbose_name='Tipo de Função')
     regime_contratacao = models.CharField(max_length=100, blank=True, verbose_name='Regime de Contratação')
+
+    # ── Função Administrativa / Desvio de Função ──────────
+    funcao_administrativa = models.CharField(
+        max_length=50, choices=FUNCAO_ADMINISTRATIVA_CHOICES, blank=True, default='',
+        verbose_name='Função Administrativa / Gestão',
+        help_text='Diretor Geral, Diretor Adjunto, Coordenador Pedagógico, Orientador Educacional, Assistente de DP, etc.'
+    )
+    em_desvio_funcao = models.BooleanField(
+        default=False,
+        verbose_name='Em Desvio de Função / Administrativo',
+        help_text='Indica se o professor atua em função administrativa em vez de lecionar em turmas.'
+    )
+    ch_administrativa = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name='Carga Horária Administrativa (Horas/Semana)',
+        help_text='Horas semanais a cumprir na função administrativa (Ex: 40h, 30h, 20h).'
+    )
 
     disciplinas_lecionadas = models.ManyToManyField(
         'Disciplina',
@@ -247,6 +291,27 @@ class Professor(models.Model):
             return None
         return t1 + t2
 
+    @property
+    def is_desviado_administrativo(self):
+        """Indica se o servidor atua em desvio de função / gestão administrativa."""
+        return bool(self.em_desvio_funcao or self.funcao_administrativa)
+
+    @property
+    def rotulo_funcao_administrativa(self):
+        """Nome formatado da função administrativa exercida."""
+        return dict(FUNCAO_ADMINISTRATIVA_CHOICES).get(self.funcao_administrativa, '')
+
+    def save(self, *args, **kwargs):
+        if self.funcao_administrativa:
+            self.em_desvio_funcao = True
+            if not self.ch_administrativa and self.ch_total:
+                self.ch_administrativa = self.ch_total
+            elif self.ch_administrativa and not self.ch_total:
+                self.ch_total = self.ch_administrativa
+        elif not self.em_desvio_funcao:
+            self.funcao_administrativa = ''
+        super().save(*args, **kwargs)
+
 
 class Disciplina(models.Model):
     """Disciplinas disponíveis na escola."""
@@ -306,13 +371,17 @@ class HorarioProfessor(models.Model):
     )
     ano_letivo = models.PositiveIntegerField(verbose_name='Ano letivo')
     dia_semana = models.CharField(max_length=10, choices=DIA_SEMANA_CHOICES, verbose_name='Dia da semana')
+    tipo_atividade = models.CharField(
+        max_length=30, choices=TIPO_ATIVIDADE_CHOICES, default='docencia',
+        verbose_name='Tipo de Atividade'
+    )
     hora_inicio = models.TimeField(verbose_name='Início')
     hora_fim = models.TimeField(verbose_name='Fim')
     local = models.CharField(max_length=40, choices=LOCAL_CHOICES, verbose_name='Local')
     local_descricao = models.CharField(
         max_length=100, blank=True,
         verbose_name='Descrição do local',
-        help_text='Ex: Sala 204, Auditório, etc.'
+        help_text='Ex: Sala 204, Gabinete, etc.'
     )
     aprovado = models.BooleanField(
         default=False, verbose_name='Aprovado pela direção'
@@ -325,6 +394,18 @@ class HorarioProfessor(models.Model):
         verbose_name = 'Horário do Professor'
         verbose_name_plural = 'Horários dos Professores'
         ordering = ['ano_letivo', 'dia_semana', 'hora_inicio']
+
+    @property
+    def duracao_minutos(self):
+        if self.hora_inicio and self.hora_fim:
+            t_inicio = self.hora_inicio.hour * 60 + self.hora_inicio.minute
+            t_fim = self.hora_fim.hour * 60 + self.hora_fim.minute
+            return max(0, t_fim - t_inicio)
+        return 0
+
+    @property
+    def duracao_horas(self):
+        return round(self.duracao_minutos / 60.0, 2)
 
     def __str__(self):
         u_nome = f" — {self.unidade.nome}" if self.unidade else ""

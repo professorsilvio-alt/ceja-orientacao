@@ -19,21 +19,82 @@
   </div>
 </div>
 
+<!-- BANNER DE CUMPRIMENTO DE CARGA HORÁRIA -->
+<div class="card-gestao mb-3" style="{% if professor.is_desviado_administrativo %}border-left:4px solid #a855f7; background:linear-gradient(135deg, rgba(30,27,75,0.4), rgba(15,23,42,0.8));{% else %}border-left:4px solid var(--blue);{% endif %} padding:16px 20px;">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <h6 style="font-weight:800; margin:0; color:#fff;">
+          {% if professor.is_desviado_administrativo %}
+            <i class="bi bi-shield-shaded me-1" style="color:#c084fc;"></i>Cumprimento de Horário Administrativo — {{ professor.get_funcao_administrativa_display|default:"Gestão Escolar" }}
+          {% else %}
+            <i class="bi bi-clock-history me-1" style="color:var(--cyan);"></i>Cumprimento de Carga Horária Semanal
+          {% endif %}
+        </h6>
+        {% if professor.is_desviado_administrativo %}
+        <span class="badge" style="background:#7c3aed; color:#fff; font-size:0.75rem;">Sem alocação em turmas</span>
+        {% endif %}
+      </div>
+      <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
+        {% if professor.is_desviado_administrativo %}
+          Este servidor atua em função administrativa. Registre aqui os dias e horários semanais do seu expediente de trabalho no CEJA.
+        {% else %}
+          Horários semanais de atendimento/regência cadastrados na unidade escolar para o ano letivo {{ ano }}.
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-4 flex-wrap">
+      <div class="text-center">
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Carga Horária Prevista</div>
+        <div style="font-size:1.2rem; font-weight:800; color:#fde047;">{{ ch_esperada }}h <span style="font-size:0.8rem; font-weight:400; color:var(--text-muted);">/ sem.</span></div>
+      </div>
+      <div class="text-center">
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Horas Cadastradas</div>
+        <div style="font-size:1.2rem; font-weight:800; color:{% if total_horas >= ch_esperada and ch_esperada > 0 %}#4ade80{% else %}#38bdf8{% endif %};">{{ total_horas }}h</div>
+      </div>
+      <div style="min-width:140px;">
+        <div class="d-flex justify-content-between" style="font-size:0.75rem; margin-bottom:3px; color:var(--text-muted);">
+          <span>Cumprimento</span>
+          <span style="font-weight:700; color:#fff;">{{ pct_cumprida }}%</span>
+        </div>
+        <div class="progress" style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px;">
+          <div class="progress-bar {% if total_horas >= ch_esperada and ch_esperada > 0 %}bg-success{% else %}bg-info{% endif %}" role="progressbar" style="width: {{ pct_cumprida }}%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row g-3">
   <!-- Lista de horários -->
   <div class="col-md-7">
     <div class="card-gestao">
-      <h6 style="font-weight:700; margin-bottom:16px;">Horários cadastrados em {{ ano }}</h6>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 style="font-weight:700; margin:0;">Horários cadastrados em {{ ano }}</h6>
+        <span class="badge bg-dark border border-secondary text-light">{{ horarios.count }} horário(s) / {{ total_horas }}h</span>
+      </div>
       {% if horarios %}
       {% for h in horarios %}
       <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px 16px; margin-bottom:8px; border-left:3px solid {% if h.aprovado %}var(--green){% else %}var(--yellow){% endif %};">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div style="font-weight:700;">{{ h.get_dia_semana_display }}</div>
-            <div style="color:var(--text-secondary); font-size:0.88rem;">
-              {{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}
+            <div class="d-flex align-items-center gap-2">
+              <span style="font-weight:700;">{{ h.get_dia_semana_display }}</span>
+              {% if h.tipo_atividade == 'administrativa' %}
+              <span class="badge" style="background:#7c3aed; color:#fff; font-size:0.68rem; padding:2px 6px;">Expediente Administrativo</span>
+              {% elif h.tipo_atividade == 'planejamento' %}
+              <span class="badge bg-secondary text-light" style="font-size:0.68rem; padding:2px 6px;">Planejamento</span>
+              {% endif %}
             </div>
-            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">{{ h.local_display }}</div>
+            <div style="color:var(--text-secondary); font-size:0.88rem; margin-top:2px;">
+              {{ h.hora_inicio|time:"H:i" }} – {{ h.hora_fim|time:"H:i" }}
+              <span style="color:var(--cyan); font-size:0.8rem; font-weight:600;" class="ms-1">({{ h.duracao_horas }}h)</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">
+              <i class="bi bi-geo-alt me-1"></i>{{ h.get_local_display }}{% if h.local_descricao %} — {{ h.local_descricao }}{% endif %}
+              {% if h.unidade %} <span class="badge bg-dark text-muted ms-1" style="font-size:0.7rem;">{{ h.unidade.nome }}</span>{% endif %}
+            </div>
           </div>
           <div class="d-flex flex-column gap-1 align-items-end">
             <span class="badge-gestao {% if h.aprovado %}badge-success{% else %}badge-warning{% endif %}">
@@ -60,6 +121,7 @@
             </div>
           </div>
         </div>
+      </div>
       {% endfor %}
       {% else %}
       <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:24px 0;">
@@ -80,8 +142,18 @@
         <div class="alert alert-danger mb-3" style="font-size:0.82rem;">{{ form.non_field_errors.0 }}</div>
         {% endif %}
         <div class="mb-2">
-          <label class="form-label">Ano letivo</label>
-          {{ form.ano_letivo }}
+          <label class="form-label">Unidade Escolar</label>
+          {{ form.unidade }}
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label">Ano letivo</label>
+            {{ form.ano_letivo }}
+          </div>
+          <div class="col-6">
+            <label class="form-label">Tipo de Atividade</label>
+            {{ form.tipo_atividade }}
+          </div>
         </div>
         <div class="mb-2">
           <label class="form-label">Dia da semana</label>
@@ -98,11 +170,11 @@
           </div>
         </div>
         <div class="mb-2">
-          <label class="form-label">Local</label>
+          <label class="form-label">Local / Setor</label>
           {{ form.local }}
         </div>
         <div class="mb-3">
-          <label class="form-label">Descrição do local (se "Outro")</label>
+          <label class="form-label">Descrição complementar</label>
           {{ form.local_descricao }}
         </div>
         <button type="submit" class="btn-gestao btn-gestao-primary w-100" id="btn-add-horario">
@@ -112,7 +184,7 @@
       {% if not is_diretor %}
       <p style="color:var(--text-muted); font-size:0.75rem; margin-top:12px;">
         <i class="bi bi-info-circle me-1"></i>
-        Horários adicionados precisam ser aprovados pela Direção para aparecer no totem.
+        Horários adicionados precisam ser aprovados pela Direção.
       </p>
       {% endif %}
     </div>

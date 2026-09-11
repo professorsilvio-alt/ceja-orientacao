@@ -31,6 +31,11 @@
           <span class="badge-gestao {% if professor.ativo %}badge-success{% else %}badge-danger{% endif %}" style="font-size:0.85rem; padding:4px 12px; font-weight:700;">
             {% if professor.ativo %}● Ativo{% else %}● Inativo{% endif %}
           </span>
+          {% if professor.is_desviado_administrativo %}
+          <span class="badge" style="background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; font-size:0.85rem; padding:6px 14px; font-weight:700; border-radius:8px; box-shadow:0 2px 8px rgba(124,58,237,0.3);">
+            <i class="bi bi-shield-shaded me-1"></i>{{ professor.get_funcao_administrativa_display|default:"Função Administrativa" }}
+          </span>
+          {% endif %}
         </div>
         <div style="color:var(--text-secondary); font-size:0.92rem;" class="d-flex align-items-center gap-3 flex-wrap">
           <span><i class="bi bi-briefcase me-1" style="color:var(--cyan);"></i><strong>{{ professor.cargo }}</strong></span>
@@ -61,6 +66,42 @@
 </div>
 
 <div class="row g-3">
+  {% if professor.is_desviado_administrativo %}
+  <!-- CARD DE FUNÇÃO ADMINISTRATIVA / GESTÃO ESCOLAR -->
+  <div class="col-12">
+    <div class="card-gestao" style="border-left:4px solid #a855f7; background:linear-gradient(135deg, rgba(30,27,75,0.4), rgba(15,23,42,0.8));">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom pb-2" style="border-color:var(--card-border) !important;">
+        <h6 style="font-weight:700; color:#c084fc; margin:0;" class="d-flex align-items-center">
+          <i class="bi bi-shield-shaded me-2" style="font-size:1.1rem;"></i>Atuação em Função Administrativa / Gestão Escolar
+        </h6>
+        <span class="badge" style="background:#7c3aed; color:#fff; font-size:0.78rem; padding:4px 10px;">Sem regência em turmas</span>
+      </div>
+      <div class="row g-3">
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">FUNÇÃO ADMINISTRATIVA</div>
+          <div style="font-size:1.05rem; font-weight:800; color:#e9d5ff;">{{ professor.get_funcao_administrativa_display|default:"Designado em Gestão" }}</div>
+        </div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CARGA HORÁRIA ADMINISTRATIVA</div>
+          <div style="font-size:1.05rem; font-weight:800; color:#fde047;">{{ professor.ch_administrativa|default:professor.ch_total|default:"—" }}h semanais</div>
+        </div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">ALOCAÇÃO EM TURMAS</div>
+          <div style="font-weight:600; font-size:0.92rem; color:#94a3b8;">Dispensado / Horário Administrativo</div>
+        </div>
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">EXPEDIENTE DE TRABALHO</div>
+          <div>
+            <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success btn-sm" style="padding:4px 12px; font-size:0.8rem;">
+              <i class="bi bi-clock-fill me-1"></i>Ver e Informar Horários
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- DADOS FUNCIONAIS (FULL WIDTH) -->
   <div class="col-12">
     <div class="card-gestao">

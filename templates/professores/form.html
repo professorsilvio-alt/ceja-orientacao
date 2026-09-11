@@ -85,13 +85,60 @@
         <label class="form-label" style="color:#fde047; font-weight:700;"><i class="bi bi-clock-history me-1"></i>Tempos 2ª Mat.</label>
         {{ form.tempos_aula_acumulacao }}
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <label class="form-label">Cargo (2ª Matrícula)</label>
         {{ form.cargo_acumulacao }}
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Disciplina de Ingresso (2ª Matrícula)</label>
+      <div class="col-md-3">
+        <label class="form-label">Disciplina Ingresso (2ª Mat.)</label>
         {{ form.disciplina_ingresso_acumulacao }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Função (2ª Mat.)</label>
+        {{ form.funcao_acumulacao }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" style="color:#c084fc;">Função Adm. (2ª Mat.)</label>
+        {{ form.funcao_administrativa_acumulacao }}
+      </div>
+
+      <!-- Função Administrativa / Desvio de Função -->
+      <div class="col-12 mt-3">
+        <h6 style="color:#a855f7; font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+          <i class="bi bi-shield-shaded me-1"></i> Função Administrativa / Desvio de Função (Gestão Escolar)
+        </h6>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label" style="color:#c084fc; font-weight:700;">Atuação Administrativa</label>
+        <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.3); height:42px;">
+          <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+            {{ form.em_desvio_funcao }}
+            <label class="form-check-label text-white fw-bold mb-0" for="id_em_desvio_funcao" style="font-size:0.82rem; cursor:pointer;">
+              Em Função Administrativa / Desvio
+            </label>
+          </div>
+        </div>
+        <small class="text-muted" style="font-size:0.72rem;">Marca o professor como atuante em cargo de gestão escolar.</small>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label" style="color:#e9d5ff; font-weight:700;">Função Administrativa / Cargo</label>
+        {{ form.funcao_administrativa }}
+        <small class="text-muted" style="font-size:0.72rem;">Diretor Geral, Adjunto, Coordenação, Orientação ou DP.</small>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label" style="color:#fde047; font-weight:700;"><i class="bi bi-clock-history me-1"></i>CH Administrativa a Cumprir (Horas)</label>
+        {{ form.ch_administrativa }}
+        <small class="text-muted" style="font-size:0.72rem;">Ex: 40, 30 ou 20 horas semanais de expediente.</small>
+      </div>
+
+      <div class="col-12" id="box-aviso-adm" style="display:none;">
+        <div class="alert alert-info py-2 px-3 mb-0" style="font-size:0.82rem; background:rgba(168,85,247,0.12); border-color:rgba(168,85,247,0.4); color:#e9d5ff;">
+          <i class="bi bi-info-circle-fill me-1 text-warning"></i>
+          <strong>Cumprimento de Horário & Regência:</strong> Servidores em função administrativa cumprem expediente de gestão e <strong>não são alocados em turmas na grade de aulas</strong>. Seus horários de expediente semanal devem ser registrados na tela de <em>Horários</em> do professor.
+        </div>
       </div>
 
       <!-- Cargo e disciplinas -->
@@ -182,4 +229,29 @@
     </div>
   </form>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const switchAdm = document.getElementById('id_em_desvio_funcao');
+    const selectAdm = document.getElementById('id_funcao_adm');
+    const chAdmInput = document.getElementById('id_ch_adm');
+    const chTotalInput = document.getElementById('id_ch_total');
+    const avisoAdm = document.getElementById('box-aviso-adm');
+
+    function updateAdmState() {
+      const isAdm = (switchAdm && switchAdm.checked) || (selectAdm && selectAdm.value !== '');
+      if (avisoAdm) avisoAdm.style.display = isAdm ? 'block' : 'none';
+      if (selectAdm && selectAdm.value !== '' && switchAdm && !switchAdm.checked) {
+        switchAdm.checked = true;
+      }
+      if (isAdm && chAdmInput && !chAdmInput.value && chTotalInput && chTotalInput.value) {
+        chAdmInput.value = chTotalInput.value;
+      }
+    }
+
+    if (switchAdm) switchAdm.addEventListener('change', updateAdmState);
+    if (selectAdm) selectAdm.addEventListener('change', updateAdmState);
+    updateAdmState();
+  });
+</script>
 {% endblock %}
