@@ -390,7 +390,7 @@ def view_horarios_professor(request, pk):
     dia_order = {'seg': 1, 'ter': 2, 'qua': 3, 'qui': 4, 'sex': 5, 'sab': 6, 'dom': 7}
     alocacoes = sorted(
         alocacoes_qs,
-        key=lambda x: (dia_order.get(x.dia_semana, 99), x.hora_inicio)
+        key=lambda x: (dia_order.get(x.dia_semana_codigo, 99), x.hora_inicio)
     )
 
     for al in alocacoes:
@@ -417,6 +417,69 @@ def view_horarios_professor(request, pk):
     total_horas = round(total_minutos / 60.0, 1)
     ch_esperada = professor.ch_administrativa or professor.ch_total or 0
     pct_cumprida = min(100, int((total_horas / ch_esperada) * 100)) if ch_esperada else 0
+
+    # 3. Monta a AGENDA SEMANAL estruturada de Segunda a Sexta (com Sábado/Domingo se houver atividade)
+    dias_semana_base = [
+        ('seg', 'Segunda-feira', 'Segunda'),
+        ('ter', 'Terça-feira', 'Terça'),
+        ('qua', 'Quarta-feira', 'Quarta'),
+        ('qui', 'Quinta-feira', 'Quinta'),
+        ('sex', 'Sexta-feira', 'Sexta'),
+    ]
+    tem_sab = any(al.dia_semana_codigo == 'sab' for al in alocacoes) or any(h.dia_semana_codigo == 'sab' for h in horarios)
+    tem_dom = any(al.dia_semana_codigo == 'dom' for al in alocacoes) or any(h.dia_semana_codigo == 'dom' for h in horarios)
+    if tem_sab:
+        dias_semana_base.append(('sab', 'Sábado', 'Sábado'))
+    if tem_dom:
+        dias_semana_base.append(('dom', 'Domingo', 'Domingo'))
+
+    agenda_semanal = []
+    for cod_dia, nome_dia, abrev_dia in dias_semana_base:
+        aulas_dia = [al for al in alocacoes if al.dia_semana_codigo == cod_dia]
+        admin_dia = [h for h in horarios if h.dia_semana_codigo == cod_dia]
+
+        itens_dia = []
+        for al in aulas_dia:
+            itens_dia.append({
+                'tipo': 'aula',
+                'hora_inicio': al.hora_inicio,
+                'hora_fim': al.hora_fim_calculada,
+                'duracao_minutos': al.duracao_minutos,
+                'alocacao': al,
+            })
+        for h in admin_dia:
+            itens_dia.append({
+                'tipo': 'expediente',
+                'hora_inicio': h.hora_inicio,
+                'hora_fim': h.hora_fim,
+                'duracao_minutos': h.duracao_minutos,
+                'horario': h,
+            })
+        itens_dia.sort(key=lambda x: x['hora_inicio'])
+
+        tem_atividades = len(itens_dia) > 0
+        hora_entrada = None
+        hora_saida = None
+        minutos_dia = sum(it['duracao_minutos'] for it in itens_dia)
+        horas_dia = round(minutos_dia / 60.0, 1)
+
+        if tem_atividades:
+            hora_entrada = itens_dia[0]['hora_inicio']
+            hora_saida = max(it['hora_fim'] for it in itens_dia)
+
+        agenda_semanal.append({
+            'cod_dia': cod_dia,
+            'nome_dia': nome_dia,
+            'abrev_dia': abrev_dia,
+            'tem_atividades': tem_atividades,
+            'hora_entrada': hora_entrada,
+            'hora_saida': hora_saida,
+            'total_tempos': len(aulas_dia),
+            'horas_dia': horas_dia,
+            'itens': itens_dia,
+        })
+
+    dias_trabalhados = sum(1 for d in agenda_semanal if d['tem_atividades'])
 
     # Pré-configura tipo_atividade e local sugerido para servidores administrativos
     initial_data = {'ano_letivo': ano}
@@ -446,6 +509,8 @@ def view_horarios_professor(request, pk):
         'professor': professor,
         'horarios': horarios,
         'alocacoes': alocacoes,
+        'agenda_semanal': agenda_semanal,
+        'dias_trabalhados': dias_trabalhados,
         'total_tempos_alocados': total_tempos_alocados,
         'tempos_mat1': tempos_mat1,
         'tempos_mat2': tempos_mat2,

@@ -464,6 +464,31 @@ class HorarioProfessor(models.Model):
     def duracao_horas(self):
         return round(self.duracao_minutos / 60.0, 2)
 
+    @property
+    def dia_semana_codigo(self):
+        s = str(self.dia_semana or '').lower().strip()
+        if 'seg' in s: return 'seg'
+        if 'ter' in s: return 'ter'
+        if 'qua' in s: return 'qua'
+        if 'qui' in s: return 'qui'
+        if 'sex' in s: return 'sex'
+        if 'sab' in s or 'sáb' in s: return 'sab'
+        if 'dom' in s: return 'dom'
+        return s
+
+    @property
+    def dia_semana_nome(self):
+        nomes = {
+            'seg': 'Segunda-feira',
+            'ter': 'Terça-feira',
+            'qua': 'Quarta-feira',
+            'qui': 'Quinta-feira',
+            'sex': 'Sexta-feira',
+            'sab': 'Sábado',
+            'dom': 'Domingo',
+        }
+        return nomes.get(self.dia_semana_codigo, str(self.dia_semana))
+
     def __str__(self):
         u_nome = f" — {self.unidade.nome}" if self.unidade else ""
         return f'{self.professor.nome_curto}{u_nome} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}-{self.hora_fim.strftime("%H:%M")}'
@@ -754,16 +779,54 @@ class AlocacaoHorarioTurma(models.Model):
         unique_together = ['turma', 'dia_semana', 'hora_inicio']
 
     @property
+    def hora_fim_calculada(self):
+        """Retorna hora_fim real, garantindo ao menos 50 min de aula se hora_fim <= hora_inicio."""
+        if self.hora_inicio:
+            if self.hora_fim and self.hora_fim > self.hora_inicio:
+                return self.hora_fim
+            import datetime
+            dt = datetime.datetime.combine(datetime.date.today(), self.hora_inicio) + datetime.timedelta(minutes=50)
+            return dt.time()
+        return self.hora_fim
+
+    @property
     def duracao_minutos(self):
-        if self.hora_inicio and self.hora_fim:
+        if self.hora_inicio:
+            fim = self.hora_fim_calculada
             t_inicio = self.hora_inicio.hour * 60 + self.hora_inicio.minute
-            t_fim = self.hora_fim.hour * 60 + self.hora_fim.minute
-            return max(0, t_fim - t_inicio)
+            t_fim = fim.hour * 60 + fim.minute
+            diff = t_fim - t_inicio
+            return diff if diff > 0 else 50
         return 50
 
     @property
     def duracao_horas(self):
         return round(self.duracao_minutos / 60.0, 2)
+
+    @property
+    def dia_semana_codigo(self):
+        s = str(self.dia_semana or '').lower().strip()
+        if 'seg' in s: return 'seg'
+        if 'ter' in s: return 'ter'
+        if 'qua' in s: return 'qua'
+        if 'qui' in s: return 'qui'
+        if 'sex' in s: return 'sex'
+        if 'sab' in s or 'sáb' in s: return 'sab'
+        if 'dom' in s: return 'dom'
+        return s
+
+    @property
+    def dia_semana_nome(self):
+        nomes = {
+            'seg': 'Segunda-feira',
+            'ter': 'Terça-feira',
+            'qua': 'Quarta-feira',
+            'qui': 'Quinta-feira',
+            'sex': 'Sexta-feira',
+            'sab': 'Sábado',
+            'dom': 'Domingo',
+        }
+        return nomes.get(self.dia_semana_codigo, str(self.dia_semana))
 
     def __str__(self):
         if self.rotulo_exibicao:
