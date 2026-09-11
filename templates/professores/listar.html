@@ -84,7 +84,7 @@
             <div style="font-weight:600;">{{ prof.nome_completo }}</div>
             {% if prof.is_desviado_administrativo %}
             <span class="badge" style="background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; font-size:0.72rem; padding:2px 8px; font-weight:700; margin-top:2px; display:inline-block;">
-              <i class="bi bi-shield-shaded me-1"></i>{{ prof.get_funcao_administrativa_display|default:"Administrativo" }}
+              <i class="bi bi-shield-shaded me-1"></i>{{ prof.descricao_desvio_matriculas }}
               {% if prof.ch_administrativa %}({{ prof.ch_administrativa }}h){% elif prof.ch_total %}({{ prof.ch_total }}h){% endif %}
             </span>
             {% endif %}

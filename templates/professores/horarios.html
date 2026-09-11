@@ -32,12 +32,20 @@
           {% endif %}
         </h6>
         {% if professor.is_desviado_administrativo %}
-        <span class="badge" style="background:#7c3aed; color:#fff; font-size:0.75rem;">Sem alocação em turmas</span>
+        <span class="badge" style="background:#7c3aed; color:#fff; font-size:0.75rem;">
+          {{ professor.get_abrangencia_desvio_display }}
+        </span>
         {% endif %}
       </div>
       <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
         {% if professor.is_desviado_administrativo %}
-          Este servidor atua em função administrativa. Registre aqui os dias e horários semanais do seu expediente de trabalho no CEJA.
+          {% if professor.abrangencia_desvio == 'mat1' %}
+            Desvio administrativo aplicado à <strong>1ª Matrícula</strong>. A 2ª Matrícula continua lecionando em sala de aula. Registre aqui o expediente da função administrativa.
+          {% elif professor.abrangencia_desvio == 'mat2' %}
+            Desvio administrativo aplicado à <strong>2ª Matrícula</strong>. A 1ª Matrícula continua lecionando em sala de aula. Registre aqui o expediente da função administrativa.
+          {% else %}
+            Servidor com <strong>ambas as matrículas</strong> dedicadas à gestão escolar integral. Registre aqui os horários do expediente administrativo semanal.
+          {% endif %}
         {% else %}
           Horários semanais de atendimento/regência cadastrados na unidade escolar para o ano letivo {{ ano }}.
         {% endif %}

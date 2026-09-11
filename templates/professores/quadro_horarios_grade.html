@@ -304,11 +304,11 @@
       <i class="bi bi-shield-shaded me-1" style="color:#c084fc;"></i>
       <strong style="color:#e9d5ff;">Servidores em Função Administrativa / Gestão ({{ profs_administrativos|length }}):</strong>
       {% for pa in profs_administrativos %}
-        <span class="badge ms-1" style="background:#4c1d95; color:#e9d5ff; font-size:0.75rem;" title="{{ pa.get_funcao_administrativa_display }} — Carga Horária: {{ pa.ch_administrativa|default:pa.ch_total }}h">
-          {{ pa.nome_curto }} ({{ pa.get_funcao_administrativa_display }})
+        <span class="badge ms-1" style="background:#4c1d95; color:#e9d5ff; font-size:0.75rem;" title="Carga Horária: {{ pa.ch_administrativa|default:pa.ch_total }}h">
+          {{ pa.nome_curto }} ({{ pa.descricao_desvio_matriculas }})
         </span>
       {% endfor %}
-      <span class="text-muted ms-2">— cumprem expediente administrativo e não participam da alocação de turmas.</span>
+      <span class="text-muted ms-2">— cumprem expediente na gestão escolar.</span>
     </div>
   </div>
   {% endif %}

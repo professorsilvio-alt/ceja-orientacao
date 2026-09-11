@@ -86,7 +86,7 @@ class ProfessorForm(forms.ModelForm):
         model = Professor
         fields = [
             'cpf', 'id_vinculo', 'matricula', 'situacao_matricula_1', 'ch_total', 'tempos_aula',
-            'em_desvio_funcao', 'funcao_administrativa', 'ch_administrativa',
+            'em_desvio_funcao', 'funcao_administrativa', 'abrangencia_desvio', 'ch_administrativa',
             'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2', 'acumulacao_nesta_escola',
             'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'funcao_administrativa_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao',
             'nome_completo', 'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
@@ -102,6 +102,7 @@ class ProfessorForm(forms.ModelForm):
             'tempos_aula': forms.NumberInput(attrs={'id': 'id_tempos_aula', 'placeholder': 'Ex: 12, 16 (0 se administrativo)'}),
             'em_desvio_funcao': forms.CheckboxInput(attrs={'id': 'id_em_desvio_funcao', 'class': 'form-check-input'}),
             'funcao_administrativa': forms.Select(attrs={'id': 'id_funcao_adm'}),
+            'abrangencia_desvio': forms.Select(attrs={'id': 'id_abrangencia_desvio'}),
             'ch_administrativa': forms.NumberInput(attrs={'id': 'id_ch_adm', 'placeholder': 'Ex: 40, 30, 20'}),
             'id_vinculo_acumulacao': forms.TextInput(attrs={'placeholder': 'Ex: 40645924/1', 'id': 'id_vinc_acum'}),
             'matricula_acumulacao': forms.TextInput(attrs={'id': 'id_mat_acum'}),
@@ -140,6 +141,7 @@ class ProfessorForm(forms.ModelForm):
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
         self.fields['funcao_administrativa'].required = False
+        self.fields['abrangencia_desvio'].required = False
         self.fields['ch_administrativa'].required = False
         self.fields['funcao_administrativa_acumulacao'].required = False
         aplicar_estilo_campos(self)

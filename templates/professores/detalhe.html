@@ -82,18 +82,30 @@
           <div style="font-size:1.05rem; font-weight:800; color:#e9d5ff;">{{ professor.get_funcao_administrativa_display|default:"Designado em Gestão" }}</div>
         </div>
         <div class="col-xl-3 col-md-4 col-sm-6">
-          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CARGA HORÁRIA ADMINISTRATIVA</div>
-          <div style="font-size:1.05rem; font-weight:800; color:#fde047;">{{ professor.ch_administrativa|default:professor.ch_total|default:"—" }}h semanais</div>
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">ABRANGÊNCIA DAS MATRÍCULAS</div>
+          <div style="font-size:0.92rem; font-weight:700; color:#38bdf8;">{{ professor.get_abrangencia_desvio_display }}</div>
         </div>
-        <div class="col-xl-3 col-md-4 col-sm-6">
-          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">ALOCAÇÃO EM TURMAS</div>
-          <div style="font-weight:600; font-size:0.92rem; color:#94a3b8;">Dispensado / Horário Administrativo</div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CH ADMINISTRATIVA</div>
+          <div style="font-size:1.05rem; font-weight:800; color:#fde047;">{{ professor.ch_administrativa|default:professor.ch_total|default:"—" }}h</div>
         </div>
-        <div class="col-xl-3 col-md-4 col-sm-6">
-          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">EXPEDIENTE DE TRABALHO</div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">SITUAÇÃO EM SALA</div>
+          <div style="font-weight:600; font-size:0.85rem; color:#cbd5e1; margin-top:2px;">
+            {% if professor.abrangencia_desvio == 'ambas' %}
+              <span class="badge bg-secondary" style="font-size:0.75rem;">Sem regência</span>
+            {% elif professor.abrangencia_desvio == 'mat1' %}
+              <span class="badge bg-info text-dark" style="font-size:0.75rem;">2ª Mat. em Sala</span>
+            {% elif professor.abrangencia_desvio == 'mat2' %}
+              <span class="badge bg-info text-dark" style="font-size:0.75rem;">1ª Mat. em Sala</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">EXPEDIENTE</div>
           <div>
-            <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success btn-sm" style="padding:4px 12px; font-size:0.8rem;">
-              <i class="bi bi-clock-fill me-1"></i>Ver e Informar Horários
+            <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success btn-sm" style="padding:4px 10px; font-size:0.78rem;">
+              <i class="bi bi-clock-fill me-1"></i>Ver Horários
             </a>
           </div>
         </div>

@@ -757,62 +757,53 @@ def view_grade_turma(request, pk):
             })
 
     from django.db.models import Q
-    # Servidores docentes para alocação em sala de aula (exclui quem está em desvio/função administrativa)
-    all_profs = Professor.objects.filter(ativo=True).exclude(
-        em_desvio_funcao=True
-    ).exclude(
-        funcao_administrativa__in=[
-            'diretor_geral', 'diretor_adjunto', 'coordenador_pedagogico',
-            'orientador_educacional', 'assistente_departamento_pessoal'
-        ]
-    ).order_by('nome_completo')
-
-    profs_administrativos = Professor.objects.filter(
-        ativo=True
-    ).filter(
-        Q(em_desvio_funcao=True) |
-        Q(funcao_administrativa__in=[
-            'diretor_geral', 'diretor_adjunto', 'coordenador_pedagogico',
-            'orientador_educacional', 'assistente_departamento_pessoal'
-        ])
-    ).order_by('nome_completo')
+    all_active_profs = Professor.objects.filter(ativo=True).order_by('nome_completo')
+    profs_administrativos = [p for p in all_active_profs if p.is_desviado_administrativo]
 
     disc_nome = (turma.disciplina_nome or '').lower()
 
     profs_da_disciplina = []
     outros_profs = []
-    for p in all_profs:
-        p_disc = (p.disciplina_ingresso or '').lower()
-        is_disc = disc_nome and (disc_nome in p_disc or p_disc in disc_nome or any(w in disc_nome for w in p_disc.split() if len(w) > 3))
-        
-        # Cria opções: se tiver acumulação na mesma escola, gera Mat. 1 e Mat. 2
+    for p in all_active_profs:
         itens_prof = []
-        if p.acumulacao_nesta_escola:
-            itens_prof.append({
-                'val': f"{p.pk}:1",
-                'nome_completo': f"{p.nome_completo} (1ª Matrícula: {p.matricula})",
-                'nome_curto': f"{p.nome_curto} (Mat. 1)",
-                'cargo_disc': p.disciplina_ingresso or p.cargo or '1ª Mat.',
-                'mat_label': '1ª Mat.'
-            })
-            mat2_disc = p.disciplina_ingresso_acumulacao or p.cargo_acumulacao or p.disciplina_ingresso or '2ª Mat.'
-            itens_prof.append({
+        
+        # 1ª Matrícula: só entra na grade se estiver em sala de aula
+        if p.mat1_em_sala:
+            p_disc1 = (p.disciplina_ingresso or '').lower()
+            is_disc1 = bool(disc_nome and (disc_nome in p_disc1 or p_disc1 in disc_nome or any(w in disc_nome for w in p_disc1.split() if len(w) > 3)))
+            
+            if p.acumulacao_nesta_escola:
+                itens_prof.append(({
+                    'val': f"{p.pk}:1",
+                    'nome_completo': f"{p.nome_completo} (1ª Matrícula: {p.matricula})",
+                    'nome_curto': f"{p.nome_curto} (Mat. 1)",
+                    'cargo_disc': p.disciplina_ingresso or p.cargo or '1ª Mat.',
+                    'mat_label': '1ª Mat.'
+                }, is_disc1))
+            else:
+                itens_prof.append(({
+                    'val': str(p.pk),
+                    'nome_completo': p.nome_completo,
+                    'nome_curto': p.nome_curto,
+                    'cargo_disc': p.disciplina_ingresso or p.cargo or 'Prof.',
+                    'mat_label': ''
+                }, is_disc1))
+
+        # 2ª Matrícula: só entra na grade se lecionar no CEJA e estiver em sala de aula
+        if p.mat2_em_sala:
+            mat2_disc_str = p.disciplina_ingresso_acumulacao or p.cargo_acumulacao or p.disciplina_ingresso or ''
+            p_disc2 = mat2_disc_str.lower()
+            is_disc2 = bool(disc_nome and (disc_nome in p_disc2 or p_disc2 in disc_nome or any(w in disc_nome for w in p_disc2.split() if len(w) > 3)))
+            
+            itens_prof.append(({
                 'val': f"{p.pk}:2",
                 'nome_completo': f"{p.nome_completo} (2ª Matrícula: {p.matricula_acumulacao or 'Acum'})",
                 'nome_curto': f"{p.nome_curto} (Mat. 2)",
-                'cargo_disc': mat2_disc,
+                'cargo_disc': mat2_disc_str or '2ª Mat.',
                 'mat_label': '2ª Mat.'
-            })
-        else:
-            itens_prof.append({
-                'val': str(p.pk),
-                'nome_completo': p.nome_completo,
-                'nome_curto': p.nome_curto,
-                'cargo_disc': p.disciplina_ingresso or p.cargo or 'Prof.',
-                'mat_label': ''
-            })
+            }, is_disc2))
 
-        for item in itens_prof:
+        for item, is_disc in itens_prof:
             if is_disc:
                 profs_da_disciplina.append(item)
             else:
@@ -824,7 +815,7 @@ def view_grade_turma(request, pk):
         'unidade': unidade,
         'dias_map': DIAS_MAP,
         'grid': grid,
-        'professores': all_profs,
+        'professores': all_active_profs,
         'profs_da_disciplina': profs_da_disciplina,
         'outros_profs': outros_profs,
         'profs_administrativos': profs_administrativos,

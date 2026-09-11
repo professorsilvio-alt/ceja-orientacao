@@ -54,6 +54,12 @@ FUNCAO_ADMINISTRATIVA_CHOICES = [
     ('outro', 'Outra Função Administrativa'),
 ]
 
+ABRANGENCIA_DESVIO_CHOICES = [
+    ('ambas', 'Ambas as Matrículas no Desvio (Acumulação Total no Cargo Administrativo)'),
+    ('mat1', 'Apenas na 1ª Matrícula (2ª Matrícula continua em Sala de Aula)'),
+    ('mat2', 'Apenas na 2ª Matrícula (1ª Matrícula continua em Sala de Aula)'),
+]
+
 TIPO_ATIVIDADE_CHOICES = [
     ('docencia', 'Regência / Atendimento em Sala ou Cabine'),
     ('administrativa', 'Expediente Administrativo / Direção / Coordenação'),
@@ -180,6 +186,13 @@ class Professor(models.Model):
         verbose_name='Carga Horária Administrativa (Horas/Semana)',
         help_text='Horas semanais a cumprir na função administrativa (Ex: 40h, 30h, 20h).'
     )
+    abrangencia_desvio = models.CharField(
+        max_length=20,
+        choices=ABRANGENCIA_DESVIO_CHOICES,
+        default='ambas',
+        verbose_name='Abrangência do Desvio / Matrículas',
+        help_text='Define se ambas as matrículas acumulam no desvio ou se uma delas continua em sala de aula.'
+    )
 
     disciplinas_lecionadas = models.ManyToManyField(
         'Disciplina',
@@ -283,15 +296,6 @@ class Professor(models.Model):
         return self.nome_completo
 
     @property
-    def total_tempos_aula(self):
-        """Retorna a soma dos tempos de aula lecionados na escola (1ª e 2ª matrículas)."""
-        t1 = self.tempos_aula or 0
-        t2 = self.tempos_aula_acumulacao or 0
-        if self.tempos_aula is None and self.tempos_aula_acumulacao is None:
-            return None
-        return t1 + t2
-
-    @property
     def is_desviado_administrativo(self):
         """Indica se o servidor atua em desvio de função / gestão administrativa."""
         return bool(self.em_desvio_funcao or self.funcao_administrativa)
@@ -300,6 +304,57 @@ class Professor(models.Model):
     def rotulo_funcao_administrativa(self):
         """Nome formatado da função administrativa exercida."""
         return dict(FUNCAO_ADMINISTRATIVA_CHOICES).get(self.funcao_administrativa, '')
+
+    @property
+    def mat1_em_desvio(self):
+        """Retorna True se a 1ª matrícula estiver em desvio administrativo."""
+        if not self.is_desviado_administrativo:
+            return False
+        if not self.matricula_acumulacao:
+            return True
+        return self.abrangencia_desvio in ['mat1', 'ambas']
+
+    @property
+    def mat2_em_desvio(self):
+        """Retorna True se a 2ª matrícula estiver em desvio administrativo."""
+        if not self.is_desviado_administrativo or not self.matricula_acumulacao:
+            return False
+        return self.abrangencia_desvio in ['mat2', 'ambas']
+
+    @property
+    def mat1_em_sala(self):
+        """Retorna True se a 1ª matrícula leciona em sala de aula."""
+        return not self.mat1_em_desvio
+
+    @property
+    def mat2_em_sala(self):
+        """Retorna True se a 2ª matrícula leciona em sala de aula nesta escola."""
+        return bool(self.matricula_acumulacao and self.acumulacao_nesta_escola and not self.mat2_em_desvio)
+
+    @property
+    def descricao_desvio_matriculas(self):
+        """Descrição textual da abrangência para exibição nas telas."""
+        if not self.is_desviado_administrativo:
+            return 'Em sala de aula'
+        nome_funcao = self.rotulo_funcao_administrativa or 'Função Administrativa'
+        if not self.matricula_acumulacao:
+            return nome_funcao
+        if self.abrangencia_desvio == 'ambas':
+            return f'{nome_funcao} (Ambas as Matrículas)'
+        elif self.abrangencia_desvio == 'mat1':
+            return f'{nome_funcao} (1ª Mat.) + Sala de Aula (2ª Mat.)'
+        elif self.abrangencia_desvio == 'mat2':
+            return f'Sala de Aula (1ª Mat.) + {nome_funcao} (2ª Mat.)'
+        return nome_funcao
+
+    @property
+    def total_tempos_aula(self):
+        """Retorna a soma dos tempos de aula lecionados na escola considerando se a matrícula está em sala ou no desvio."""
+        t1 = (self.tempos_aula or 0) if self.mat1_em_sala else 0
+        t2 = (self.tempos_aula_acumulacao or 0) if self.mat2_em_sala else 0
+        if not self.mat1_em_sala and not self.mat2_em_sala:
+            return 0
+        return t1 + t2
 
     def save(self, *args, **kwargs):
         if self.funcao_administrativa:
@@ -310,6 +365,8 @@ class Professor(models.Model):
                 self.ch_total = self.ch_administrativa
         elif not self.em_desvio_funcao:
             self.funcao_administrativa = ''
+        if not self.matricula_acumulacao:
+            self.abrangencia_desvio = 'ambas'
         super().save(*args, **kwargs)
 
 
