@@ -55,89 +55,195 @@
   </div>
 
   {% if professores %}
-  <div class="table-responsive">
-    <table class="table-gestao" id="tabela-professores">
-      <thead>
-        <tr>
-          <th>Classif.</th>
-          <th>Nome</th>
-          <th>ID / Vínculo</th>
-          <th>Disciplina de ingresso</th>
-          <th>Cargo</th>
-          <th>Matrícula</th>
-          <th>Ingresso na escola</th>
-          <th>Tempo na escola</th>
-          <th style="text-align:right;">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for prof in professores %}
-        <tr>
-          <td>
-            {% if prof.classificacao %}
-            <span class="badge-gestao badge-primary">{{ prof.classificacao }}º</span>
-            {% else %}
-            <span class="badge-gestao badge-secondary" style="font-size:0.7rem;">{{ prof.get_situacao_matricula_1_display }}</span>
-            {% endif %}
-          </td>
-          <td>
-            <div style="font-weight:600;">{{ prof.nome_completo }}</div>
-            {% if prof.is_desviado_administrativo %}
-            <span class="badge" style="background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; font-size:0.72rem; padding:2px 8px; font-weight:700; margin-top:2px; display:inline-block;">
-              <i class="bi bi-shield-shaded me-1"></i>{{ prof.descricao_desvio_matriculas }}
-              {% if prof.ch_administrativa %}({{ prof.ch_administrativa }}h){% elif prof.ch_total %}({{ prof.ch_total }}h){% endif %}
-            </span>
-            {% endif %}
-          </td>
-          <td style="font-size:0.82rem; font-weight:600; color:#fde047;">
-            {{ prof.id_vinculo|default:"—" }}
-            {% if prof.id_vinculo_acumulacao %}
-            <br><span style="color:var(--text-muted); font-size:0.75rem;">Acum: {{ prof.id_vinculo_acumulacao }}</span>
-            {% endif %}
-          </td>
-          <td style="font-size:0.85rem;">{{ prof.disciplina_ingresso|default:"—" }}</td>
-          <td style="font-size:0.85rem;">
-            {{ prof.cargo|default:"—" }}
-            {% if prof.is_desviado_administrativo %}
-            <div style="font-size:0.75rem; color:#c084fc; font-weight:600;">Desvio Administrativo</div>
-            {% endif %}
-          </td>
-          <td style="font-family:monospace; font-size:0.82rem;">
-            {{ prof.matricula }}
-            {% if prof.tempos_aula %}
-            <span class="badge bg-info text-dark ms-1" style="font-size:0.72rem;" title="{{ prof.tempos_aula }} tempos de aula na 1ª matrícula">{{ prof.tempos_aula }}t</span>
-            {% endif %}
-            {% if prof.matricula_acumulacao %}
-            <br><span style="color:var(--text-muted); font-size:0.72rem;">Acum: {{ prof.matricula_acumulacao }}{% if prof.acumulacao_nesta_escola %} <span class="badge bg-primary text-white ms-1" style="font-size:0.65rem;" title="2ª Matrícula leciona nesta escola (CEJA)">CEJA</span>{% endif %}{% if prof.tempos_aula_acumulacao %} <span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;" title="{{ prof.tempos_aula_acumulacao }} tempos de aula na 2ª matrícula">{{ prof.tempos_aula_acumulacao }}t</span>{% endif %}</span>
-            {% endif %}
-          </td>
-          <td>{{ prof.data_ingresso_unidade|date:"d/m/Y"|default:"—" }}</td>
-          <td>
-            {% if prof.data_ingresso_unidade %}
-            <span style="color:var(--green); font-size:0.82rem;">{{ prof.tempo_na_escola }}</span>
-            {% else %}
-            <span style="color:var(--text-muted); font-size:0.82rem;">—</span>
-            {% endif %}
-          </td>
-          <td style="text-align:right;">
-            <div class="d-flex gap-1 justify-content-end">
-              <a href="{% url 'detalhe_professor' prof.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
+  <style>
+    .card-professor-item {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .card-professor-item:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      transform: translateY(-2px);
+    }
+    .badge-classif-grid {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+      flex-shrink: 0;
+    }
+    .badge-classif-neutral {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #334155;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <div class="row g-3" id="grid-professores">
+    {% for prof in professores %}
+    <div class="col-12 col-lg-6">
+      <div class="card-professor-item h-100 d-flex flex-column justify-content-between">
+        <div>
+          <!-- CABEÇALHO DO CARD -->
+          <div class="d-flex align-items-start justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+            <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+              <!-- Classificação -->
+              {% if prof.classificacao %}
+              <div class="badge-classif-grid" title="{{ prof.classificacao }}º Lugar na classificação geral">
+                {{ prof.classificacao }}º
+              </div>
+              {% else %}
+              <div class="badge-classif-neutral" title="{{ prof.get_situacao_matricula_1_display }}">
+                —
+              </div>
+              {% endif %}
+
+              <!-- Avatar / Foto -->
+              {% if prof.foto %}
+              <img src="{{ prof.foto.url }}" alt="{{ prof.nome_completo }}" class="flex-shrink-0" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue);">
+              {% else %}
+              <div class="flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #334155); color: #38bdf8; font-weight: 800; font-size: 1.15rem; border: 2px solid #475569;">
+                {{ prof.nome_completo|first|upper }}
+              </div>
+              {% endif %}
+
+              <!-- Nome e Função -->
+              <div style="min-width: 0;">
+                <h5 class="mb-1 text-truncate" style="font-weight: 800; font-size: 1.08rem; color: #fff;">
+                  <a href="{% url 'detalhe_professor' prof.pk %}" style="color: inherit; text-decoration: none;" title="{{ prof.nome_completo }}">
+                    {{ prof.nome_completo }}
+                  </a>
+                </h5>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  {% if prof.is_desviado_administrativo %}
+                  <span class="badge" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-size: 0.74rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">
+                    <i class="bi bi-shield-shaded me-1"></i>{{ prof.descricao_desvio_matriculas }}
+                    {% if prof.ch_administrativa %}({{ prof.ch_administrativa }}h){% elif prof.ch_total %}({{ prof.ch_total }}h){% endif %}
+                  </span>
+                  {% else %}
+                  <span class="badge bg-secondary text-light" style="font-size: 0.72rem; padding: 3px 8px;">
+                    ● Docente em Sala
+                  </span>
+                  {% endif %}
+
+                  <span class="badge {% if prof.ativo %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 0.72rem; padding: 3px 8px;">
+                    {% if prof.ativo %}Ativo{% else %}Inativo{% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="d-flex gap-1 flex-shrink-0">
+              <a href="{% url 'detalhe_professor' prof.pk %}" class="btn-gestao btn-gestao-secondary btn-sm" style="padding: 6px 10px; font-size: 0.82rem;" title="Ver Detalhes">
                 <i class="bi bi-eye"></i>
               </a>
-              <a href="{% url 'horarios_professor' prof.pk %}" class="btn-gestao btn-gestao-success" style="padding:5px 10px; font-size:0.78rem;" title="Horários">
+              <a href="{% url 'horarios_professor' prof.pk %}" class="btn-gestao btn-gestao-success btn-sm" style="padding: 6px 10px; font-size: 0.82rem;" title="Horários">
                 <i class="bi bi-clock"></i>
               </a>
               {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-              <a href="{% url 'editar_professor' prof.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;" title="Editar">
+              <a href="{% url 'editar_professor' prof.pk %}" class="btn-gestao btn-gestao-primary btn-sm" style="padding: 6px 10px; font-size: 0.82rem;" title="Editar">
                 <i class="bi bi-pencil"></i>
               </a>
               {% endif %}
             </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </div>
+
+          <!-- CORPO DO CARD: Vínculos e Matrículas -->
+          <div class="row g-2 mb-2">
+            <!-- 1ª Matrícula -->
+            <div class="col-6">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px;">
+                <div style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: 700;">ID / Vínculo 1</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #fde047;">{{ prof.id_vinculo|default:"—" }}</div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; font-family: monospace; margin-top: 2px;">
+                  Mat. {{ prof.matricula }}
+                  {% if prof.tempos_aula and prof.mat1_em_sala %}
+                  <span class="badge bg-info text-dark ms-1" style="font-size: 0.68rem;" title="{{ prof.tempos_aula }} tempos semanais">{{ prof.tempos_aula }}t</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- 2ª Matrícula -->
+            <div class="col-6">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px;">
+                <div style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: 700;">
+                  {% if prof.matricula_acumulacao or prof.id_vinculo_acumulacao %}2ª Matrícula (Acumulação){% else %}Vínculo 2{% endif %}
+                </div>
+                {% if prof.matricula_acumulacao or prof.id_vinculo_acumulacao %}
+                <div style="font-size: 0.95rem; font-weight: 800; color: #c084fc;">
+                  {{ prof.id_vinculo_acumulacao|default:"—" }}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; font-family: monospace; margin-top: 2px;">
+                  Mat. {{ prof.matricula_acumulacao|default:"—" }}
+                  {% if prof.acumulacao_nesta_escola %}
+                  <span class="badge bg-primary text-white ms-1" style="font-size: 0.65rem;" title="Leciona nesta escola (CEJA)">CEJA</span>
+                  {% endif %}
+                  {% if prof.tempos_aula_acumulacao and prof.mat2_em_sala %}
+                  <span class="badge bg-warning text-dark ms-1" style="font-size: 0.68rem;" title="{{ prof.tempos_aula_acumulacao }} tempos semanais">{{ prof.tempos_aula_acumulacao }}t</span>
+                  {% endif %}
+                </div>
+                {% else %}
+                <div style="font-size: 0.82rem; color: var(--text-muted); padding: 4px 0;">Sem acumulação</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Disciplina e Cargo -->
+            <div class="col-12">
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px 12px;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Disciplina de Ingresso</span>
+                  <strong style="color: #60a5fa; font-size: 0.9rem;">{{ prof.disciplina_ingresso|default:"—" }}</strong>
+                </div>
+                <div class="text-end">
+                  <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Cargo</span>
+                  <span style="color: #cbd5e1; font-size: 0.88rem; font-weight: 600;">{{ prof.cargo|default:"—" }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RODAPÉ DO CARD: Datas e Tempo de Escola -->
+        <div class="pt-2 mt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-color: rgba(255,255,255,0.08) !important; font-size: 0.8rem;">
+          <div>
+            <span style="color: #94a3b8;"><i class="bi bi-calendar-event me-1"></i>Ingresso:</span>
+            <strong style="color: #e2e8f0;">{{ prof.data_ingresso_unidade|date:"d/m/Y"|default:"—" }}</strong>
+          </div>
+          <div>
+            <span style="color: #94a3b8;"><i class="bi bi-hourglass-split me-1 text-success"></i>Tempo na escola:</span>
+            {% if prof.data_ingresso_unidade %}
+            <strong style="color: #4ade80;">{{ prof.tempo_na_escola }}</strong>
+            {% else %}
+            <span style="color: var(--text-muted);">—</span>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
   </div>
   {% else %}
   <div style="text-align:center; padding:48px; color:var(--text-muted);">
