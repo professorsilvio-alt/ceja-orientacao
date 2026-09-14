@@ -72,7 +72,9 @@ class FuncionarioAdministrativo(models.Model):
     disciplina_ingresso_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Disciplina de Ingresso (2ª Matrícula)')
     funcao_acumulacao = models.CharField(max_length=150, blank=True, verbose_name='Função (2ª Matrícula)')
     ch_total_acumulacao = models.PositiveIntegerField(null=True, blank=True, verbose_name='CH Total (2ª Matrícula)')
-    data_admissao_acumulacao = models.DateField(null=True, blank=True, verbose_name='Data Admissão (2ª Matrícula)')
+    data_admissao_acumulacao = models.DateField(null=True, blank=True, verbose_name='Data Admissão no Estado (2ª Matrícula)')
+    data_ci_movimentacao_acumulacao = models.DateField(null=True, blank=True, verbose_name='Data da CI de Movimentação (2ª Matrícula)')
+    data_ingresso_unidade_acumulacao = models.DateField(null=True, blank=True, verbose_name='Data de Chegada na Escola / Ingresso (2ª Matrícula)')
     nome_completo = models.CharField(max_length=200, verbose_name='Nome completo')
 
     # ── Cargo e função ─────────────────────────────────────
@@ -148,6 +150,26 @@ class FuncionarioAdministrativo(models.Model):
         data_ref = self.data_ingresso_efetiva
         if not data_ref:
             return 'Não informado'
+        hoje = timezone.now().date()
+        diff = relativedelta(hoje, data_ref)
+        partes = []
+        if diff.years:
+            partes.append(f'{diff.years} ano{"s" if diff.years > 1 else ""}')
+        if diff.months:
+            partes.append(f'{diff.months} mês' if diff.months == 1 else f'{diff.months} meses')
+        return ' e '.join(partes) if partes else 'Menos de 1 mês'
+
+    @property
+    def data_ingresso_escola_acumulacao_efetiva(self):
+        """Retorna a melhor data de ingresso na escola da 2ª matrícula."""
+        return self.data_ingresso_unidade_acumulacao or self.data_ci_movimentacao_acumulacao or self.data_admissao_acumulacao
+
+    @property
+    def tempo_na_escola_acumulacao(self):
+        """Retorna string com anos e meses desde o ingresso na unidade referente à 2ª matrícula."""
+        data_ref = self.data_ingresso_escola_acumulacao_efetiva
+        if not data_ref:
+            return None
         hoje = timezone.now().date()
         diff = relativedelta(hoje, data_ref)
         partes = []

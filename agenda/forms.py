@@ -22,12 +22,14 @@ class RegistroPresencaForm(forms.ModelForm):
         fields = [
             'tipo_funcionario', 'professor_id', 'administrativo_id', 'terceirizado_id',
             'data', 'tipo', 'hora_chegada', 'hora_saida',
-            'justificado', 'motivo', 'observacoes',
+            'justificado', 'lancar_banco_horas', 'dias_banco_horas',
+            'motivo', 'observacoes',
         ]
         widgets = {
             'data': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_presenca'}, format='%Y-%m-%d'),
             'hora_chegada': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_chegada'}),
             'hora_saida': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_saida'}),
+            'dias_banco_horas': forms.NumberInput(attrs={'step': '0.1', 'min': '0.1', 'id': 'id_dias_banco_horas'}),
             'motivo': forms.TextInput(attrs={'id': 'id_motivo_presenca', 'placeholder': 'Motivo da ocorrência'}),
             'observacoes': forms.Textarea(attrs={'rows': 2, 'id': 'id_obs_presenca'}),
         }

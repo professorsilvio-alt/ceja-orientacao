@@ -16,6 +16,7 @@ TIPO_OCORRENCIA_CHOICES = [
     ('ausencia', 'Ausência justificada'),
     ('atraso', 'Atraso'),
     ('saida_antecipada', 'Saída antecipada'),
+    ('compensacao', 'Compensação de horas (Crédito)'),
 ]
 
 TIPO_FUNCIONARIO_CHOICES = [
@@ -42,7 +43,7 @@ STATUS_RESERVA_CHOICES = [
 
 class RegistroPresenca(models.Model):
     """
-    Registro de ausências, faltas e atrasos de professores e funcionários.
+    Registro de ausências, faltas, atrasos e compensações de professores e funcionários.
     Cadastrado pela Direção.
     """
 
@@ -82,6 +83,24 @@ class RegistroPresenca(models.Model):
     justificado = models.BooleanField(default=False, verbose_name='Justificado')
     motivo = models.CharField(max_length=200, blank=True, verbose_name='Motivo')
     observacoes = models.TextField(blank=True, verbose_name='Observações')
+
+    # Integração com o Banco de Horas / Folgas
+    lancar_banco_horas = models.BooleanField(
+        default=True,
+        verbose_name='Lançar no Banco de Horas / Folgas'
+    )
+    dias_banco_horas = models.DecimalField(
+        max_digits=4, decimal_places=1, default=0.5,
+        verbose_name='Equivalente em Dias no Banco',
+        help_text='Ex: 0.5 dia, 1.0 dia'
+    )
+    ocorrencia_folga = models.ForeignKey(
+        'professores.OcorrenciaFolgaServidor',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='registros_presenca',
+        verbose_name='Lançamento no Banco de Horas'
+    )
 
     # Quem registrou
     registrado_por = models.ForeignKey(
@@ -127,8 +146,98 @@ class RegistroPresenca(models.Model):
             'ausencia': 'warning',
             'atraso': 'info',
             'saida_antecipada': 'secondary',
+            'compensacao': 'success',
         }
         return cores.get(self.tipo, 'secondary')
+
+    def sincronizar_banco_horas(self):
+        """
+        Sincroniza automaticamente a ocorrência com o Banco de Horas (OcorrenciaFolgaServidor).
+        - atraso e saida_antecipada -> tipo 'usufruido' (débito / saída de horas)
+        - compensacao -> tipo 'credito' (saldo positivo)
+        """
+        if not self.lancar_banco_horas or self.tipo not in ('atraso', 'saida_antecipada', 'compensacao'):
+            if self.ocorrencia_folga_id:
+                folga = self.ocorrencia_folga
+                self.ocorrencia_folga = None
+                RegistroPresenca.objects.filter(pk=self.pk).update(ocorrencia_folga=None)
+                if folga:
+                    folga.delete()
+            return
+
+        func = self.get_funcionario()
+        if not func:
+            return
+
+        from django.contrib.contenttypes.models import ContentType
+        from professores.models import OcorrenciaFolgaServidor
+
+        ct = ContentType.objects.get_for_model(func.__class__)
+
+        if self.tipo == 'compensacao':
+            tipo_folga = 'credito'
+            motivo_texto = f"Compensação de Horas em {self.data.strftime('%d/%m/%Y')}"
+        elif self.tipo == 'atraso':
+            tipo_folga = 'usufruido'
+            horario_str = f"Chegada: {self.hora_chegada.strftime('%H:%M')}" if self.hora_chegada else "Chegada com atraso"
+            motivo_texto = f"Atraso em {self.data.strftime('%d/%m/%Y')} ({horario_str})"
+        elif self.tipo == 'saida_antecipada':
+            tipo_folga = 'usufruido'
+            horario_str = f"Saída: {self.hora_saida.strftime('%H:%M')}" if self.hora_saida else "Saída antecipada"
+            motivo_texto = f"Saída Antecipada em {self.data.strftime('%d/%m/%Y')} ({horario_str})"
+        else:
+            return
+
+        if self.motivo:
+            motivo_texto += f" — {self.motivo}"
+
+        dias_val = self.dias_banco_horas if (self.dias_banco_horas and self.dias_banco_horas > 0) else 0.5
+
+        if self.ocorrencia_folga_id:
+            try:
+                folga = self.ocorrencia_folga
+                folga.tipo = tipo_folga
+                folga.dias = dias_val
+                folga.motivo = motivo_texto
+                folga.data_ocorrencia = self.data
+                folga.observacoes = self.observacoes
+                folga.content_type = ct
+                folga.object_id = func.pk
+                folga.save()
+            except OcorrenciaFolgaServidor.DoesNotExist:
+                folga = OcorrenciaFolgaServidor.objects.create(
+                    content_type=ct,
+                    object_id=func.pk,
+                    tipo=tipo_folga,
+                    dias=dias_val,
+                    motivo=motivo_texto,
+                    data_ocorrencia=self.data,
+                    observacoes=self.observacoes,
+                    criado_por=self.registrado_por
+                )
+                self.ocorrencia_folga = folga
+                RegistroPresenca.objects.filter(pk=self.pk).update(ocorrencia_folga=folga)
+        else:
+            folga = OcorrenciaFolgaServidor.objects.create(
+                content_type=ct,
+                object_id=func.pk,
+                tipo=tipo_folga,
+                dias=dias_val,
+                motivo=motivo_texto,
+                data_ocorrencia=self.data,
+                observacoes=self.observacoes,
+                criado_por=self.registrado_por
+            )
+            self.ocorrencia_folga = folga
+            RegistroPresenca.objects.filter(pk=self.pk).update(ocorrencia_folga=folga)
+
+    def delete(self, *args, **kwargs):
+        if self.ocorrencia_folga_id:
+            try:
+                self.ocorrencia_folga.delete()
+            except Exception:
+                pass
+        super().delete(*args, **kwargs)
 
 
 class ReservaAuditorio(models.Model):

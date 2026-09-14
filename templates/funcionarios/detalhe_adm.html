@@ -102,9 +102,35 @@
           <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.data_ingresso_unidade|date:"d/m/Y" }}</div>
         </div>
         <div class="col-xl-4 col-md-6">
-          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">TEMPO NA ESCOLA</div>
+          <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">TEMPO NA ESCOLA (1ª MAT.)</div>
           <div style="font-weight:700; color:var(--green); font-size:1.05rem;">{{ funcionario.tempo_na_escola }}</div>
         </div>
+
+        {% if funcionario.matricula_acumulacao %}
+        <div class="col-12 mt-2 pt-2 border-top" style="border-color:var(--card-border) !important;">
+          <div style="font-size:0.8rem; font-weight:700; color:#c084fc; margin-bottom:8px;">
+            <i class="bi bi-layers-fill me-1"></i>Datas da 2ª Matrícula (Acumulação)
+          </div>
+          <div class="row g-3">
+            <div class="col-xl-3 col-md-4 col-sm-6">
+              <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">ADMISSÃO NO ESTADO (2ª MAT.)</div>
+              <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.data_admissao_acumulacao|date:"d/m/Y"|default:"—" }}</div>
+            </div>
+            <div class="col-xl-3 col-md-4 col-sm-6">
+              <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">DATA DA C.I. (2ª MAT.)</div>
+              <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.data_ci_movimentacao_acumulacao|date:"d/m/Y"|default:"—" }}</div>
+            </div>
+            <div class="col-xl-3 col-md-4 col-sm-6">
+              <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">CHEGADA NA ESCOLA (2ª MAT.)</div>
+              <div style="font-weight:700; font-size:0.95rem;">{{ funcionario.data_ingresso_unidade_acumulacao|date:"d/m/Y"|default:"—" }}</div>
+            </div>
+            <div class="col-xl-3 col-md-4 col-sm-6">
+              <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">TEMPO NA ESCOLA (2ª MAT.)</div>
+              <div style="font-weight:700; color:var(--green); font-size:1.05rem;">{{ funcionario.tempo_na_escola_acumulacao|default:"—" }}</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>

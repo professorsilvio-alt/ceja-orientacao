@@ -33,6 +33,7 @@
         <option value="ausencia" {% if tipo_filtro == 'ausencia' %}selected{% endif %}>Ausência justificada</option>
         <option value="atraso" {% if tipo_filtro == 'atraso' %}selected{% endif %}>Atraso</option>
         <option value="saida_antecipada" {% if tipo_filtro == 'saida_antecipada' %}selected{% endif %}>Saída antecipada</option>
+        <option value="compensacao" {% if tipo_filtro == 'compensacao' %}selected{% endif %}>Compensação de horas</option>
       </select>
     </div>
     <div class="col-md-3">
@@ -72,6 +73,22 @@
             <span class="badge-gestao badge-{{ reg.badge_color }}">{{ reg.get_tipo_display }}</span>
             {% if reg.hora_chegada %}
             <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Chegada: {{ reg.hora_chegada|time:"H:i" }}</div>
+            {% elif reg.hora_saida %}
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Saída: {{ reg.hora_saida|time:"H:i" }}</div>
+            {% endif %}
+
+            {% if reg.ocorrencia_folga %}
+              <div class="mt-1">
+                {% if reg.ocorrencia_folga.tipo == 'credito' %}
+                <span class="badge bg-success font-monospace" style="font-size:0.68rem;" title="Crédito lançado no Banco de Horas">
+                  <i class="bi bi-hourglass-split me-1"></i>+{{ reg.ocorrencia_folga.dias }}d Banco
+                </span>
+                {% else %}
+                <span class="badge bg-danger font-monospace" style="font-size:0.68rem;" title="Débito lançado no Banco de Horas">
+                  <i class="bi bi-hourglass-split me-1"></i>-{{ reg.ocorrencia_folga.dias }}d Banco
+                </span>
+                {% endif %}
+              </div>
             {% endif %}
           </td>
           <td>

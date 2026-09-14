@@ -231,19 +231,33 @@
         </div>
 
         <!-- RODAPÉ DO CARD: Datas e Tempo de Escola -->
-        <div class="pt-2 mt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-color: rgba(255,255,255,0.08) !important; font-size: 0.8rem;">
-          <div>
-            <span style="color: #94a3b8;"><i class="bi bi-calendar-event me-1"></i>Ingresso:</span>
-            <strong style="color: #e2e8f0;">{{ prof.data_ingresso_unidade|date:"d/m/Y"|default:"—" }}</strong>
+        <div class="pt-2 mt-2 border-top d-flex flex-column gap-1" style="border-color: rgba(255,255,255,0.08) !important; font-size: 0.8rem;">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+              <span style="color: #94a3b8;"><i class="bi bi-calendar-event me-1"></i>Ingresso{% if prof.acumulacao_nesta_escola %} (1ª Mat.){% endif %}:</span>
+              <strong style="color: #e2e8f0;">{{ prof.data_ingresso_unidade|date:"d/m/Y"|default:"—" }}</strong>
+            </div>
+            <div>
+              <span style="color: #94a3b8;"><i class="bi bi-hourglass-split me-1 text-success"></i>Tempo:</span>
+              {% if prof.data_ingresso_unidade %}
+              <strong style="color: #4ade80;">{{ prof.tempo_na_escola }}</strong>
+              {% else %}
+              <span style="color: var(--text-muted);">—</span>
+              {% endif %}
+            </div>
           </div>
-          <div>
-            <span style="color: #94a3b8;"><i class="bi bi-hourglass-split me-1 text-success"></i>Tempo na escola:</span>
-            {% if prof.data_ingresso_unidade %}
-            <strong style="color: #4ade80;">{{ prof.tempo_na_escola }}</strong>
-            {% else %}
-            <span style="color: var(--text-muted);">—</span>
-            {% endif %}
+          {% if prof.acumulacao_nesta_escola and prof.data_ingresso_escola_acumulacao_efetiva %}
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-1 border-top" style="border-color: rgba(255,255,255,0.04) !important;">
+            <div>
+              <span style="color: #c084fc;"><i class="bi bi-calendar-plus me-1"></i>Ingresso (2ª Mat.):</span>
+              <strong style="color: #e2e8f0;">{{ prof.data_ingresso_escola_acumulacao_efetiva|date:"d/m/Y"|default:"—" }}</strong>
+            </div>
+            <div>
+              <span style="color: #c084fc;"><i class="bi bi-hourglass-split me-1"></i>Tempo:</span>
+              <strong style="color: #c084fc;">{{ prof.tempo_na_escola_acumulacao }}</strong>
+            </div>
           </div>
+          {% endif %}
         </div>
 
       </div>

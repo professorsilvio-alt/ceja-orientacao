@@ -56,8 +56,9 @@ def view_novo_registro(request):
         if func:
             registro.nome_funcionario = func.nome_completo
         registro.save()
+        registro.sincronizar_banco_horas()
 
-        messages.success(request, f'Registro de {registro.get_tipo_display()} cadastrado.')
+        messages.success(request, f'Registro de {registro.get_tipo_display()} cadastrado com sucesso.')
         return redirect('listar_presencas')
 
     return render(request, 'agenda/form_presenca.html', {
@@ -83,7 +84,8 @@ def view_editar_registro(request, pk):
         if func:
             reg.nome_funcionario = func.nome_completo
         reg.save()
-        messages.success(request, 'Registro atualizado.')
+        reg.sincronizar_banco_horas()
+        messages.success(request, 'Registro de presença e banco de horas atualizados com sucesso.')
         return redirect('listar_presencas')
 
     return render(request, 'agenda/form_presenca.html', {

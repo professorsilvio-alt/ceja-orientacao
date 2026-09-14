@@ -20,7 +20,9 @@ class FuncionarioAdmForm(forms.ModelForm):
     class Meta:
         model = FuncionarioAdministrativo
         fields = [
-            'cpf', 'id_vinculo', 'matricula', 'matricula_acumulacao', 'nome_completo',
+            'cpf', 'id_vinculo', 'matricula', 'matricula_acumulacao',
+            'data_admissao_acumulacao', 'data_ci_movimentacao_acumulacao', 'data_ingresso_unidade_acumulacao',
+            'nome_completo',
             'cargo', 'disciplina_ingresso', 'funcao_atual', 'funcao_ingresso',
             'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
             'email', 'telefone', 'foto', 'ativo', 'observacoes',
@@ -33,6 +35,9 @@ class FuncionarioAdmForm(forms.ModelForm):
             'funcao_atual': forms.TextInput(attrs={'placeholder': 'Ex: Auxiliar de Secretaria', 'id': 'id_func_atual'}),
             'data_ci_movimentacao': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'data_ingresso_unidade': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'data_admissao_acumulacao': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'data_ci_movimentacao_acumulacao': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'data_ingresso_unidade_acumulacao': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'observacoes': forms.Textarea(attrs={'rows': 3}),
         }
 
@@ -40,6 +45,9 @@ class FuncionarioAdmForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
+        self.fields['data_admissao_acumulacao'].input_formats = ['%Y-%m-%d']
+        self.fields['data_ci_movimentacao_acumulacao'].input_formats = ['%Y-%m-%d']
+        self.fields['data_ingresso_unidade_acumulacao'].input_formats = ['%Y-%m-%d']
         aplicar_estilo_campos(self)
 
     def clean_cpf(self):

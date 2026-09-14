@@ -110,6 +110,46 @@
               {{ form.hora_saida }}
             </div>
 
+            <!-- Painel Integrado de Banco de Horas / Folgas -->
+            <div class="col-12" id="wrap-banco-horas">
+              <div class="p-3 rounded border" style="background:rgba(15,23,42,0.6); border-color:var(--card-border) !important;">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-hourglass-split text-warning" style="font-size:1.3rem;"></i>
+                    <h6 class="m-0 font-weight-bold text-white">Integração com o Banco de Horas / Folgas</h6>
+                  </div>
+                  <div id="banco-impacto-badge"></div>
+                </div>
+
+                <div class="row g-3 align-items-center">
+                  <div class="col-md-7">
+                    <div class="form-check form-switch fs-6 mb-1">
+                      {{ form.lancar_banco_horas }}
+                      <label class="form-check-label font-weight-bold ms-2" for="{{ form.lancar_banco_horas.id_for_label }}" style="cursor:pointer; color:#e2e8f0;">
+                        Lançar automaticamente no Banco de Horas do servidor
+                      </label>
+                    </div>
+                    <small class="text-muted d-block ms-4" id="banco-impacto-descricao">
+                      Ajusta o saldo do servidor instantaneamente na Pasta Digital e no Painel Geral de Folgas.
+                    </small>
+                  </div>
+
+                  <div class="col-md-5">
+                    <label class="form-label font-weight-bold text-muted text-uppercase" style="font-size:0.75rem;">Quantidade (Dias ou fração no banco) *</label>
+                    <div class="input-group">
+                      {{ form.dias_banco_horas }}
+                      <span class="input-group-text bg-dark text-muted border-secondary">dia(s)</span>
+                    </div>
+                    <div class="d-flex gap-1 mt-1">
+                      <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="definirDias(0.2)">0.2d (~1h30)</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="definirDias(0.5)">0.5d (Meio período)</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="definirDias(1.0)">1.0d (Integral)</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="col-12">
               <div class="p-3 rounded d-flex align-items-center gap-3 border" style="background:rgba(59,130,246,0.05); border-color:rgba(59,130,246,0.2) !important;">
                 <div class="form-check form-switch m-0 fs-5">
@@ -150,14 +190,51 @@
   const wrapAdm = document.getElementById('wrap-administrativos');
   const wrapTerc = document.getElementById('wrap-terceirizados');
 
+  const selectTipoOcorrencia = document.getElementById('id_tipo');
+  const wrapChegada = document.getElementById('wrap-chegada');
+  const wrapSaida = document.getElementById('wrap-saida');
+  const wrapBancoHoras = document.getElementById('wrap-banco-horas');
+  const badgeImpacto = document.getElementById('banco-impacto-badge');
+  const descImpacto = document.getElementById('banco-impacto-descricao');
+  const inputDias = document.getElementById('id_dias_banco_horas');
+
+  function definirDias(qtd) {
+    if (inputDias) {
+      inputDias.value = qtd;
+    }
+  }
+
   function atualizarExibicaoCampos() {
-    const val = selectTipoFunc.value;
-    wrapProf.style.display = (val === 'professor') ? 'block' : 'none';
-    wrapAdm.style.display = (val === 'administrativo') ? 'block' : 'none';
-    wrapTerc.style.display = (val === 'terceirizado') ? 'block' : 'none';
+    const valFunc = selectTipoFunc.value;
+    wrapProf.style.display = (valFunc === 'professor') ? 'block' : 'none';
+    wrapAdm.style.display = (valFunc === 'administrativo') ? 'block' : 'none';
+    wrapTerc.style.display = (valFunc === 'terceirizado') ? 'block' : 'none';
+
+    const valTipo = selectTipoOcorrencia ? selectTipoOcorrencia.value : '';
+    wrapChegada.style.display = (valTipo === 'atraso') ? 'block' : 'none';
+    wrapSaida.style.display = (valTipo === 'saida_antecipada') ? 'block' : 'none';
+
+    if (valTipo === 'atraso' || valTipo === 'saida_antecipada' || valTipo === 'compensacao') {
+      wrapBancoHoras.style.display = 'block';
+      if (valTipo === 'compensacao') {
+        badgeImpacto.innerHTML = '<span class="badge bg-success font-monospace" style="font-size:0.78rem; padding:6px 12px;"><i class="bi bi-plus-circle me-1"></i>➕ CRÉDITO NO BANCO (Saldo Positivo)</span>';
+        descImpacto.textContent = 'Esta compensação aumentará o saldo de folgas disponíveis do servidor.';
+        if (inputDias && (!inputDias.value || inputDias.value === '0.5')) {
+          // Mantém ou sugere
+        }
+      } else {
+        badgeImpacto.innerHTML = '<span class="badge bg-danger font-monospace" style="font-size:0.78rem; padding:6px 12px;"><i class="bi bi-dash-circle me-1"></i>➖ DÉBITO NO BANCO (Saldo Negativo)</span>';
+        descImpacto.textContent = 'Este atraso/saída será debitado do banco de horas como pendência a compensar.';
+      }
+    } else {
+      wrapBancoHoras.style.display = 'none';
+    }
   }
 
   selectTipoFunc.addEventListener('change', atualizarExibicaoCampos);
+  if (selectTipoOcorrencia) {
+    selectTipoOcorrencia.addEventListener('change', atualizarExibicaoCampos);
+  }
   atualizarExibicaoCampos();
 </script>
 {% endblock %}

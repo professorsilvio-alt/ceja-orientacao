@@ -89,6 +89,7 @@ class ProfessorForm(forms.ModelForm):
             'em_desvio_funcao', 'funcao_administrativa', 'abrangencia_desvio', 'ch_administrativa',
             'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2', 'acumulacao_nesta_escola',
             'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'funcao_administrativa_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao',
+            'data_admissao_acumulacao', 'data_ci_movimentacao_acumulacao', 'data_ingresso_unidade_acumulacao',
             'nome_completo', 'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
             'data_admissao', 'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
             'email', 'telefone', 'celular', 'foto', 'ativo', 'observacoes',
@@ -114,6 +115,9 @@ class ProfessorForm(forms.ModelForm):
             'funcao_administrativa_acumulacao': forms.Select(attrs={'id': 'id_func_adm_acum'}),
             'ch_total_acumulacao': forms.NumberInput(attrs={'id': 'id_ch_acum', 'placeholder': 'Ex: 16, 20, 40'}),
             'tempos_aula_acumulacao': forms.NumberInput(attrs={'id': 'id_tempos_acum', 'placeholder': 'Ex: 12, 16'}),
+            'data_admissao_acumulacao': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_adm_acum'}, format='%Y-%m-%d'),
+            'data_ci_movimentacao_acumulacao': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_ci_acum'}, format='%Y-%m-%d'),
+            'data_ingresso_unidade_acumulacao': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_ingresso_acum'}, format='%Y-%m-%d'),
             'nome_completo': forms.TextInput(attrs={'id': 'id_nome_prof'}),
             'cargo': forms.TextInput(attrs={'id': 'id_cargo'}),
             'disciplina_ingresso': forms.TextInput(attrs={'id': 'id_disc_ing'}),
@@ -137,9 +141,15 @@ class ProfessorForm(forms.ModelForm):
         self.fields['data_admissao'].required = False
         self.fields['data_ci_movimentacao'].required = False
         self.fields['data_ingresso_unidade'].required = False
+        self.fields['data_admissao_acumulacao'].required = False
+        self.fields['data_ci_movimentacao_acumulacao'].required = False
+        self.fields['data_ingresso_unidade_acumulacao'].required = False
         self.fields['data_admissao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ci_movimentacao'].input_formats = ['%Y-%m-%d']
         self.fields['data_ingresso_unidade'].input_formats = ['%Y-%m-%d']
+        self.fields['data_admissao_acumulacao'].input_formats = ['%Y-%m-%d']
+        self.fields['data_ci_movimentacao_acumulacao'].input_formats = ['%Y-%m-%d']
+        self.fields['data_ingresso_unidade_acumulacao'].input_formats = ['%Y-%m-%d']
         self.fields['funcao_administrativa'].required = False
         self.fields['abrangencia_desvio'].required = False
         self.fields['ch_administrativa'].required = False
