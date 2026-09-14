@@ -139,11 +139,17 @@ class FuncionarioAdministrativo(models.Model):
         return f'{self.nome_completo} — {self.cargo}'
 
     @property
+    def data_ingresso_efetiva(self):
+        """Retorna a melhor data disponível para cálculo de tempo e antiguidade."""
+        return self.data_ingresso_unidade or self.data_ci_movimentacao or self.data_admissao
+
+    @property
     def tempo_na_escola(self):
-        if not self.data_ingresso_unidade:
+        data_ref = self.data_ingresso_efetiva
+        if not data_ref:
             return 'Não informado'
         hoje = timezone.now().date()
-        diff = relativedelta(hoje, self.data_ingresso_unidade)
+        diff = relativedelta(hoje, data_ref)
         partes = []
         if diff.years:
             partes.append(f'{diff.years} ano{"s" if diff.years > 1 else ""}')
@@ -377,4 +383,35 @@ class RegistroPontoTerceirizado(models.Model):
     def __str__(self):
         dt_local = timezone.localtime(self.data_hora) if timezone.is_aware(self.data_hora) else self.data_hora
         return f'{self.funcionario.nome_curto} - {self.get_tipo_display()} em {dt_local.strftime("%d/%m/%Y %H:%M:%S")}'
+
+
+def recalcular_classificacao_administrativos():
+    """
+    Recalcula a classificação oficial dos funcionários administrativos ativos
+    pela antiguidade (data_ingresso_unidade, data_ci_movimentacao ou data_admissao) e nome.
+    """
+    from datetime import datetime
+    import unicodedata
+
+    def norm(text):
+        if not text:
+            return ''
+        n = unicodedata.normalize('NFD', text)
+        return ''.join(c for c in n if unicodedata.category(c) != 'Mn').lower().strip()
+
+    # 1. Limpa inativos
+    FuncionarioAdministrativo.objects.filter(ativo=False).update(classificacao=None)
+
+    # 2. Busca ativos
+    ativos = list(FuncionarioAdministrativo.objects.filter(ativo=True))
+
+    def key_ordem(a):
+        d = a.data_ingresso_unidade or a.data_ci_movimentacao or a.data_admissao
+        return (d or datetime(2099, 1, 1).date(), norm(a.nome_completo))
+
+    ativos.sort(key=key_ordem)
+    for i, a in enumerate(ativos, 1):
+        if a.classificacao != i:
+            FuncionarioAdministrativo.objects.filter(pk=a.pk).update(classificacao=i)
+
 

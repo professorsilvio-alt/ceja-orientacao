@@ -15,25 +15,46 @@ from .forms import FuncionarioAdmForm, FuncionarioTercForm
 def view_listar_administrativos(request):
     import re
     from django.db.models import Q
+    from .models import recalcular_classificacao_administrativos
+    recalcular_classificacao_administrativos()
+
+    status_filtro = request.GET.get('status', 'ativos')
     q = request.GET.get('q', '').strip()
     cpf_limpo = re.sub(r'\D', '', q)
 
-    funcionarios = FuncionarioAdministrativo.objects.filter(ativo=True)
+    total_ativos = FuncionarioAdministrativo.objects.filter(ativo=True).count()
+    total_inativos = FuncionarioAdministrativo.objects.filter(ativo=False).count()
+    total_geral = FuncionarioAdministrativo.objects.count()
+
+    if status_filtro == 'inativos':
+        funcionarios = FuncionarioAdministrativo.objects.filter(ativo=False).order_by('nome_completo')
+    elif status_filtro == 'todos':
+        funcionarios = FuncionarioAdministrativo.objects.all().order_by('classificacao', 'nome_completo')
+    else:
+        # Padrão: ativos na escola
+        funcionarios = FuncionarioAdministrativo.objects.filter(ativo=True).order_by('classificacao', 'nome_completo')
 
     if q:
         query_filter = Q(nome_completo__icontains=q) | \
                        Q(matricula__icontains=q) | \
                        Q(matricula_acumulacao__icontains=q) | \
                        Q(id_vinculo__icontains=q) | \
+                       Q(id_vinculo_acumulacao__icontains=q) | \
                        Q(cargo__icontains=q) | \
-                       Q(funcao_atual__icontains=q)
+                       Q(funcao_atual__icontains=q) | \
+                       Q(disciplina_ingresso__icontains=q)
         if cpf_limpo:
             query_filter |= Q(cpf__icontains=cpf_limpo)
         funcionarios = funcionarios.filter(query_filter)
 
     return render(request, 'funcionarios/listar_adm.html', {
         'funcionarios': funcionarios,
+        'status_filtro': status_filtro,
         'query': q,
+        'total_ativos': total_ativos,
+        'total_inativos': total_inativos,
+        'total_geral': total_geral,
+        'total': funcionarios.count(),
         'tipo': 'Funcionários Administrativos',
     })
 
@@ -99,10 +120,21 @@ def view_editar_administrativo(request, pk):
 def view_listar_terceirizados(request):
     import re
     from django.db.models import Q
+    status_filtro = request.GET.get('status', 'ativos')
     q = request.GET.get('q', '').strip()
     cpf_limpo = re.sub(r'\D', '', q)
 
-    funcionarios = FuncionarioTerceirizado.objects.filter(ativo=True)
+    total_ativos = FuncionarioTerceirizado.objects.filter(ativo=True).count()
+    total_inativos = FuncionarioTerceirizado.objects.filter(ativo=False).count()
+    total_geral = FuncionarioTerceirizado.objects.count()
+
+    if status_filtro == 'inativos':
+        funcionarios = FuncionarioTerceirizado.objects.filter(ativo=False).order_by('nome_completo')
+    elif status_filtro == 'todos':
+        funcionarios = FuncionarioTerceirizado.objects.all().order_by('nome_completo')
+    else:
+        # Padrão: ativos na escola
+        funcionarios = FuncionarioTerceirizado.objects.filter(ativo=True).order_by('nome_completo')
 
     if q:
         query_filter = Q(nome_completo__icontains=q) | \
@@ -116,7 +148,12 @@ def view_listar_terceirizados(request):
 
     return render(request, 'funcionarios/listar_terc.html', {
         'funcionarios': funcionarios,
+        'status_filtro': status_filtro,
         'query': q,
+        'total_ativos': total_ativos,
+        'total_inativos': total_inativos,
+        'total_geral': total_geral,
+        'total': funcionarios.count(),
         'tipo': 'Funcionários Terceirizados',
     })
 

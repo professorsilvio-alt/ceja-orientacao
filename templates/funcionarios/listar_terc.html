@@ -7,10 +7,13 @@
 <div class="page-header">
   <div>
     <div class="page-title">Funcionários Terceirizados</div>
-    <div class="page-subtitle">{{ funcionarios.count }} funcionário{{ funcionarios.count|pluralize:"s" }} ativo{{ funcionarios.count|pluralize:"s" }}</div>
+    <div class="page-subtitle">{{ total }} funcionário{{ total|pluralize:"s" }} cadastrado{{ total|pluralize:"s" }}</div>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'folha_ponto_kratus' %}" class="btn-gestao btn-gestao-secondary" target="_blank">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'painel_banco_folgas' %}?tipo=terc" class="btn-gestao btn-gestao-secondary" style="border: 1px solid rgba(234, 179, 8, 0.4); color: #fde047; font-weight: 700;">
+      <i class="bi bi-hourglass-split text-warning me-1"></i> Banco de Horas & Folgas
+    </a>
+    <a href="{% url 'folha_ponto_kratus' %}" class="btn-gestao btn-gestao-secondary" target="_blank" title="Imprimir Folhas de Ponto Consolidadas">
       <i class="bi bi-printer-fill me-1"></i> Folhas de Ponto (Kratus)
     </a>
     {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
@@ -24,6 +27,7 @@
 <div class="card-gestao">
   <!-- Formulário de Busca -->
   <form method="get" action="" class="mb-3 pb-3 border-bottom" style="border-color:var(--card-border) !important;">
+    <input type="hidden" name="status" value="{{ status_filtro }}">
     <div class="row g-2 align-items-center">
       <div class="col-md-8 col-lg-6">
         <div class="input-group">
@@ -31,7 +35,7 @@
           <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por Nome, CPF, Cód. Terceirizado, RG ou Empresa..." style="height:42px; font-size:0.88rem; background:rgba(15,23,42,0.6); color:#fff; border-color:var(--card-border);">
           <button type="submit" class="btn-gestao btn-gestao-primary px-4" style="height:42px; font-weight:700;">Buscar</button>
           {% if query %}
-          <a href="{% url 'listar_terceirizados' %}" class="btn-gestao btn-gestao-secondary px-3" title="Limpar busca" style="height:42px; display:inline-flex; align-items:center;"><i class="bi bi-x-lg"></i></a>
+          <a href="?status={{ status_filtro }}" class="btn-gestao btn-gestao-secondary px-3" title="Limpar busca" style="height:42px; display:inline-flex; align-items:center;"><i class="bi bi-x-lg"></i></a>
           {% endif %}
         </div>
       </div>
@@ -44,61 +48,208 @@
       {% endif %}
     </div>
   </form>
+
+  <!-- Abas de Filtro por Status -->
+  <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:12px; overflow-x:auto;">
+    <a href="?status=ativos{% if query %}&q={{ query }}{% endif %}" class="btn-gestao {% if status_filtro == 'ativos' or not status_filtro %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-person-check-fill"></i> Ativos na Escola <span class="badge bg-dark ms-1">{{ total_ativos }}</span>
+    </a>
+    <a href="?status=inativos{% if query %}&q={{ query }}{% endif %}" class="btn-gestao {% if status_filtro == 'inativos' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-person-slash"></i> Desligados / Inativos <span class="badge bg-dark ms-1">{{ total_inativos }}</span>
+    </a>
+    <a href="?status=todos{% if query %}&q={{ query }}{% endif %}" class="btn-gestao {% if status_filtro == 'todos' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-people-fill"></i> Todos os Cadastros <span class="badge bg-dark ms-1">{{ total_geral }}</span>
+    </a>
+  </div>
+
   {% if funcionarios %}
-  <div class="table-responsive">
-    <table class="table-gestao" id="tabela-terc">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Cargo / Função</th>
-          <th>Empresa</th>
-          <th>Admissão</th>
-          <th>Tempo</th>
-          <th>Contato</th>
-          <th style="text-align:right;">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for func in funcionarios %}
-        <tr>
-          <td>
-            <div style="font-weight:600;">{{ func.nome_completo }}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted);">CPF: {{ func.cpf|slice:":3" }}.{{ func.cpf|slice:"3:6" }}.{{ func.cpf|slice:"6:9" }}-{{ func.cpf|slice:"9:" }}</div>
-          </td>
-          <td>{{ func.cargo_funcao }}</td>
-          <td style="font-size:0.85rem; color:var(--text-secondary);">{{ func.empresa_contratante }}</td>
-          <td>{{ func.data_admissao|date:"d/m/Y" }}</td>
-          <td><span style="color:var(--green); font-size:0.82rem;">{{ func.tempo_na_escola }}</span></td>
-          <td style="font-size:0.82rem;">
-            {% if func.telefone %}<div><i class="bi bi-phone me-1" style="color:var(--text-muted);"></i>{{ func.telefone }}</div>{% endif %}
-            {% if func.email %}<div><i class="bi bi-envelope me-1" style="color:var(--text-muted);"></i>{{ func.email }}</div>{% endif %}
-          </td>
-          <td style="text-align:right;">
-            <div class="d-flex gap-1 justify-content-end">
-              <a href="{% url 'folha_ponto_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Folha de Ponto (Kratus)" target="_blank">
+  <style>
+    .card-servidor-item {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .card-servidor-item:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      transform: translateY(-2px);
+    }
+    .badge-terc-grid {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+      flex-shrink: 0;
+    }
+    .badge-terc-neutral {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #334155;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <div class="row g-3" id="grid-terceirizados">
+    {% for func in funcionarios %}
+    <div class="col-12 col-lg-6">
+      <div class="card-servidor-item h-100 d-flex flex-column justify-content-between">
+        <div>
+          <!-- CABEÇALHO DO CARD -->
+          <div class="d-flex align-items-start justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+            <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+              <!-- Código Kratus / Identificador -->
+              {% if func.codigo_terceirizado %}
+              <div class="badge-terc-grid" title="Código na Empresa / Kratus: {{ func.codigo_terceirizado }}">
+                #{{ func.codigo_terceirizado }}
+              </div>
+              {% else %}
+              <div class="badge-terc-neutral" title="Sem código cadastrado">
+                #{{ forloop.counter }}
+              </div>
+              {% endif %}
+
+              <!-- Avatar / Foto -->
+              {% if func.foto %}
+              <img src="{{ func.foto.url }}" alt="{{ func.nome_completo }}" class="flex-shrink-0" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b;">
+              {% else %}
+              <div class="flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #334155); color: #fbbf24; font-weight: 800; font-size: 1.15rem; border: 2px solid #475569;">
+                {{ func.nome_completo|first|upper }}
+              </div>
+              {% endif %}
+
+              <!-- Nome e Função -->
+              <div style="min-width: 0;">
+                <h5 class="mb-1 text-truncate" style="font-weight: 800; font-size: 1.08rem; color: #fff;">
+                  <a href="{% url 'detalhe_terceirizado' func.pk %}" style="color: inherit; text-decoration: none;" title="{{ func.nome_completo }}">
+                    {{ func.nome_completo }}
+                  </a>
+                </h5>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <span class="badge" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-size: 0.74rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;" title="Função: {{ func.cargo_funcao }}">
+                    <i class="bi bi-person-workspace me-1"></i>{{ func.cargo_funcao }}
+                  </span>
+
+                  <span class="badge {% if func.ativo %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 0.72rem; padding: 3px 8px;">
+                    {% if func.ativo %}Ativo{% else %}Inativo{% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="d-flex gap-1 flex-shrink-0">
+              <a href="{% url 'folha_ponto_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary btn-sm" style="padding: 6px 10px; font-size: 0.82rem;" title="Gerar Folha de Ponto Mensal (PDF)" target="_blank">
                 <i class="bi bi-file-earmark-pdf"></i>
               </a>
-              <a href="{% url 'detalhe_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary" style="padding:5px 10px; font-size:0.78rem;" title="Ver detalhes">
+              <a href="{% url 'detalhe_terceirizado' func.pk %}" class="btn-gestao btn-gestao-secondary btn-sm" style="padding: 6px 10px; font-size: 0.82rem;" title="Ver Pasta Digital e Detalhes">
                 <i class="bi bi-eye"></i>
               </a>
               {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-              <a href="{% url 'editar_terceirizado' func.pk %}" class="btn-gestao btn-gestao-primary" style="padding:5px 10px; font-size:0.78rem;" title="Editar">
+              <a href="{% url 'editar_terceirizado' func.pk %}" class="btn-gestao btn-gestao-primary btn-sm" style="padding: 6px 10px; font-size: 0.82rem;" title="Editar">
                 <i class="bi bi-pencil"></i>
               </a>
               {% endif %}
             </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </div>
+
+          <!-- CORPO DO CARD: Dados da Empresa e Contrato -->
+          <div class="row g-2 mb-2">
+            <!-- Código e Horário -->
+            <div class="col-6">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px;">
+                <div style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: 700;">Cód. / Matrícula</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #fde047;">{{ func.codigo_terceirizado|default:"—" }}</div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 2px;">
+                  <i class="bi bi-clock me-1 text-info"></i>{{ func.horario_trabalho|default:"07:00 X 16:48" }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Empresa Contratante -->
+            <div class="col-6">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px;">
+                <div style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: 700;">Empresa Contratante</div>
+                <div style="font-size: 0.88rem; font-weight: 800; color: #38bdf8; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ func.empresa_contratante }}">
+                  {{ func.empresa_contratante }}
+                </div>
+                <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+                  {% if func.departamento %}{{ func.departamento }}{% else %}CECIERJ{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Documentos e Contato -->
+            <div class="col-12">
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px 12px;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Documentos</span>
+                  <span style="color: #cbd5e1; font-size: 0.82rem; font-family: monospace;">
+                    CPF: {{ func.cpf|slice:":3" }}.{{ func.cpf|slice:"3:6" }}.{{ func.cpf|slice:"6:9" }}-{{ func.cpf|slice:"9:" }}
+                    {% if func.rg %} | RG: {{ func.rg }}{% endif %}
+                  </span>
+                </div>
+                <div class="text-end">
+                  <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block;">Contato</span>
+                  <span style="color: #60a5fa; font-size: 0.82rem;">
+                    {% if func.telefone %}
+                      <i class="bi bi-phone me-1"></i>{{ func.telefone }}
+                    {% elif func.email %}
+                      <i class="bi bi-envelope me-1"></i>{{ func.email|truncatechars:20 }}
+                    {% else %}
+                      <span class="text-muted">Não informado</span>
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RODAPÉ DO CARD: Datas e Tempo de Escola -->
+        <div class="pt-2 mt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-color: rgba(255,255,255,0.08) !important; font-size: 0.8rem;">
+          <div>
+            <span style="color: #94a3b8;"><i class="bi bi-calendar-event me-1"></i>Admissão:</span>
+            <strong style="color: #e2e8f0;">{{ func.data_admissao|date:"d/m/Y"|default:"—" }}</strong>
+          </div>
+          <div>
+            <span style="color: #94a3b8;"><i class="bi bi-hourglass-split me-1 text-success"></i>Tempo na escola:</span>
+            {% if func.data_admissao %}
+            <strong style="color: #4ade80;">{{ func.tempo_na_escola }}</strong>
+            {% else %}
+            <span style="color: var(--text-muted);">—</span>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
   </div>
   {% else %}
   <div style="text-align:center; padding:48px; color:var(--text-muted);">
     <i class="bi bi-people" style="font-size:3rem; display:block; margin-bottom:12px;"></i>
-    Nenhum funcionário terceirizado cadastrado.
-    {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-    <br><a href="{% url 'criar_terceirizado' %}" class="btn-gestao btn-gestao-primary mt-3">Cadastrar o primeiro</a>
+    <p class="fw-bold" style="font-size:1.1rem;">Nenhum funcionário terceirizado encontrado.</p>
+    {% if query %}
+    <a href="?status={{ status_filtro }}" class="btn-gestao btn-gestao-secondary mt-2">Limpar busca</a>
+    {% elif request.user.perfil == 'diretor' or request.user.is_superuser %}
+    <a href="{% url 'criar_terceirizado' %}" class="btn-gestao btn-gestao-primary mt-2">Cadastrar o primeiro</a>
     {% endif %}
   </div>
   {% endif %}
