@@ -322,6 +322,21 @@ class Professor(models.Model):
         return self.abrangencia_desvio in ['mat2', 'ambas']
 
     @property
+    def tem_multiplos_vinculos_na_escola(self):
+        """
+        Retorna True se o professor possui 2 vínculos/matrículas atuando nesta unidade escolar.
+        Considera True se acumulacao_nesta_escola for True, ou se tiver 2ª matrícula cadastrada
+        com dados de disciplina/cargo/CH de acumulação.
+        """
+        if not self.matricula_acumulacao:
+            return False
+        if self.acumulacao_nesta_escola:
+            return True
+        if self.disciplina_ingresso_acumulacao or self.cargo_acumulacao or self.ch_total_acumulacao or self.tempos_aula_acumulacao:
+            return True
+        return False
+
+    @property
     def mat1_em_sala(self):
         """Retorna True se a 1ª matrícula leciona em sala de aula."""
         return not self.mat1_em_desvio
@@ -329,7 +344,7 @@ class Professor(models.Model):
     @property
     def mat2_em_sala(self):
         """Retorna True se a 2ª matrícula leciona em sala de aula nesta escola."""
-        return bool(self.matricula_acumulacao and self.acumulacao_nesta_escola and not self.mat2_em_desvio)
+        return bool(self.matricula_acumulacao and self.tem_multiplos_vinculos_na_escola and not self.mat2_em_desvio)
 
     @property
     def descricao_desvio_matriculas(self):
@@ -828,16 +843,49 @@ class AlocacaoHorarioTurma(models.Model):
         }
         return nomes.get(self.dia_semana_codigo, str(self.dia_semana))
 
+    @property
+    def matricula_num_1(self):
+        if not self.professor:
+            return ''
+        if self.vinculo_matricula_1 == 2 and self.professor.matricula_acumulacao:
+            return self.professor.matricula_acumulacao
+        return self.professor.matricula
+
+    @property
+    def matricula_num_2(self):
+        if not self.professor_2:
+            return ''
+        if self.vinculo_matricula_2 == 2 and self.professor_2.matricula_acumulacao:
+            return self.professor_2.matricula_acumulacao
+        return self.professor_2.matricula
+
+    @property
+    def tem_multiplos_1(self):
+        return bool(self.professor and self.professor.tem_multiplos_vinculos_na_escola)
+
+    @property
+    def tem_multiplos_2(self):
+        return bool(self.professor_2 and self.professor_2.tem_multiplos_vinculos_na_escola)
+
+    @property
+    def rotulo_completo_com_matricula(self):
+        """Retorna rótulo dos professores com indicador de Mat. 1 / Mat. 2 se aplicável."""
+        parts = []
+        if self.professor:
+            p1_name = self.professor.nome_curto.upper()
+            sufixo1 = f' (Mat. {self.vinculo_matricula_1})' if self.tem_multiplos_1 else ''
+            parts.append(f'{p1_name}{sufixo1}')
+        if self.professor_2:
+            p2_name = self.professor_2.nome_curto.upper()
+            sufixo2 = f' (Mat. {self.vinculo_matricula_2})' if self.tem_multiplos_2 else ''
+            parts.append(f'{p2_name}{sufixo2}')
+        return ' / '.join(parts) if parts else (self.rotulo_exibicao or 'Vazio')
+
     def __str__(self):
         if self.rotulo_exibicao:
             prof = self.rotulo_exibicao
         else:
-            p1 = self.professor.nome_curto if self.professor else ''
-            p2 = self.professor_2.nome_curto if self.professor_2 else ''
-            if p1 and p2:
-                prof = f'{p1} / {p2}'
-            else:
-                prof = p1 or p2 or 'Vazio'
+            prof = self.rotulo_completo_com_matricula
         return f'{self.turma.codigo_turma} — {self.get_dia_semana_display()} {self.hora_inicio.strftime("%H:%M")}: {prof}'
 
 

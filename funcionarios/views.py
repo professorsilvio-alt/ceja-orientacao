@@ -590,3 +590,178 @@ def view_reenviar_email_ponto(request, pk):
 
     return redirect(request.META.get('HTTP_REFERER', 'espelho_ponto'))
 
+
+@diretor_required
+def view_painel_banco_folgas(request):
+    """
+    Painel Centralizado de Consulta e Gestão do Banco de Horas e Folgas.
+    Lista todos os funcionários (professores, administrativos e terceirizados),
+    permitindo identificar diretamente devedores (saldo negativo), positivos e zerados.
+    """
+    from professores.models import Professor, OcorrenciaFolgaServidor
+    from .models import FuncionarioAdministrativo, FuncionarioTerceirizado
+    from django.contrib.contenttypes.models import ContentType
+    from django.db.models import Q
+
+    ct_prof = ContentType.objects.get_for_model(Professor)
+    ct_adm = ContentType.objects.get_for_model(FuncionarioAdministrativo)
+    ct_terc = ContentType.objects.get_for_model(FuncionarioTerceirizado)
+
+    q = request.GET.get('q', '').strip()
+    filtro_status = request.GET.get('status', 'todos').strip()
+    filtro_tipo = request.GET.get('tipo', 'todos').strip()
+    filtro_ordem = request.GET.get('ordem', 'devedores_primeiro').strip()
+
+    # Coleta todas as ocorrências de folga agrupadas em memória para performance máxima
+    folgas_all = OcorrenciaFolgaServidor.objects.all().order_by('-data_ocorrencia')
+    mapa_folgas = {}
+    for f in folgas_all:
+        k = (f.content_type_id, f.object_id)
+        if k not in mapa_folgas:
+            mapa_folgas[k] = []
+        mapa_folgas[k].append(f)
+
+    lista_servidores = []
+
+    # 1. Professores
+    if filtro_tipo in ['todos', 'professor']:
+        profs = Professor.objects.filter(ativo=True)
+        if q:
+            profs = profs.filter(Q(nome_completo__icontains=q) | Q(matricula__icontains=q) | Q(cpf__icontains=q))
+        for p in profs:
+            k = (ct_prof.id, p.pk)
+            fs = mapa_folgas.get(k, [])
+            cred = sum(float(x.dias) for x in fs if x.tipo == 'credito')
+            usuf = sum(float(x.dias) for x in fs if x.tipo == 'usufruido')
+            saldo = cred - usuf
+            ult_data = fs[0].data_ocorrencia if fs else None
+            lista_servidores.append({
+                'pk': p.pk,
+                'nome': p.nome_completo,
+                'nome_curto': p.nome_curto,
+                'tipo_categoria': 'professor',
+                'tipo_label': 'Professor(a)',
+                'tipo_badge': 'badge-cat-prof',
+                'tipo_servidor_param': 'professor',
+                'matricula': p.matricula,
+                'matricula_2': p.matricula_acumulacao,
+                'tem_duas_matriculas': p.tem_multiplos_vinculos_na_escola,
+                'cargo': p.disciplina_ingresso or p.cargo or 'Docente',
+                'creditos': cred,
+                'usufruidos': usuf,
+                'saldo': saldo,
+                'total_lancamentos': len(fs),
+                'ultima_data': ult_data,
+                'url_pasta': f"/professores/{p.pk}/",
+            })
+
+    # 2. Funcionários Administrativos
+    if filtro_tipo in ['todos', 'administrativo']:
+        adms = FuncionarioAdministrativo.objects.filter(ativo=True)
+        if q:
+            adms = adms.filter(Q(nome_completo__icontains=q) | Q(matricula__icontains=q) | Q(cpf__icontains=q))
+        for a in adms:
+            k = (ct_adm.id, a.pk)
+            fs = mapa_folgas.get(k, [])
+            cred = sum(float(x.dias) for x in fs if x.tipo == 'credito')
+            usuf = sum(float(x.dias) for x in fs if x.tipo == 'usufruido')
+            saldo = cred - usuf
+            ult_data = fs[0].data_ocorrencia if fs else None
+            lista_servidores.append({
+                'pk': a.pk,
+                'nome': a.nome_completo,
+                'nome_curto': a.nome_curto if hasattr(a, 'nome_curto') else a.nome_completo.split()[0],
+                'tipo_categoria': 'administrativo',
+                'tipo_label': 'Administrativo',
+                'tipo_badge': 'badge-cat-adm',
+                'tipo_servidor_param': 'adm',
+                'matricula': a.matricula,
+                'matricula_2': a.matricula_acumulacao,
+                'tem_duas_matriculas': bool(a.matricula_acumulacao),
+                'cargo': a.funcao_atual or a.cargo or 'Administrativo',
+                'creditos': cred,
+                'usufruidos': usuf,
+                'saldo': saldo,
+                'total_lancamentos': len(fs),
+                'ultima_data': ult_data,
+                'url_pasta': f"/funcionarios/administrativos/{a.pk}/",
+            })
+
+    # 3. Funcionários Terceirizados
+    if filtro_tipo in ['todos', 'terceirizado']:
+        tercs = FuncionarioTerceirizado.objects.filter(ativo=True)
+        if q:
+            tercs = tercs.filter(Q(nome_completo__icontains=q) | Q(codigo_terceirizado__icontains=q) | Q(cpf__icontains=q))
+        for t in tercs:
+            k = (ct_terc.id, t.pk)
+            fs = mapa_folgas.get(k, [])
+            cred = sum(float(x.dias) for x in fs if x.tipo == 'credito')
+            usuf = sum(float(x.dias) for x in fs if x.tipo == 'usufruido')
+            saldo = cred - usuf
+            ult_data = fs[0].data_ocorrencia if fs else None
+            lista_servidores.append({
+                'pk': t.pk,
+                'nome': t.nome_completo,
+                'nome_curto': t.nome_curto if hasattr(t, 'nome_curto') else t.nome_completo.split()[0],
+                'tipo_categoria': 'terceirizado',
+                'tipo_label': 'Terceirizado',
+                'tipo_badge': 'badge-cat-terc',
+                'tipo_servidor_param': 'terc',
+                'matricula': t.codigo_terceirizado or t.cpf,
+                'matricula_2': '',
+                'tem_duas_matriculas': False,
+                'cargo': t.cargo_funcao or 'Apoio Operacional',
+                'creditos': cred,
+                'usufruidos': usuf,
+                'saldo': saldo,
+                'total_lancamentos': len(fs),
+                'ultima_data': ult_data,
+                'url_pasta': f"/funcionarios/terceirizados/{t.pk}/",
+            })
+
+    # Métricas gerais da listagem
+    total_geral = len(lista_servidores)
+    devedores_todos = [s for s in lista_servidores if s['saldo'] < 0]
+    positivos_todos = [s for s in lista_servidores if s['saldo'] > 0]
+    zerados_todos = [s for s in lista_servidores if s['saldo'] == 0]
+
+    qtd_devedores = len(devedores_todos)
+    dias_totais_devidos = abs(sum(s['saldo'] for s in devedores_todos))
+    qtd_positivos = len(positivos_todos)
+    dias_totais_credito = sum(s['saldo'] for s in positivos_todos)
+    qtd_zerados = len(zerados_todos)
+
+    # Aplicação do filtro de status
+    if filtro_status == 'devedores':
+        lista_servidores = devedores_todos
+    elif filtro_status == 'positivos':
+        lista_servidores = positivos_todos
+    elif filtro_status == 'zerados':
+        lista_servidores = zerados_todos
+    elif filtro_status == 'com_movimentacao':
+        lista_servidores = [s for s in lista_servidores if s['total_lancamentos'] > 0]
+
+    # Ordenação
+    if filtro_ordem == 'devedores_primeiro':
+        lista_servidores.sort(key=lambda x: (x['saldo'], x['nome']))
+    elif filtro_ordem == 'positivos_primeiro':
+        lista_servidores.sort(key=lambda x: (-x['saldo'], x['nome']))
+    elif filtro_ordem == 'nome_asc':
+        lista_servidores.sort(key=lambda x: x['nome'])
+    elif filtro_ordem == 'movimentacao':
+        lista_servidores.sort(key=lambda x: (x['total_lancamentos'] == 0, -(x['total_lancamentos']), x['nome']))
+
+    return render(request, 'funcionarios/banco_folgas_geral.html', {
+        'servidores': lista_servidores,
+        'filtro_status': filtro_status,
+        'filtro_tipo': filtro_tipo,
+        'filtro_ordem': filtro_ordem,
+        'q': q,
+        'total_geral': total_geral,
+        'qtd_devedores': qtd_devedores,
+        'dias_totais_devidos': dias_totais_devidos,
+        'qtd_positivos': qtd_positivos,
+        'dias_totais_credito': dias_totais_credito,
+        'qtd_zerados': qtd_zerados,
+    })
+

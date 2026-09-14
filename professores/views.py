@@ -846,26 +846,41 @@ def view_grade_turma(request, pk):
             aloc = alocs_dict.get((dia_code, inicio.strftime("%H:%M")))
 
             prof_nome = ''
+            disp_nome1 = ''
+            disp_nome2 = ''
+            tem_mult1 = False
+            tem_mult2 = False
+            mat_num1 = ''
+            mat_num2 = ''
+            v1 = 1
+            v2 = 1
+
             if aloc:
+                v1 = getattr(aloc, 'vinculo_matricula_1', 1) or 1
+                v2 = getattr(aloc, 'vinculo_matricula_2', 1) or 1
+
+                if aloc.professor:
+                    disp_nome1 = aloc.professor.nome_curto
+                    tem_mult1 = aloc.professor.tem_multiplos_vinculos_na_escola
+                    mat_num1 = aloc.professor.matricula_acumulacao if (v1 == 2 and aloc.professor.matricula_acumulacao) else aloc.professor.matricula
+
+                if aloc.professor_2:
+                    disp_nome2 = aloc.professor_2.nome_curto
+                    tem_mult2 = aloc.professor_2.tem_multiplos_vinculos_na_escola
+                    mat_num2 = aloc.professor_2.matricula_acumulacao if (v2 == 2 and aloc.professor_2.matricula_acumulacao) else aloc.professor_2.matricula
+
                 if aloc.rotulo_exibicao:
                     prof_nome = aloc.rotulo_exibicao
                 else:
-                    p1 = aloc.professor.nome_curto if aloc.professor else ''
-                    p2 = aloc.professor_2.nome_curto if aloc.professor_2 else ''
-                    if p1 and p2:
-                        prof_nome = f'{p1} / {p2}'
-                    else:
-                        prof_nome = p1 or p2
+                    prof_nome = aloc.rotulo_completo_com_matricula
 
             prof_id_val = ''
             if aloc and aloc.professor:
-                v1 = getattr(aloc, 'vinculo_matricula_1', 1) or 1
-                prof_id_val = f"{aloc.professor.pk}:{v1}" if aloc.professor.acumulacao_nesta_escola else str(aloc.professor.pk)
+                prof_id_val = f"{aloc.professor.pk}:{v1}"
 
             prof2_id_val = ''
             if aloc and aloc.professor_2:
-                v2 = getattr(aloc, 'vinculo_matricula_2', 1) or 1
-                prof2_id_val = f"{aloc.professor_2.pk}:{v2}" if aloc.professor_2.acumulacao_nesta_escola else str(aloc.professor_2.pk)
+                prof2_id_val = f"{aloc.professor_2.pk}:{v2}"
 
             row_cells.append({
                 'dia_code': dia_code,
@@ -875,10 +890,16 @@ def view_grade_turma(request, pk):
                 'is_fechada': is_fechada,
                 'alocacao': aloc,
                 'professor_nome': prof_nome,
+                'display_name_1': disp_nome1,
+                'display_name_2': disp_nome2,
+                'tem_multiplos_1': tem_mult1,
+                'tem_multiplos_2': tem_mult2,
+                'matricula_num_1': mat_num1,
+                'matricula_num_2': mat_num2,
                 'prof_id': prof_id_val,
                 'prof2_id': prof2_id_val,
-                'vinculo1': getattr(aloc, 'vinculo_matricula_1', 1) if aloc else 1,
-                'vinculo2': getattr(aloc, 'vinculo_matricula_2', 1) if aloc else 1,
+                'vinculo1': v1,
+                'vinculo2': v2,
             })
         
         # Só exibe a linha no quadro se houver funcionamento em pelo menos 1 dia
@@ -906,21 +927,23 @@ def view_grade_turma(request, pk):
             p_disc1 = (p.disciplina_ingresso or '').lower()
             is_disc1 = bool(disc_nome and (disc_nome in p_disc1 or p_disc1 in disc_nome or any(w in disc_nome for w in p_disc1.split() if len(w) > 3)))
             
-            if p.acumulacao_nesta_escola:
+            if p.tem_multiplos_vinculos_na_escola:
                 itens_prof.append(({
                     'val': f"{p.pk}:1",
-                    'nome_completo': f"{p.nome_completo} (1ª Matrícula: {p.matricula})",
+                    'nome_completo': f"{p.nome_completo} [1ª Matrícula: {p.matricula}]",
                     'nome_curto': f"{p.nome_curto} (Mat. 1)",
-                    'cargo_disc': p.disciplina_ingresso or p.cargo or '1ª Mat.',
-                    'mat_label': '1ª Mat.'
+                    'cargo_disc': f"{p.disciplina_ingresso or p.cargo or 'Docente'} — 1ª Matrícula",
+                    'mat_label': '1ª Mat.',
+                    'vinculo': 1
                 }, is_disc1))
             else:
                 itens_prof.append(({
-                    'val': str(p.pk),
-                    'nome_completo': p.nome_completo,
+                    'val': f"{p.pk}:1",
+                    'nome_completo': f"{p.nome_completo} (Matrícula: {p.matricula})",
                     'nome_curto': p.nome_curto,
-                    'cargo_disc': p.disciplina_ingresso or p.cargo or 'Prof.',
-                    'mat_label': ''
+                    'cargo_disc': p.disciplina_ingresso or p.cargo or 'Docente',
+                    'mat_label': '',
+                    'vinculo': 1
                 }, is_disc1))
 
         # 2ª Matrícula: só entra na grade se lecionar no CEJA e estiver em sala de aula
@@ -931,10 +954,11 @@ def view_grade_turma(request, pk):
             
             itens_prof.append(({
                 'val': f"{p.pk}:2",
-                'nome_completo': f"{p.nome_completo} (2ª Matrícula: {p.matricula_acumulacao or 'Acum'})",
+                'nome_completo': f"{p.nome_completo} [2ª Matrícula: {p.matricula_acumulacao or 'Acum'}]",
                 'nome_curto': f"{p.nome_curto} (Mat. 2)",
-                'cargo_disc': mat2_disc_str or '2ª Mat.',
-                'mat_label': '2ª Mat.'
+                'cargo_disc': f"{mat2_disc_str or 'Docente'} — 2ª Matrícula",
+                'mat_label': '2ª Mat.',
+                'vinculo': 2
             }, is_disc2))
 
         for item, is_disc in itens_prof:
@@ -1058,10 +1082,10 @@ def view_salvar_alocacao_slot(request, pk):
             if not rotulo_exibicao:
                 parts = []
                 if prof1:
-                    suffix1 = f' (Mat. {vinculo1})' if prof1.acumulacao_nesta_escola else ''
+                    suffix1 = f' (Mat. {vinculo1})' if prof1.tem_multiplos_vinculos_na_escola else ''
                     parts.append(f'{prof1.nome_curto.upper()}{suffix1}')
                 if prof2:
-                    suffix2 = f' (Mat. {vinculo2})' if prof2.acumulacao_nesta_escola else ''
+                    suffix2 = f' (Mat. {vinculo2})' if prof2.tem_multiplos_vinculos_na_escola else ''
                     parts.append(f'{prof2.nome_curto.upper()}{suffix2}')
                 rotulo = ' / '.join(parts)
             else:
@@ -1083,6 +1107,7 @@ def view_salvar_alocacao_slot(request, pk):
             msg = f'Professor(es) alocado(s): {rotulo}!'
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('format') == 'json':
+            aloc_obj = locals().get('aloc')
             return JsonResponse({
                 'success': True,
                 'message': msg,
@@ -1091,6 +1116,16 @@ def view_salvar_alocacao_slot(request, pk):
                 'status_display': turma.status_display,
                 'status_ok': turma.status_ok,
                 'professores_nomes': turma.professores_alocados_nomes,
+                'aloc_id': aloc_obj.id if aloc_obj else None,
+                'vinculo1': aloc_obj.vinculo_matricula_1 if aloc_obj else 1,
+                'vinculo2': aloc_obj.vinculo_matricula_2 if aloc_obj else 1,
+                'tem_multiplos_1': aloc_obj.tem_multiplos_1 if aloc_obj else False,
+                'tem_multiplos_2': aloc_obj.tem_multiplos_2 if aloc_obj else False,
+                'matricula_num_1': aloc_obj.matricula_num_1 if aloc_obj else '',
+                'matricula_num_2': aloc_obj.matricula_num_2 if aloc_obj else '',
+                'display_name_1': aloc_obj.professor.nome_curto if (aloc_obj and aloc_obj.professor) else '',
+                'display_name_2': aloc_obj.professor_2.nome_curto if (aloc_obj and aloc_obj.professor_2) else '',
+                'rotulo': aloc_obj.rotulo_exibicao if aloc_obj else '',
             })
 
         messages.success(request, msg)

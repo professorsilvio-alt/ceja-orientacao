@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Banco Geral de Horas & Folgas — CEJA Profa Rosa Soares{% endblock %}
+{% block nav_banco_folgas %}active{% endblock %}
+
+{% block breadcrumb %}
+  <span style="color:var(--text-secondary);"><i class="bi bi-people-fill me-1"></i>Pessoas</span>
+  <span class="mx-2" style="color:var(--text-muted);">/</span>
+  <span style="color:var(--text-primary); font-weight:700;"><i class="bi bi-hourglass-split me-1 text-warning"></i>Banco Geral de Horas & Folgas</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── DESIGN SYSTEM & ESTÉTICA MODERNA DO BANCO DE FOLGAS ── */
+  .banco-hero {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  /* KPI Summary Cards */
+  .kpi-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 18px 20px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none !important;
+    display: block;
+  }
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .kpi-card.active-kpi {
+    outline: 2px solid #38bdf8;
+    background: rgba(15, 23, 42, 0.95);
+  }
+  .kpi-card-devedor {
+    border-left: 5px solid #ef4444 !important;
+  }
+  .kpi-card-devedor:hover {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+  }
+  .kpi-card-positivo {
+    border-left: 5px solid #10b981 !important;
+  }
+  .kpi-card-positivo:hover {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+  }
+  .kpi-card-zerado {
+    border-left: 5px solid #64748b !important;
+  }
+  .kpi-card-total {
+    border-left: 5px solid #38bdf8 !important;
+  }
+
+  .kpi-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .kpi-number {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1.1;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .kpi-sub {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 4px;
+    color: var(--text-secondary);
+  }
+
+  /* Barra de Filtros */
+  .filter-panel {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .filter-pill-btn {
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: all 0.15s ease;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+  }
+  .filter-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .filter-pill-btn.active {
+    background: #38bdf8;
+    color: #0f172a !important;
+    border-color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  }
+  .filter-pill-btn.active.btn-devedores {
+    background: #ef4444 !important;
+    color: #fff !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5) !important;
+  }
+  .filter-pill-btn.active.btn-positivos {
+    background: #10b981 !important;
+    color: #fff !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5) !important;
+  }
+
+  /* Tabela Elegante de Funcionários */
+  .table-banco {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  .table-banco thead th {
+    background: transparent;
+    color: #94a3b8;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.8px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 14px;
+  }
+  .table-banco tbody tr {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.15s ease;
+    border-radius: 10px;
+  }
+  .table-banco tbody tr:hover {
+    background: rgba(30, 41, 59, 0.85);
+    transform: scale(1.003);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  .table-banco tbody td {
+    padding: 14px;
+    vertical-align: middle;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .table-banco tbody td:first-child {
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+  .table-banco tbody td:last-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  /* Badges de Categoria */
+  .badge-cat-prof {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+  .badge-cat-adm {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+  .badge-cat-terc {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  /* Badges de Saldo (Alto Contraste) */
+  .badge-saldo-devedor {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #ef4444;
+    font-size: 0.85rem;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+    animation: pulseDevedor 2.5s infinite;
+  }
+  @keyframes pulseDevedor {
+    0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.25); }
+    50% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); }
+  }
+
+  .badge-saldo-positivo {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid #10b981;
+    font-size: 0.85rem;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge-saldo-zerado {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Avatar com Iniciais */
+  .avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  @media print {
+    .no-print, .filter-panel, .sidebar, .topbar { display: none !important; }
+    .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .table-banco tbody tr { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; }
+    .badge-saldo-devedor { color: #b91c1c !important; border-color: #b91c1c !important; }
+    .badge-saldo-positivo { color: #047857 !important; border-color: #047857 !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+  <!-- Cabeçalho Principal -->
+  <div class="banco-hero no-print">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <h3 class="fw-bold mb-1" style="color:#f8fafc;">
+          <i class="bi bi-hourglass-split me-2" style="color:#fde047;"></i>Painel do Banco de Horas & Folgas
+        </h3>
+        <p class="text-muted mb-0" style="font-size:0.9rem;">
+          Visão panorâmica e controle direto de saldos, direitos adquiridos e pendências de todos os servidores da unidade.
+        </p>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn-gestao btn-gestao-secondary" onclick="window.print();">
+          <i class="bi bi-printer me-1"></i> Imprimir Relatório
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARDS DE MÉTRICAS RÁPIDAS (KPIs) ── -->
+  <div class="row g-3 mb-4 no-print">
+    
+    <!-- 1. DEVEDORES (Saldo Negativo) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a href="?status=devedores&tipo={{ filtro_tipo }}&q={{ q }}" class="kpi-card kpi-card-devedor {% if filtro_status == 'devedores' %}active-kpi{% endif %}">
+        <div class="kpi-title">
+          <span><i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>Quem Deve Horas</span>
+          <span class="badge bg-danger rounded-pill" style="font-size:0.7rem;">Negativo</span>
+        </div>
+        <div class="kpi-number text-danger">{{ qtd_devedores }}</div>
+        <div class="kpi-sub">
+          <strong>{{ dias_totais_devidos|floatformat:1 }} dia(s)</strong> devidos à escola
+        </div>
+      </a>
+    </div>
+
+    <!-- 2. POSITIVOS (Créditos Acumulados) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a href="?status=positivos&tipo={{ filtro_tipo }}&q={{ q }}" class="kpi-card kpi-card-positivo {% if filtro_status == 'positivos' %}active-kpi{% endif %}">
+        <div class="kpi-title">
+          <span><i class="bi bi-check-circle-fill text-success me-1"></i>Saldo Positivo</span>
+          <span class="badge bg-success rounded-pill" style="font-size:0.7rem;">Crédito</span>
+        </div>
+        <div class="kpi-number text-success">{{ qtd_positivos }}</div>
+        <div class="kpi-sub">
+          <strong>+{{ dias_totais_credito|floatformat:1 }} dia(s)</strong> acumulados a gozar
+        </div>
+      </a>
+    </div>
+
+    <!-- 3. ZERADOS / QUITADOS -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a href="?status=zerados&tipo={{ filtro_tipo }}&q={{ q }}" class="kpi-card kpi-card-zerado {% if filtro_status == 'zerados' %}active-kpi{% endif %}">
+        <div class="kpi-title">
+          <span><i class="bi bi-dash-circle-fill text-muted me-1"></i>Quitados / Em Dia</span>
+          <span class="badge bg-secondary rounded-pill" style="font-size:0.7rem;">Saldo 0</span>
+        </div>
+        <div class="kpi-number text-white">{{ qtd_zerados }}</div>
+        <div class="kpi-sub">
+          Sem pendências ou saldo zerado
+        </div>
+      </a>
+    </div>
+
+    <!-- 4. TOTAL GERAL -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a href="?status=todos&tipo={{ filtro_tipo }}&q={{ q }}" class="kpi-card kpi-card-total {% if filtro_status == 'todos' %}active-kpi{% endif %}">
+        <div class="kpi-title">
+          <span><i class="bi bi-people-fill text-info me-1"></i>Total de Servidores</span>
+          <span class="badge bg-info text-dark rounded-pill" style="font-size:0.7rem;">Ativos</span>
+        </div>
+        <div class="kpi-number text-info">{{ total_geral }}</div>
+        <div class="kpi-sub">
+          Colaboradores cadastrados
+        </div>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ── PAINEL DE FILTROS E BUSCA ── -->
+  <div class="filter-panel no-print">
+    <form method="get" action="" class="row g-3 align-items-center">
+      
+      <!-- Filtros Rápidos por Situação (Pills) -->
+      <div class="col-12 col-lg-7">
+        <label class="form-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size:0.72rem;">
+          <i class="bi bi-funnel me-1"></i>Situação do Saldo:
+        </label>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="?status=todos&tipo={{ filtro_tipo }}&ordem={{ filtro_ordem }}&q={{ q }}" 
+             class="filter-pill-btn {% if filtro_status == 'todos' %}active{% endif %}">
+            Todos ({{ total_geral }})
+          </a>
+          <a href="?status=devedores&tipo={{ filtro_tipo }}&ordem={{ filtro_ordem }}&q={{ q }}" 
+             class="filter-pill-btn btn-devedores {% if filtro_status == 'devedores' %}active{% endif %}">
+            <i class="bi bi-exclamation-octagon-fill"></i> Quem Deve ({{ qtd_devedores }})
+          </a>
+          <a href="?status=positivos&tipo={{ filtro_tipo }}&ordem={{ filtro_ordem }}&q={{ q }}" 
+             class="filter-pill-btn btn-positivos {% if filtro_status == 'positivos' %}active{% endif %}">
+            <i class="bi bi-check-circle-fill"></i> Com Crédito ({{ qtd_positivos }})
+          </a>
+          <a href="?status=zerados&tipo={{ filtro_tipo }}&ordem={{ filtro_ordem }}&q={{ q }}" 
+             class="filter-pill-btn {% if filtro_status == 'zerados' %}active{% endif %}">
+            Quitados ({{ qtd_zerados }})
+          </a>
+          <a href="?status=com_movimentacao&tipo={{ filtro_tipo }}&ordem={{ filtro_ordem }}&q={{ q }}" 
+             class="filter-pill-btn {% if filtro_status == 'com_movimentacao' %}active{% endif %}">
+            <i class="bi bi-activity"></i> Com Histórico
+          </a>
+        </div>
+      </div>
+
+      <!-- Filtro Categoria + Ordenação -->
+      <div class="col-12 col-sm-6 col-lg-2">
+        <label class="form-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size:0.72rem;">
+          Categoria:
+        </label>
+        <select name="tipo" class="form-select form-select-sm" style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);" onchange="this.form.submit()">
+          <option value="todos" {% if filtro_tipo == 'todos' %}selected{% endif %}>Todas as Categorias</option>
+          <option value="professor" {% if filtro_tipo == 'professor' %}selected{% endif %}>Professores</option>
+          <option value="administrativo" {% if filtro_tipo == 'administrativo' %}selected{% endif %}>Administrativos</option>
+          <option value="terceirizado" {% if filtro_tipo == 'terceirizado' %}selected{% endif %}>Terceirizados</option>
+        </select>
+        <input type="hidden" name="status" value="{{ filtro_status }}">
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label class="form-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size:0.72rem;">
+          Buscar Servidor:
+        </label>
+        <div class="input-group input-group-sm">
+          <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Nome, matrícula ou CPF..." style="background:#0f172a; color:#fff; border-color:rgba(255,255,255,0.15);">
+          <button class="btn btn-outline-info" type="submit"><i class="bi bi-search"></i></button>
+          {% if q %}
+          <a href="?status={{ filtro_status }}&tipo={{ filtro_tipo }}&ordem={{ filtro_ordem }}" class="btn btn-outline-secondary" title="Limpar busca"><i class="bi bi-x-lg"></i></a>
+          {% endif %}
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ── TABELA CONSOLIDADA ── -->
+  <div class="table-responsive">
+    <table class="table-banco">
+      <thead>
+        <tr>
+          <th>Servidor</th>
+          <th>Matrícula / Cargo</th>
+          <th class="text-center" style="color:#34d399;">Créditos (+)</th>
+          <th class="text-center" style="color:#f87171;">Usufruídas (-)</th>
+          <th class="text-center">Saldo Atual</th>
+          <th class="text-center">Última Movimentação</th>
+          <th class="text-end no-print">Ações Rápidas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in servidores %}
+        <tr>
+          <!-- Servidor -->
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-circle {% if s.tipo_categoria == 'professor' %}bg-primary text-white{% elif s.tipo_categoria == 'administrativo' %}bg-purple text-white{% else %}bg-warning text-dark{% endif %}" style="{% if s.tipo_categoria == 'administrativo' %}background:#7c3aed !important;{% endif %}">
+                {{ s.nome|first|upper }}
+              </div>
+              <div>
+                <div class="fw-bold text-white mb-1" style="font-size:0.95rem;">
+                  {{ s.nome }}
+                  {% if s.tem_duas_matriculas %}
+                    <span class="badge bg-dark border border-secondary text-info ms-1" style="font-size:0.65rem;" title="Possui 2 Matrículas">2 Vínculos</span>
+                  {% endif %}
+                </div>
+                <span class="{{ s.tipo_badge }}">{{ s.tipo_label }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Matrícula / Cargo -->
+          <td>
+            <div class="font-monospace fw-bold text-white mb-1" style="font-size:0.85rem;">
+              {{ s.matricula }}
+              {% if s.matricula_2 %}
+                <span class="text-muted" style="font-size:0.75rem;">/ {{ s.matricula_2 }}</span>
+              {% endif %}
+            </div>
+            <div class="text-muted" style="font-size:0.8rem;">{{ s.cargo }}</div>
+          </td>
+
+          <!-- Créditos (+) -->
+          <td class="text-center">
+            {% if s.creditos > 0 %}
+              <span class="fw-bold text-success font-monospace" style="font-size:0.95rem;">+{{ s.creditos|floatformat:1 }} d</span>
+            {% else %}
+              <span class="text-muted font-monospace" style="font-size:0.85rem;">0 d</span>
+            {% endif %}
+          </td>
+
+          <!-- Usufruídas (-) -->
+          <td class="text-center">
+            {% if s.usufruidos > 0 %}
+              <span class="fw-bold text-danger font-monospace" style="font-size:0.95rem;">-{{ s.usufruidos|floatformat:1 }} d</span>
+            {% else %}
+              <span class="text-muted font-monospace" style="font-size:0.85rem;">0 d</span>
+            {% endif %}
+          </td>
+
+          <!-- Saldo Atual (Badge de Alto Impacto) -->
+          <td class="text-center">
+            {% if s.saldo < 0 %}
+              <span class="badge-saldo-devedor" title="Este servidor está com saldo negativo (deve horas/dias à escola)">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ s.saldo|floatformat:1 }} dia(s) • DEVE
+              </span>
+            {% elif s.saldo > 0 %}
+              <span class="badge-saldo-positivo" title="Este servidor possui crédito positivo acumulado para folga">
+                <i class="bi bi-check-circle-fill me-1"></i>+{{ s.saldo|floatformat:1 }} dia(s) • CRÉDITO
+              </span>
+            {% else %}
+              <span class="badge-saldo-zerado" title="Saldo quitado / sem pendências">
+                <i class="bi bi-dash-circle me-1"></i>0 dia(s) • QUITADO
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- Última Movimentação -->
+          <td class="text-center">
+            {% if s.ultima_data %}
+              <div class="text-white fw-bold" style="font-size:0.82rem;">{{ s.ultima_data|date:"d/m/Y" }}</div>
+              <small class="text-muted" style="font-size:0.72rem;">{{ s.total_lancamentos }} lançamento(s)</small>
+            {% else %}
+              <span class="badge bg-dark border border-secondary text-muted" style="font-size:0.72rem;">Sem histórico</span>
+            {% endif %}
+          </td>
+
+          <!-- Ações Rápidas -->
+          <td class="text-end no-print">
+            <div class="d-inline-flex gap-2">
+              <button type="button" 
+                      class="btn-gestao btn-gestao-primary btn-sm py-1 px-2"
+                      onclick="abrirModalLancamentoRapido('{{ s.tipo_servidor_param }}', '{{ s.pk }}', '{{ s.nome|escapejs }}')"
+                      title="Lançar crédito ou uso de folga agora">
+                <i class="bi bi-plus-circle me-1"></i> Lançar
+              </button>
+              <a href="{{ s.url_pasta }}" 
+                 class="btn-gestao btn-gestao-secondary btn-sm py-1 px-2"
+                 title="Abrir Pasta Digital completa">
+                <i class="bi bi-folder-fill me-1"></i> Pasta
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <div class="text-muted">
+              <i class="bi bi-search" style="font-size:2.5rem; opacity:0.4;"></i>
+              <p class="mt-2 fw-bold" style="font-size:1.1rem;">Nenhum servidor encontrado com os filtros selecionados.</p>
+              <a href="?status=todos&tipo=todos" class="btn btn-outline-info btn-sm mt-1">Limpar todos os filtros</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ── MODAL DE LANÇAMENTO RÁPIDO DE FOLGA ── -->
+<div class="modal fade no-print" id="modalLancamentoRapido" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+      <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+        <h5 class="modal-title font-weight-bold" style="color:var(--blue);">
+          <i class="bi bi-hourglass-split me-2 text-warning"></i>Lançar Folga / Banco de Horas
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form id="formLancamentoRapido" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="alert alert-info py-2 font-weight-bold mb-3" style="font-size:0.88rem; background:rgba(6,182,212,0.1); border-color:rgba(6,182,212,0.3); color:#67e8f9;">
+            <i class="bi bi-person-badge me-1"></i> Servidor: <span id="modalServidorNome" style="color:#fff;"></span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Tipo de Ocorrência *</label>
+            <select name="tipo" class="form-select" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required>
+              <option value="credito">➕ Crédito de Folga (Direito Adquirido / Plantão / Eleição)</option>
+              <option value="usufruido">➖ Gozo de Folga (Folga Usufruída / Saída Antecipada)</option>
+            </select>
+            <small class="text-muted" style="font-size:0.75rem;">
+              Crédito aumenta o saldo positivo. Gozo consome o saldo ou gera débito se usufruir a mais.
+            </small>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Quantidade (Dias) *</label>
+              <input type="number" step="0.5" min="0.5" name="dias" value="1.0" class="form-control" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Data da Ocorrência *</label>
+              <input type="date" name="data_ocorrencia" id="modalDataOcorrencia" class="form-control" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Motivo / Origem *</label>
+            <input type="text" name="motivo" class="form-control" placeholder="Ex: Trabalho na Eleição 2026, Compensação de Reunião, Gozo de Folga..." style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Observações / Detalhes (Opcional)</label>
+            <textarea name="observacoes" class="form-control" rows="2" placeholder="Informações complementares..." style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+          <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-gestao btn-gestao-primary">
+            <i class="bi bi-check-lg me-1"></i> Registrar Lançamento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function abrirModalLancamentoRapido(tipoServidor, pk, nomeServidor) {
+    document.getElementById('modalServidorNome').textContent = nomeServidor;
+    const form = document.getElementById('formLancamentoRapido');
+    form.action = `/professores/pasta/${tipoServidor}/${pk}/folgas/adicionar/`;
+
+    const hoje = new Date().toISOString().split('T')[0];
+    const dataInput = document.getElementById('modalDataOcorrencia');
+    if (dataInput && !dataInput.value) {
+      dataInput.value = hoje;
+    }
+
+    const modalEl = document.getElementById('modalLancamentoRapido');
+    if (window.bootstrap && bootstrap.Modal) {
+      const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modalObj.show();
+    }
+  }
+</script>
+{% endblock %}

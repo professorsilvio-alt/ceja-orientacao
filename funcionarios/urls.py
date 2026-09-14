@@ -27,5 +27,8 @@ urlpatterns = [
     path('ponto/senhas/', views.view_gerenciar_senhas_ponto, name='gerenciar_senhas_ponto'),
     path('terceirizados/folha-ponto/', views.view_folha_ponto_kratus, name='folha_ponto_kratus'),
     path('terceirizados/<int:pk>/folha-ponto/', views.view_folha_ponto_kratus, name='folha_ponto_terceirizado'),
+
+    # Painel Central do Banco de Horas & Folgas (Todos os Servidores)
+    path('banco-folgas/', views.view_painel_banco_folgas, name='painel_banco_folgas'),
 ]
 

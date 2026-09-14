@@ -212,6 +212,7 @@
   }
 
   /* Célula Selecionada */
+  /* Célula Selecionada */
   .cell-selected {
     outline: 3px solid #38bdf8 !important;
     outline-offset: -3px;
@@ -222,6 +223,56 @@
   .cell-drag-over {
     outline: 3px dashed #4ade80 !important;
     background-color: rgba(34, 197, 94, 0.4) !important;
+  }
+
+  /* Estrutura Interna de Informação do Professor na Célula */
+  .cell-prof-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 100%;
+    max-width: calc(100% - 24px);
+    line-height: 1.25;
+    gap: 2px;
+  }
+  .cell-prof-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .cell-prof-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 800;
+  }
+  .badge-mat {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    line-height: 1.2;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .badge-mat1 {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border: 1px solid #38bdf8 !important;
+  }
+  .badge-mat2 {
+    background: #7c3aed !important;
+    color: #ffffff !important;
+    border: 1px solid #c084fc !important;
   }
 
   @media print {
@@ -373,6 +424,14 @@
                     data-profid="{{ cell.prof_id }}"
                     data-prof2id="{{ cell.prof2_id }}"
                     data-rotulo="{{ cell.professor_nome }}"
+                    data-vinculo1="{{ cell.vinculo1 }}"
+                    data-vinculo2="{{ cell.vinculo2 }}"
+                    data-temmultiplos1="{% if cell.tem_multiplos_1 %}1{% else %}0{% endif %}"
+                    data-temmultiplos2="{% if cell.tem_multiplos_2 %}1{% else %}0{% endif %}"
+                    data-dispnome1="{{ cell.display_name_1|default:cell.professor_nome }}"
+                    data-dispnome2="{{ cell.display_name_2 }}"
+                    data-matnum1="{{ cell.matricula_num_1 }}"
+                    data-matnum2="{{ cell.matricula_num_2 }}"
                     ondragstart="arrastarInicio(event, this)"
                     ondragover="arrastarSobre(event, this)"
                     ondragleave="arrastarSair(this)"
@@ -380,14 +439,38 @@
                     onclick="clicarCelulaGrid(this)"
                     title="Clique para editar ou use Ctrl+C para copiar">
                   <div class="cell-content-wrapper">
-                    <span>
-                      {% if cell.prof2_id %}
-                      <i class="bi bi-people-fill me-1" style="color:#38bdf8;"></i>
-                      {% else %}
-                      <i class="bi bi-person-fill me-1"></i>
+                    <div class="cell-prof-container">
+                      <div class="cell-prof-row">
+                        {% if cell.prof2_id %}
+                        <i class="bi bi-people-fill me-1" style="color:#38bdf8; flex-shrink:0;"></i>
+                        {% else %}
+                        <i class="bi bi-person-fill me-1" style="color:#4ade80; flex-shrink:0;"></i>
+                        {% endif %}
+                        <span class="cell-prof-name" title="{{ cell.display_name_1|default:cell.professor_nome }}">{{ cell.display_name_1|default:cell.professor_nome }}</span>
+                        {% if cell.tem_multiplos_1 %}
+                          {% if cell.vinculo1 == 2 %}
+                          <span class="badge-mat badge-mat2" title="2ª Matrícula ({{ cell.matricula_num_1 }})">Mat. 2</span>
+                          {% else %}
+                          <span class="badge-mat badge-mat1" title="1ª Matrícula ({{ cell.matricula_num_1 }})">Mat. 1</span>
+                          {% endif %}
+                        {% endif %}
+                      </div>
+
+                      {% if cell.prof2_id and cell.display_name_2 %}
+                      <div class="cell-prof-row mt-1" style="font-size:0.75rem; color:#bae6fd;">
+                        <i class="bi bi-person-plus-fill me-1" style="color:#38bdf8; flex-shrink:0;"></i>
+                        <span class="cell-prof-name" title="{{ cell.display_name_2 }}">{{ cell.display_name_2 }}</span>
+                        {% if cell.tem_multiplos_2 %}
+                          {% if cell.vinculo2 == 2 %}
+                          <span class="badge-mat badge-mat2" title="2ª Matrícula ({{ cell.matricula_num_2 }})">Mat. 2</span>
+                          {% else %}
+                          <span class="badge-mat badge-mat1" title="1ª Matrícula ({{ cell.matricula_num_2 }})">Mat. 1</span>
+                          {% endif %}
+                        {% endif %}
+                      </div>
                       {% endif %}
-                      {{ cell.professor_nome }}
-                    </span>
+                    </div>
+
                     <button type="button" class="btn-trash-clean no-print" onclick="deletarSlotDireto(event, '{{ cell.dia_code }}', '{{ row.hora_inicio }}')" title="Excluir este horário">
                       <i class="bi bi-trash-fill"></i>
                     </button>
@@ -403,6 +486,14 @@
                     data-profid=""
                     data-prof2id=""
                     data-rotulo=""
+                    data-vinculo1="1"
+                    data-vinculo2="1"
+                    data-temmultiplos1="0"
+                    data-temmultiplos2="0"
+                    data-dispnome1=""
+                    data-dispnome2=""
+                    data-matnum1=""
+                    data-matnum2=""
                     ondragover="arrastarSobre(event, this)"
                     ondragleave="arrastarSair(this)"
                     ondrop="soltarItem(event, this)"
@@ -696,8 +787,23 @@
     .catch(() => recarregarPaginaLimpa());
   }
 
-  /* ── ABRIR MODAL ── */
+  /* ── ABRIR MODAL COM RESET COMPLETO DE INSTÂNCIAS BOOTSTRAP ── */
+  function setSelectValue(sel, targetVal) {
+    if (!sel) return;
+    sel.value = targetVal;
+    if (sel.value !== targetVal && targetVal) {
+      const baseId = targetVal.toString().split(':')[0];
+      for (let opt of sel.options) {
+        if (opt.value === targetVal || opt.value === baseId || opt.value.startsWith(baseId + ':')) {
+          sel.value = opt.value;
+          break;
+        }
+      }
+    }
+  }
+
   function abrirModalAlocacao(cellElem) {
+    // 1. Limpa qualquer backdrop ou classe orfã imediatamente
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style.removeProperty('overflow');
@@ -715,22 +821,39 @@
     document.getElementById('input_hora_inicio').value = horaInicio;
     document.getElementById('input_hora_fim').value = horaFim;
     document.getElementById('slotInfoLabel').textContent = diaNome + ' (' + horaInicio + ' / ' + horaFim + ')';
-    
-    document.getElementById('select_professor').value = profId;
-    document.getElementById('select_professor_2').value = prof2Id;
+
+    const sel1 = document.getElementById('select_professor');
+    const sel2 = document.getElementById('select_professor_2');
+    setSelectValue(sel1, profId);
+    setSelectValue(sel2, prof2Id);
     document.getElementById('input_rotulo_exibicao').value = rotulo;
 
     const modalEl = document.getElementById('modalAlocarSlot');
+
+    // 2. Destrói com segurança qualquer instância anterior presa/corrompida
     if (window.bootstrap && bootstrap.Modal) {
       try {
-        const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalObj.show();
+        const oldInstance = bootstrap.Modal.getInstance(modalEl);
+        if (oldInstance) {
+          try { oldInstance.dispose(); } catch(e){}
+        }
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+        modalEl.setAttribute('aria-hidden', 'true');
+
+        const newInstance = new bootstrap.Modal(modalEl, {
+          backdrop: true,
+          keyboard: true,
+          focus: true
+        });
+        newInstance.show();
         return;
       } catch(err) {
         console.warn('Bootstrap modal instance fallback:', err);
       }
     }
-    // Fallback nativo
+
+    // 3. Fallback nativo 100% à prova de falhas
     modalEl.classList.add('show');
     modalEl.style.display = 'block';
     modalEl.removeAttribute('aria-hidden');
@@ -746,7 +869,12 @@
     if (window.bootstrap && bootstrap.Modal) {
       try {
         const modalObj = bootstrap.Modal.getInstance(modalEl);
-        if (modalObj) modalObj.hide();
+        if (modalObj) {
+          modalObj.hide();
+          setTimeout(() => {
+            try { modalObj.dispose(); } catch(e){}
+          }, 350);
+        }
       } catch(e){}
     }
     modalEl.classList.remove('show');
@@ -754,6 +882,8 @@
     modalEl.setAttribute('aria-hidden', 'true');
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
   }
 
   /* ── CLIQUE NA CÉLULA: PREENCHIMENTO RÁPIDO OU MODAL ── */
@@ -780,43 +910,121 @@
     abrirModalAlocacao(cellElem);
   }
 
+  /* ── RENDERIZADOR HTML DA CÉLULA ALOCADA ── */
+  function renderizarConteudoCelulaAlocada(dispNome1, temMult1, vinc1, matNum1, dispNome2, temMult2, vinc2, matNum2, diaCode, horaInicio) {
+    let badge1Html = '';
+    if (temMult1) {
+      const cls1 = (vinc1 == 2) ? 'badge-mat2' : 'badge-mat1';
+      badge1Html = `<span class="badge-mat ${cls1}" title="${vinc1}ª Matrícula (${matNum1 || ''})">Mat. ${vinc1}</span>`;
+    }
+    let row2Html = '';
+    if (dispNome2) {
+      let badge2Html = '';
+      if (temMult2) {
+        const cls2 = (vinc2 == 2) ? 'badge-mat2' : 'badge-mat1';
+        badge2Html = `<span class="badge-mat ${cls2}" title="${vinc2}ª Matrícula (${matNum2 || ''})">Mat. ${vinc2}</span>`;
+      }
+      row2Html = `
+        <div class="cell-prof-row mt-1" style="font-size:0.75rem; color:#bae6fd;">
+          <i class="bi bi-person-plus-fill me-1" style="color:#38bdf8; flex-shrink:0;"></i>
+          <span class="cell-prof-name" title="${dispNome2}">${dispNome2}</span>
+          ${badge2Html}
+        </div>
+      `;
+    }
+    return `
+      <div class="cell-content-wrapper">
+        <div class="cell-prof-container">
+          <div class="cell-prof-row">
+            <i class="bi bi-${dispNome2 ? 'people' : 'person'}-fill me-1" style="color:${dispNome2 ? '#38bdf8' : '#4ade80'}; flex-shrink:0;"></i>
+            <span class="cell-prof-name" title="${dispNome1}">${dispNome1}</span>
+            ${badge1Html}
+          </div>
+          ${row2Html}
+        </div>
+        <button type="button" class="btn-trash-clean no-print" onclick="deletarSlotDireto(event, '${diaCode}', '${horaInicio}')" title="Excluir este horário">
+          <i class="bi bi-trash-fill"></i>
+        </button>
+      </div>
+    `;
+  }
+
   /* ── COLAR INSTANTÂNEO COM 1 CLIQUE NA CÉLULA ── */
   function colarSlotInstantaneo(cellElem, dados) {
     const diaCode = cellElem.dataset.diacode;
     const horaInicio = cellElem.dataset.horainicio;
     const horaFim = cellElem.dataset.horafim;
 
-    const iconHtml = dados.prof2Id ? '<i class="bi bi-people-fill me-1" style="color:#38bdf8;"></i>' : '<i class="bi bi-person-fill me-1"></i>';
+    const dispNome1 = dados.dispNome1 || dados.rotulo || 'Professor';
+    const dispNome2 = dados.dispNome2 || '';
+    const temMult1 = dados.temMult1 || false;
+    const temMult2 = dados.temMult2 || false;
+    const vinc1 = dados.vinculo1 || 1;
+    const vinc2 = dados.vinculo2 || 1;
+    const matNum1 = dados.matNum1 || '';
+    const matNum2 = dados.matNum2 || '';
 
-    // Atualiza imediatamente a interface visualmente sem esperar a rede
-    cellElem.innerHTML = `
-      <div class="cell-content-wrapper">
-        <span>${iconHtml}${dados.rotulo}</span>
-        <button type="button" class="btn-trash-clean no-print" onclick="deletarSlotDireto(event, '${diaCode}', '${horaInicio}')" title="Excluir este horário">
-          <i class="bi bi-trash-fill"></i>
-        </button>
-      </div>
-    `;
+    // Atualiza imediatamente a interface visualmente
+    cellElem.innerHTML = renderizarConteudoCelulaAlocada(dispNome1, temMult1, vinc1, matNum1, dispNome2, temMult2, vinc2, matNum2, diaCode, horaInicio);
     cellElem.className = 'cell-alocada grid-cell';
     cellElem.dataset.profid = dados.profId || '';
     cellElem.dataset.prof2id = dados.prof2Id || '';
-    cellElem.dataset.rotulo = dados.rotulo;
+    cellElem.dataset.rotulo = dados.rotulo || '';
+    cellElem.dataset.vinculo1 = vinc1;
+    cellElem.dataset.vinculo2 = vinc2;
+    cellElem.dataset.temmultiplos1 = temMult1 ? '1' : '0';
+    cellElem.dataset.temmultiplos2 = temMult2 ? '1' : '0';
+    cellElem.dataset.dispnome1 = dispNome1;
+    cellElem.dataset.dispnome2 = dispNome2;
+    cellElem.dataset.matnum1 = matNum1;
+    cellElem.dataset.matnum2 = matNum2;
     cellElem.title = 'Clique para editar ou use Ctrl+C para copiar';
     cellElem.draggable = true;
 
-    // Dispara salvamento em segundo plano e atualiza contadores do topo
+    // Dispara salvamento em segundo plano e atualiza contadores
     salvarSlotAjax(diaCode, horaInicio, horaFim, dados.profId, dados.prof2Id, dados.rotulo, function(res) {
       if (res) {
         atualizarContadoresHeader(res);
+        if (res.tem_multiplos_1 !== undefined) {
+          cellElem.dataset.vinculo1 = res.vinculo1;
+          cellElem.dataset.temmultiplos1 = res.tem_multiplos_1 ? '1' : '0';
+          cellElem.dataset.matnum1 = res.matricula_num_1;
+          cellElem.innerHTML = renderizarConteudoCelulaAlocada(
+            res.display_name_1 || dispNome1,
+            res.tem_multiplos_1,
+            res.vinculo1,
+            res.matricula_num_1,
+            res.display_name_2 || dispNome2,
+            res.tem_multiplos_2,
+            res.vinculo2,
+            res.matricula_num_2,
+            diaCode,
+            horaInicio
+          );
+        }
       }
     });
   }
 
   /* ── COPIAR DADOS ── */
-  function copiarDados(profId, prof2Id, rotulo) {
+  function copiarDados(profId, prof2Id, rotulo, extraData) {
     if (!profId && !prof2Id && !rotulo) return;
-    dadosCopiados = { profId, prof2Id, rotulo };
-    localStorage.setItem('ceja_copied_prof_global', JSON.stringify(dadosCopiados));
+    dadosCopiados = {
+      profId: profId,
+      prof2Id: prof2Id,
+      rotulo: rotulo,
+      dispNome1: extraData ? extraData.dispNome1 : rotulo,
+      dispNome2: extraData ? extraData.dispNome2 : '',
+      temMult1: extraData ? extraData.temMult1 : false,
+      temMult2: extraData ? extraData.temMult2 : false,
+      vinculo1: extraData ? extraData.vinculo1 : 1,
+      vinculo2: extraData ? extraData.vinculo2 : 1,
+      matNum1: extraData ? extraData.matNum1 : '',
+      matNum2: extraData ? extraData.matNum2 : '',
+    };
+    try {
+      localStorage.setItem('ceja_copied_prof_global', JSON.stringify(dadosCopiados));
+    } catch(e){}
     exibirBadgeCopia(rotulo);
   }
 
@@ -827,13 +1035,24 @@
     const prof2Id = prof2Select.value;
     const rotulo = document.getElementById('input_rotulo_exibicao').value;
 
+    const opt1 = profSelect.selectedIndex >= 0 ? profSelect.options[profSelect.selectedIndex] : null;
+    const opt2 = prof2Select.selectedIndex >= 0 ? prof2Select.options[prof2Select.selectedIndex] : null;
+
+    const extraData = {
+      dispNome1: opt1 ? opt1.dataset.nomecurto : rotulo,
+      dispNome2: opt2 ? opt2.dataset.nomecurto : '',
+      temMult1: profId.includes(':'),
+      temMult2: prof2Id.includes(':'),
+      vinculo1: profId.endsWith(':2') ? 2 : 1,
+      vinculo2: prof2Id.endsWith(':2') ? 2 : 1,
+      matNum1: '',
+      matNum2: ''
+    };
+
     if (profId || prof2Id || rotulo) {
-      copiarDados(profId, prof2Id, rotulo);
+      copiarDados(profId, prof2Id, rotulo, extraData);
       
-      // Fecha modal
-      const modalEl = document.getElementById('modalAlocarSlot');
-      const modalObj = bootstrap.Modal.getInstance(modalEl);
-      if (modalObj) modalObj.hide();
+      fecharModalManual();
 
       // Salva o slot atual onde o modal foi aberto
       if (celulaSelecionada) {
@@ -885,19 +1104,27 @@
 
   /* ── ATALHOS DE TECLADO ── */
   document.addEventListener('keydown', function(e) {
-    // ESC limpa o modo cópia
     if (e.key === 'Escape') {
       if (dadosCopiados) {
         limparCopiaForcado();
       }
     }
-    // Ctrl+C copia da célula selecionada
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
       if (celulaSelecionada && (celulaSelecionada.dataset.profid || celulaSelecionada.dataset.rotulo)) {
         copiarDados(
           celulaSelecionada.dataset.profid,
           celulaSelecionada.dataset.prof2id,
-          celulaSelecionada.dataset.rotulo
+          celulaSelecionada.dataset.rotulo,
+          {
+            dispNome1: celulaSelecionada.dataset.dispnome1,
+            dispNome2: celulaSelecionada.dataset.dispnome2,
+            temMult1: celulaSelecionada.dataset.temmultiplos1 === '1',
+            temMult2: celulaSelecionada.dataset.temmultiplos2 === '1',
+            vinculo1: parseInt(celulaSelecionada.dataset.vinculo1 || '1'),
+            vinculo2: parseInt(celulaSelecionada.dataset.vinculo2 || '1'),
+            matNum1: celulaSelecionada.dataset.matnum1,
+            matNum2: celulaSelecionada.dataset.matnum2,
+          }
         );
       }
     }
@@ -929,10 +1156,79 @@
   }
 
   function limparSlotAtual() {
-    document.getElementById('select_professor').value = '';
-    document.getElementById('select_professor_2').value = '';
-    document.getElementById('input_rotulo_exibicao').value = '';
-    document.getElementById('formAlocarSlot').submit();
+    const diaCode = document.getElementById('input_dia_semana').value;
+    const horaInicio = document.getElementById('input_hora_inicio').value;
+    if (diaCode && horaInicio) {
+      fecharModalManual();
+      salvarSlotAjax(diaCode, horaInicio, '', 'limpar', '', '', function() {
+        recarregarPaginaLimpa();
+      });
+    } else {
+      document.getElementById('select_professor').value = '';
+      document.getElementById('select_professor_2').value = '';
+      document.getElementById('input_rotulo_exibicao').value = '';
+      fecharModalManual();
+    }
   }
+
+  /* ── EVENTOS DOM & SUBMIT COM INTERCEPTAÇÃO AJAX SEGURO ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+
+    const modalEl = document.getElementById('modalAlocarSlot');
+    if (modalEl) {
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      });
+    }
+
+    const formAlocar = document.getElementById('formAlocarSlot');
+    if (formAlocar) {
+      formAlocar.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        const formData = new FormData(form);
+        formData.append('format', 'json');
+
+        const btnSubmit = form.querySelector('button[type="submit"]');
+        const origText = btnSubmit ? btnSubmit.innerHTML : '';
+        if (btnSubmit) {
+          btnSubmit.disabled = true;
+          btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
+        }
+
+        fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = origText;
+          }
+          if (data.success) {
+            fecharModalManual();
+            recarregarPaginaLimpa();
+          } else {
+            alert('⚠️ ' + (data.error || 'Erro ao salvar horário.'));
+          }
+        })
+        .catch(err => {
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = origText;
+          }
+          console.error('Erro de envio:', err);
+          recarregarPaginaLimpa();
+        });
+      });
+    }
+  });
 </script>
 {% endblock %}
