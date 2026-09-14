@@ -167,6 +167,11 @@
         {% block breadcrumb %}<i class="bi bi-house"></i> Dashboard{% endblock %}
       </div>
       <div class="topbar-right">
+        {% if user.perfil == 'diretor' or user.is_superuser %}
+        <a href="{% url 'painel_banco_folgas' %}" class="btn btn-sm d-none d-sm-inline-flex align-items-center" style="background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.35); font-weight: 700; padding: 4px 10px; border-radius: 8px; text-decoration: none;" title="Consultar Banco de Horas & Folgas de Todos os Servidores">
+          <i class="bi bi-hourglass-split me-1 text-warning"></i> Banco de Folgas
+        </a>
+        {% endif %}
         <span class="topbar-clock" id="topbar-clock"></span>
         {% if user.primeiro_acesso %}
         <a href="{% url 'trocar_senha' %}" class="btn btn-sm btn-warning">
