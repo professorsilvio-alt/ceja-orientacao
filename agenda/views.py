@@ -20,6 +20,7 @@ def view_listar_presencas(request):
     data_inicio = request.GET.get('data_inicio', (timezone.now().date() - timedelta(days=30)).isoformat())
     data_fim = request.GET.get('data_fim', timezone.now().date().isoformat())
     tipo = request.GET.get('tipo', '')
+    nome = request.GET.get('nome', '').strip()
 
     registros = RegistroPresenca.objects.filter(
         data__gte=data_inicio,
@@ -29,11 +30,15 @@ def view_listar_presencas(request):
     if tipo:
         registros = registros.filter(tipo=tipo)
 
+    if nome:
+        registros = registros.filter(nome_funcionario__icontains=nome)
+
     return render(request, 'agenda/listar_presencas.html', {
         'registros': registros,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
         'tipo_filtro': tipo,
+        'nome_filtro': nome,
         'hoje': timezone.now().date().isoformat(),
     })
 

@@ -7,7 +7,7 @@
 <div class="page-header">
   <div>
     <div class="page-title">Presenças e Faltas</div>
-    <div class="page-subtitle">{{ registros.count }} registro{{ registros.count|pluralize:"s" }} no período</div>
+    <div class="page-subtitle">{{ registros.count }} registro{{ registros.count|pluralize:"s" }} no período{% if nome_filtro %} para "<strong>{{ nome_filtro }}</strong>"{% endif %}</div>
   </div>
   <a href="{% url 'novo_registro_presenca' %}" class="btn-gestao btn-gestao-primary">
     <i class="bi bi-plus-lg"></i> Registrar Ocorrência
@@ -17,17 +17,26 @@
 <!-- Filtros -->
 <div class="card-gestao mb-3">
   <form method="get" class="row g-2 align-items-end">
-    <div class="col-md-3">
-      <label class="form-label">Data inicial</label>
-      <input type="date" name="data_inicio" value="{{ data_inicio }}" class="form-control" id="filtro-inicio">
+    <div class="col-md-4 col-lg-3">
+      <label class="form-label" for="filtro-nome">Nome do funcionário</label>
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-muted border-secondary" style="border-color:var(--card-border, #334155) !important;">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" name="nome" value="{{ nome_filtro }}" class="form-control" placeholder="Buscar por nome..." id="filtro-nome" style="background:rgba(15,23,42,0.6); color:#fff; border-color:var(--card-border, #334155); height:42px;">
+      </div>
     </div>
-    <div class="col-md-3">
-      <label class="form-label">Data final</label>
-      <input type="date" name="data_fim" value="{{ data_fim }}" class="form-control" id="filtro-fim">
+    <div class="col-md-3 col-lg-2">
+      <label class="form-label" for="filtro-inicio">Data inicial</label>
+      <input type="date" name="data_inicio" value="{{ data_inicio }}" class="form-control" id="filtro-inicio" style="height:42px;">
     </div>
-    <div class="col-md-3">
-      <label class="form-label">Tipo</label>
-      <select name="tipo" class="form-select" id="filtro-tipo">
+    <div class="col-md-3 col-lg-2">
+      <label class="form-label" for="filtro-fim">Data final</label>
+      <input type="date" name="data_fim" value="{{ data_fim }}" class="form-control" id="filtro-fim" style="height:42px;">
+    </div>
+    <div class="col-md-4 col-lg-3">
+      <label class="form-label" for="filtro-tipo">Tipo</label>
+      <select name="tipo" class="form-select" id="filtro-tipo" style="height:42px;">
         <option value="">Todos</option>
         <option value="falta" {% if tipo_filtro == 'falta' %}selected{% endif %}>Falta</option>
         <option value="ausencia" {% if tipo_filtro == 'ausencia' %}selected{% endif %}>Ausência justificada</option>
@@ -36,10 +45,15 @@
         <option value="compensacao" {% if tipo_filtro == 'compensacao' %}selected{% endif %}>Compensação de horas</option>
       </select>
     </div>
-    <div class="col-md-3">
-      <button type="submit" class="btn-gestao btn-gestao-primary w-100" id="btn-filtrar">
+    <div class="col-md-4 col-lg-2 d-flex gap-1">
+      <button type="submit" class="btn-gestao btn-gestao-primary w-100" id="btn-filtrar" style="height:42px;">
         <i class="bi bi-funnel-fill"></i> Filtrar
       </button>
+      {% if nome_filtro or tipo_filtro %}
+      <a href="?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="btn-gestao btn-gestao-secondary d-flex align-items-center justify-content-center" title="Limpar filtro de nome e tipo" style="height:42px; width:44px; flex-shrink:0;">
+        <i class="bi bi-x-lg"></i>
+      </a>
+      {% endif %}
     </div>
   </form>
 </div>
