@@ -160,6 +160,77 @@
   </div>
   {% endif %}
 
+  <!-- PROCESSOS SEI VINCULADOS AO FUNCIONÁRIO ADMINISTRATIVO (FULL WIDTH) -->
+  <div class="col-12">
+    <div class="card-gestao">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 style="font-weight:700; color:var(--blue); margin:0;">
+          <i class="bi bi-folder2-open me-2" style="color:#38bdf8;"></i>Processos SEI Vinculados
+        </h6>
+        <div class="d-flex gap-2">
+          <span class="badge bg-secondary">{{ funcionario.processos_sei.count }} processo{{ funcionario.processos_sei.count|pluralize:"s" }}</span>
+          <a href="{% url 'criar_processo' %}" class="btn-gestao btn-gestao-secondary" style="font-size:0.78rem; padding:4px 10px;">
+            <i class="bi bi-plus-circle me-1"></i> Novo Processo
+          </a>
+        </div>
+      </div>
+
+      {% if funcionario.processos_sei.all %}
+      <div class="table-responsive">
+        <table class="table-gestao">
+          <thead>
+            <tr>
+              <th>Número SEI</th>
+              <th>Assunto / Título</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Abertura</th>
+              <th>Setor Atual</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proc in funcionario.processos_sei.all %}
+            <tr>
+              <td>
+                <span style="font-family:monospace; color:#38bdf8; font-weight:700;">{{ proc.numero_sei }}</span>
+              </td>
+              <td style="font-weight:600; color:#fff;">
+                <a href="{% url 'detalhe_processo' proc.pk %}" class="text-white text-decoration-none">
+                  {{ proc.titulo }}
+                </a>
+              </td>
+              <td>
+                <span class="badge" style="background:rgba(99,102,241,0.18); color:#a5b4fc; font-size:0.72rem; padding:3px 8px;">
+                  {{ proc.get_tipo_display }}
+                </span>
+              </td>
+              <td>
+                <span class="badge-gestao {% if proc.status == 'concluido' %}badge-success{% elif proc.status == 'em_andamento' %}badge-primary{% elif proc.status == 'aguardando_resposta' %}badge-warning{% else %}badge-secondary{% endif %}" style="font-size:0.72rem;">
+                  {{ proc.get_status_display }}
+                </span>
+              </td>
+              <td style="font-size:0.85rem; color:var(--text-muted);">{{ proc.data_abertura|date:"d/m/Y" }}</td>
+              <td style="font-size:0.85rem; color:var(--text-secondary);">{{ proc.setor_atual|default:"—" }}</td>
+              <td class="text-end">
+                <a href="{% url 'detalhe_processo' proc.pk %}" class="btn-gestao btn-gestao-secondary btn-sm" style="font-size:0.78rem; padding:3px 8px;" title="Ver detalhes do processo">
+                  <i class="bi bi-eye-fill"></i> Detalhes
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-3 text-muted small">
+        <i class="bi bi-folder-x" style="font-size:1.8rem; display:block; margin-bottom:6px;"></i>
+        Nenhum processo SEI atrelado a este funcionário no momento.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
   <!-- MÓDULO PASTA DIGITAL DO SERVIDOR (FULL WIDTH) -->
   <div class="col-12">
     {% include "professores/_pasta_digital_componente.html" with funcionario_pk=funcionario.pk tipo_servidor='adm' %}

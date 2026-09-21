@@ -87,7 +87,7 @@ def view_listar_processos(request):
     if data_fim:
         queryset = queryset.filter(data_abertura__lte=data_fim)
 
-    # 7. Busca Textual Ampla
+    # 7. Busca Textual Ampla (incluindo nomes dos servidores vinculados)
     if q:
         queryset = queryset.filter(
             Q(numero_sei__icontains=q) |
@@ -95,8 +95,10 @@ def view_listar_processos(request):
             Q(palavras_chave__icontains=q) |
             Q(descricao__icontains=q) |
             Q(interessado__icontains=q) |
-            Q(setor_atual__icontains=q)
-        )
+            Q(setor_atual__icontains=q) |
+            Q(professores_relacionados__nome_completo__icontains=q) |
+            Q(administrativos_relacionados__nome_completo__icontains=q)
+        ).distinct()
 
     # 8. Ordenação
     ordenacoes_validas = {
@@ -168,6 +170,7 @@ def view_criar_processo(request):
             processo = form.save(commit=False)
             processo.criado_por = request.user
             processo.save()
+            form.save_m2m()
             messages.success(request, f'Processo {processo.numero_sei} cadastrado com sucesso!')
             return redirect('detalhe_processo', pk=processo.pk)
     else:

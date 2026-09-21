@@ -99,6 +99,20 @@ class ProcessoSEI(models.Model):
         verbose_name="Link de Acesso Direto no SEI",
         help_text="Link opcional para abrir diretamente o processo no sistema SEI"
     )
+    professores_relacionados = models.ManyToManyField(
+        'professores.Professor',
+        blank=True,
+        related_name='processos_sei',
+        verbose_name="Professores Relacionados",
+        help_text="Docentes atrelados a este processo SEI"
+    )
+    administrativos_relacionados = models.ManyToManyField(
+        'funcionarios.FuncionarioAdministrativo',
+        blank=True,
+        related_name='processos_sei',
+        verbose_name="Funcionários Administrativos Relacionados",
+        help_text="Servidores administrativos atrelados a este processo SEI"
+    )
     criado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -125,6 +139,42 @@ class ProcessoSEI(models.Model):
             return []
         raw = self.palavras_chave.replace(';', ',')
         return [tag.strip() for tag in raw.split(',') if tag.strip()]
+
+    @property
+    def total_servidores_relacionados(self):
+        """Retorna o número total de servidores atrelados ao processo."""
+        return self.professores_relacionados.count() + self.administrativos_relacionados.count()
+
+    def get_servidores_relacionados(self):
+        """Retorna uma lista unificada de servidores com foto, nome, cargo e link."""
+        servidores = []
+        for p in self.professores_relacionados.all():
+            servidores.append({
+                'tipo': 'Professor',
+                'tipo_cod': 'professor',
+                'tipo_badge': 'badge-primary',
+                'icone': 'bi-person-video3',
+                'objeto': p,
+                'nome': p.nome_completo,
+                'matricula': p.matricula,
+                'cargo': p.cargo or 'Professor',
+                'foto': p.foto if hasattr(p, 'foto') and p.foto else None,
+                'url': f'/professores/{p.pk}/',
+            })
+        for a in self.administrativos_relacionados.all():
+            servidores.append({
+                'tipo': 'Administrativo',
+                'tipo_cod': 'administrativo',
+                'tipo_badge': 'badge-info',
+                'icone': 'bi-briefcase-fill',
+                'objeto': a,
+                'nome': a.nome_completo,
+                'matricula': a.matricula,
+                'cargo': a.funcao_atual or a.cargo or 'Administrativo',
+                'foto': a.foto if hasattr(a, 'foto') and a.foto else None,
+                'url': f'/funcionarios/administrativos/{a.pk}/',
+            })
+        return servidores
 
 
 class AndamentoProcesso(models.Model):

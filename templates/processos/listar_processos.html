@@ -621,6 +621,17 @@
             <div>
               <i class="bi bi-clock-history me-1"></i>Andamentos: <span class="badge bg-secondary">{{ proc.andamentos.count }}</span>
             </div>
+
+            {% if proc.total_servidores_relacionados > 0 %}
+            <div class="d-flex align-items-center gap-1 flex-wrap">
+              <i class="bi bi-people-fill text-info me-1"></i>Servidores:
+              {% for s in proc.get_servidores_relacionados %}
+                <a href="{{ s.url }}" class="badge bg-dark border border-secondary text-light text-decoration-none" style="font-size:0.75rem; padding:3px 8px;" title="Ver perfil de {{ s.nome }}">
+                  <i class="bi {{ s.icone }} me-1 text-info"></i>{{ s.nome }} ({{ s.tipo }})
+                </a>
+              {% endfor %}
+            </div>
+            {% endif %}
           </div>
 
           <div class="d-flex align-items-center gap-2">

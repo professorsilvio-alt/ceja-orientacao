@@ -1,8 +1,24 @@
 from django import forms
+from django.db import models
 from .models import ProcessoSEI, AndamentoProcesso
+from professores.models import Professor
+from funcionarios.models import FuncionarioAdministrativo
 
 
 class ProcessoSEIForm(forms.ModelForm):
+    professores_relacionados = forms.ModelMultipleChoiceField(
+        queryset=Professor.objects.filter(ativo=True).order_by('nome_completo'),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Professores Relacionados"
+    )
+    administrativos_relacionados = forms.ModelMultipleChoiceField(
+        queryset=FuncionarioAdministrativo.objects.filter(ativo=True).order_by('nome_completo'),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Funcionários Administrativos Relacionados"
+    )
+
     class Meta:
         model = ProcessoSEI
         fields = [
@@ -17,6 +33,8 @@ class ProcessoSEIForm(forms.ModelForm):
             'prioridade',
             'data_abertura',
             'link_sei',
+            'professores_relacionados',
+            'administrativos_relacionados',
         ]
         widgets = {
             'tipo': forms.Select(attrs={
@@ -65,6 +83,22 @@ class ProcessoSEIForm(forms.ModelForm):
                 'placeholder': 'https://sei.rj.gov.br/... (opcional)',
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Se estiver editando e houver servidores já vinculados (mesmo inativos), garantir que estejam no queryset
+        if self.instance and self.instance.pk:
+            p_ids = list(self.instance.professores_relacionados.values_list('pk', flat=True))
+            if p_ids:
+                self.fields['professores_relacionados'].queryset = Professor.objects.filter(
+                    models.Q(ativo=True) | models.Q(pk__in=p_ids)
+                ).distinct().order_by('nome_completo')
+
+            a_ids = list(self.instance.administrativos_relacionados.values_list('pk', flat=True))
+            if a_ids:
+                self.fields['administrativos_relacionados'].queryset = FuncionarioAdministrativo.objects.filter(
+                    models.Q(ativo=True) | models.Q(pk__in=a_ids)
+                ).distinct().order_by('nome_completo')
 
     def clean_numero_sei(self):
         numero = self.cleaned_data.get('numero_sei', '').strip()

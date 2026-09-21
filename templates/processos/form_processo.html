@@ -182,6 +182,77 @@
       </div>
     </div>
 
+    <!-- SEÇÃO 4: Servidores Relacionados -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3" style="border-color:var(--card-border, #334155) !important;">
+        <h6 class="text-primary fw-bold text-uppercase mb-0" style="letter-spacing:0.5px;">
+          <i class="bi bi-people-fill me-1"></i> 4. Servidores Atrelados / Relacionados
+        </h6>
+        <span class="badge bg-secondary" id="total-servidores-selecionados">Nenhum servidor selecionado</span>
+      </div>
+      <p class="text-muted small mb-3">
+        Selecione os servidores (professores ou funcionários administrativos) vinculados a este processo. Você pode marcar um ou múltiplos servidores.
+      </p>
+
+      <div class="row g-3">
+        <!-- Coluna Professores -->
+        <div class="col-md-6">
+          <div class="p-3 rounded" style="background:rgba(15,23,42,0.7); border:1px solid var(--card-border, #334155); height:100%;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold text-info small text-uppercase">
+                <i class="bi bi-person-video3 me-1"></i> Professores (<span id="cont-prof-marcados">0</span>)
+              </span>
+              <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none small" onclick="limparSelecao('professores')">Limpar</button>
+            </div>
+            
+            <div class="input-group input-group-sm mb-2">
+              <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="busca-prof" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Filtrar professores pelo nome..." onkeyup="filtrarLista('prof')">
+            </div>
+
+            <div id="lista-professores" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+              {% for checkbox in form.professores_relacionados %}
+              <div class="form-check item-servidor item-prof py-1 px-2 rounded mb-1" style="background:rgba(30,41,59,0.5); transition:background 0.15s;">
+                {{ checkbox.tag }}
+                <label class="form-check-label text-white small ms-1" for="{{ checkbox.id_for_label }}" style="cursor:pointer; display:block;">
+                  {{ checkbox.choice_label }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna Funcionários Administrativos -->
+        <div class="col-md-6">
+          <div class="p-3 rounded" style="background:rgba(15,23,42,0.7); border:1px solid var(--card-border, #334155); height:100%;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold text-warning small text-uppercase">
+                <i class="bi bi-briefcase-fill me-1"></i> Funcionários Adm. (<span id="cont-adm-marcados">0</span>)
+              </span>
+              <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none small" onclick="limparSelecao('adm')">Limpar</button>
+            </div>
+
+            <div class="input-group input-group-sm mb-2">
+              <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="busca-adm" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Filtrar administrativos..." onkeyup="filtrarLista('adm')">
+            </div>
+
+            <div id="lista-administrativos" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+              {% for checkbox in form.administrativos_relacionados %}
+              <div class="form-check item-servidor item-adm py-1 px-2 rounded mb-1" style="background:rgba(30,41,59,0.5); transition:background 0.15s;">
+                {{ checkbox.tag }}
+                <label class="form-check-label text-white small ms-1" for="{{ checkbox.id_for_label }}" style="cursor:pointer; display:block;">
+                  {{ checkbox.choice_label }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Botões de Ação -->
     <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary border-opacity-25">
       <a href="{% url 'listar_processos' %}" class="btn-gestao btn-gestao-secondary px-4">
@@ -193,4 +264,52 @@
     </div>
   </form>
 </div>
+
+<script>
+function filtrarLista(tipo) {
+  const input = document.getElementById(tipo === 'prof' ? 'busca-prof' : 'busca-adm');
+  const termo = input.value.toLowerCase();
+  const itens = document.querySelectorAll(tipo === 'prof' ? '.item-prof' : '.item-adm');
+
+  itens.forEach(item => {
+    const label = item.querySelector('label').textContent.toLowerCase();
+    if (label.includes(termo)) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function atualizarContadores() {
+  const profs = document.querySelectorAll('.item-prof input[type="checkbox"]:checked').length;
+  const adms = document.querySelectorAll('.item-adm input[type="checkbox"]:checked').length;
+  const total = profs + adms;
+
+  document.getElementById('cont-prof-marcados').textContent = profs;
+  document.getElementById('cont-adm-marcados').textContent = adms;
+
+  const totalEl = document.getElementById('total-servidores-selecionados');
+  if (total === 0) {
+    totalEl.textContent = 'Nenhum servidor selecionado';
+    totalEl.className = 'badge bg-secondary';
+  } else {
+    totalEl.textContent = `${total} servidor(es) selecionado(s)`;
+    totalEl.className = 'badge bg-primary';
+  }
+}
+
+function limparSelecao(tipo) {
+  const seletor = tipo === 'professores' ? '.item-prof input[type="checkbox"]' : '.item-adm input[type="checkbox"]';
+  document.querySelectorAll(seletor).forEach(cb => cb.checked = false);
+  atualizarContadores();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.item-servidor input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', atualizarContadores);
+  });
+  atualizarContadores();
+});
+</script>
 {% endblock %}
