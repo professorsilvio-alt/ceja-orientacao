@@ -1,0 +1,695 @@
+{% extends "base.html" %}
+{% block title %}Acompanhamento de Processos SEI{% endblock %}
+{% block nav_processos %}active{% endblock %}
+{% block nav_processos_adm %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-folder2-open me-1"></i> Acompanhamento de Processos SEI{% endblock %}
+
+{% block content %}
+<style>
+  .kpi-grid-sei {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .kpi-card-sei {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+    border: 1px solid var(--card-border, #334155);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .kpi-card-sei:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56, 189, 248, 0.5);
+  }
+  .kpi-icon-sei {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+  }
+  .kpi-val-sei {
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+  }
+  .kpi-lbl-sei {
+    font-size: 0.76rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* Painel de Filtros Avançados */
+  .filtros-box-sei {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .filtro-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #7dd3fc;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .filtro-chip a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 2px;
+  }
+  .filtro-chip a:hover {
+    color: #f87171;
+  }
+
+  /* Tags populares */
+  .tag-popular-item {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    color: #cbd5e1;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .tag-popular-item:hover, .tag-popular-item.active {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    transform: translateY(-1px);
+  }
+
+  /* Process Cards */
+  .card-processo-item {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+    border: 1px solid var(--card-border, #334155);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .card-processo-item:hover {
+    border-color: rgba(56, 189, 248, 0.6);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  .sei-number-pill {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 8px;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sei-tag {
+    background: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    color: #cbd5e1;
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .sei-tag:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .sei-tag i {
+    font-size: 0.7rem;
+    margin-right: 4px;
+    color: #38bdf8;
+  }
+  .badge-tipo-sei {
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.18);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .badge-status-sei {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .badge-status-em_andamento {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+  }
+  .badge-status-aguardando_resposta {
+    background: rgba(234, 179, 8, 0.15);
+    color: #fde047;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+  .badge-status-sob_analise {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.35);
+  }
+  .badge-status-concluido {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+  }
+  .badge-status-arquivado {
+    background: rgba(100, 116, 139, 0.2);
+    color: #cbd5e1;
+    border: 1px solid rgba(100, 116, 139, 0.4);
+  }
+  .badge-status-indeferido {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+  .badge-prioridade-urgente {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+  }
+  .badge-prioridade-alta {
+    background: rgba(249, 115, 22, 0.18);
+    color: #fdba74;
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+  }
+  .desc-box-sei {
+    background: rgba(15, 23, 42, 0.6);
+    border-left: 3px solid #38bdf8;
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    line-height: 1.5;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title d-flex align-items-center gap-2">
+      <i class="bi bi-folder2-open text-primary"></i> Acompanhamento de Processos SEI
+    </div>
+    <div class="page-subtitle">Gestão, busca avançada e controle de tramitação de processos da escola</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'criar_processo' %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-plus-circle-fill"></i> Novo Processo
+    </a>
+  </div>
+</div>
+
+<!-- KPIs / Estatísticas no Topo -->
+<div class="kpi-grid-sei">
+  <div class="kpi-card-sei">
+    <div class="kpi-icon-sei" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+      <i class="bi bi-archive-fill"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei">{{ total_geral }}</div>
+      <div class="kpi-lbl-sei">Total Processos</div>
+    </div>
+  </div>
+
+  <div class="kpi-card-sei">
+    <div class="kpi-icon-sei" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+      <i class="bi bi-arrow-repeat"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei">{{ total_em_andamento }}</div>
+      <div class="kpi-lbl-sei">Em Andamento</div>
+    </div>
+  </div>
+
+  <div class="kpi-card-sei">
+    <div class="kpi-icon-sei" style="background: rgba(234, 179, 8, 0.15); color: #fde047;">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei">{{ total_aguardando }}</div>
+      <div class="kpi-lbl-sei">Aguardando Resposta</div>
+    </div>
+  </div>
+
+  <div class="kpi-card-sei">
+    <div class="kpi-icon-sei" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+      <i class="bi bi-search"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei">{{ total_sob_analise }}</div>
+      <div class="kpi-lbl-sei">Sob Análise</div>
+    </div>
+  </div>
+
+  <div class="kpi-card-sei">
+    <div class="kpi-icon-sei" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei">{{ total_concluidos }}</div>
+      <div class="kpi-lbl-sei">Concluídos</div>
+    </div>
+  </div>
+
+  {% if total_urgentes > 0 %}
+  <div class="kpi-card-sei" style="border-color: rgba(239, 68, 68, 0.4);">
+    <div class="kpi-icon-sei" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei text-danger">{{ total_urgentes }}</div>
+      <div class="kpi-lbl-sei text-danger">Urgentes Ativos</div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Card Principal com Busca e Listagem -->
+<div class="card-gestao">
+  
+  <!-- Formulário de Busca e Filtros Avançados -->
+  <form method="get" action="" id="form-busca-processos" class="mb-4">
+    <!-- Linha Principal de Pesquisa -->
+    <div class="row g-2 align-items-center mb-3">
+      <div class="col-md-7 col-lg-8">
+        <div class="input-group">
+          <span class="input-group-text bg-dark text-muted border-secondary" style="border-color:var(--card-border, #334155) !important;">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por Número SEI, Palavras, Assunto, Interessado ou Descrição..." style="height:46px; font-size:0.92rem; background:rgba(15,23,42,0.7); color:#fff; border-color:var(--card-border, #334155);">
+          <button type="submit" class="btn-gestao btn-gestao-primary px-4" style="height:46px; font-weight:700;">
+            Buscar
+          </button>
+        </div>
+      </div>
+      <div class="col-md-5 col-lg-4 d-flex gap-2">
+        <button type="button" class="btn-gestao btn-gestao-secondary w-100 d-flex justify-content-center align-items-center gap-2" id="btn-toggle-filtros" style="height:46px; border-color:rgba(56,189,248,0.4);">
+          <i class="bi bi-sliders"></i> Opções de Busca & Filtros
+          {% if tem_filtros_ativos %}
+          <span class="badge bg-primary" style="font-size:0.75rem;">Ativos</span>
+          {% endif %}
+        </button>
+        {% if tem_filtros_ativos %}
+        <a href="{% url 'listar_processos' %}" class="btn-gestao btn-gestao-secondary" title="Limpar todos os filtros" style="height:46px; display:inline-flex; align-items:center;">
+          <i class="bi bi-x-circle text-danger"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Painel de Filtros Avançados (Colapsável) -->
+    <div class="filtros-box-sei" id="painel-filtros-avancados" style="{% if not tem_filtros_ativos and not tipo_filtro and not tag_filtro and not setor_filtro and not data_inicio %}display:none;{% endif %}">
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style="border-color:rgba(148,163,184,0.2) !important;">
+        <span class="text-info fw-bold small text-uppercase">
+          <i class="bi bi-funnel-fill me-1"></i> Filtros Detalhados de Pesquisa
+        </span>
+        <a href="{% url 'listar_processos' %}" class="text-danger small text-decoration-none">
+          <i class="bi bi-arrow-counterclockwise"></i> Redefinir Todos os Filtros
+        </a>
+      </div>
+
+      <div class="row g-3">
+        <!-- Filtro por Tipo / Categoria -->
+        <div class="col-md-6 col-lg-3">
+          <label class="form-label text-white small fw-semibold">Tipo / Categoria</label>
+          <select name="tipo" class="form-select form-select-sm" style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+            <option value="todos">Todos os Tipos</option>
+            {% for cod, rotulo in tipos_choices %}
+            <option value="{{ cod }}" {% if tipo_filtro == cod %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Filtro por Status -->
+        <div class="col-md-6 col-lg-3">
+          <label class="form-label text-white small fw-semibold">Situação / Status</label>
+          <select name="status" class="form-select form-select-sm" style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+            <option value="todos">Todas as Situações</option>
+            {% for cod, rotulo in status_choices %}
+            <option value="{{ cod }}" {% if status_filtro == cod %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Filtro por Prioridade -->
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label text-white small fw-semibold">Prioridade</label>
+          <select name="prioridade" class="form-select form-select-sm" style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+            <option value="todos">Todas</option>
+            {% for cod, rotulo in prioridade_choices %}
+            <option value="{{ cod }}" {% if prioridade_filtro == cod %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Filtro por Palavra-chave específica -->
+        <div class="col-md-6 col-lg-4">
+          <label class="form-label text-white small fw-semibold">Palavra-Chave / Tag Específica</label>
+          <input type="text" name="tag" value="{{ tag_filtro }}" class="form-control form-control-sm" placeholder="Ex: Telhado, Merenda, Reforma, GLPI..." style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+        </div>
+
+        <!-- Filtro por Setor Atual -->
+        <div class="col-md-6 col-lg-4">
+          <label class="form-label text-white small fw-semibold">Setor de Tramitação</label>
+          <input type="text" name="setor" value="{{ setor_filtro }}" list="lista-setores" class="form-control form-control-sm" placeholder="Ex: SEEDUC, DIESP, Regional..." style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+          <datalist id="lista-setores">
+            {% for s in setores_cadastrados %}
+            <option value="{{ s }}">
+            {% endfor %}
+          </datalist>
+        </div>
+
+        <!-- Período: Data Inicial -->
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label text-white small fw-semibold">Abertura De</label>
+          <input type="date" name="data_inicio" value="{{ data_inicio }}" class="form-control form-control-sm" style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+        </div>
+
+        <!-- Período: Data Final -->
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label text-white small fw-semibold">Abertura Até</label>
+          <input type="date" name="data_fim" value="{{ data_fim }}" class="form-control form-control-sm" style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+        </div>
+
+        <!-- Ordenação -->
+        <div class="col-md-6 col-lg-4">
+          <label class="form-label text-white small fw-semibold">Ordenar Por</label>
+          <select name="ordem" class="form-select form-select-sm" style="background:rgba(15,23,42,0.8); color:#fff; border-color:#334155;">
+            <option value="-data_abertura" {% if ordenacao == '-data_abertura' %}selected{% endif %}>Data de Abertura (Mais recentes)</option>
+            <option value="data_abertura" {% if ordenacao == 'data_abertura' %}selected{% endif %}>Data de Abertura (Mais antigos)</option>
+            <option value="-atualizado_em" {% if ordenacao == '-atualizado_em' %}selected{% endif %}>Última Atualização</option>
+            <option value="titulo" {% if ordenacao == 'titulo' %}selected{% endif %}>Assunto (A-Z)</option>
+            <option value="prioridade" {% if ordenacao == 'prioridade' %}selected{% endif %}>Maior Prioridade</option>
+          </select>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2 mt-2">
+          <button type="submit" class="btn-gestao btn-gestao-primary px-4 py-1" style="font-size:0.88rem;">
+            <i class="bi bi-funnel me-1"></i> Aplicar Filtros
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nuvem de Palavras-Chave Rápidas (Tags mais frequentes) -->
+    {% if tags_populares %}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <span class="text-muted small fw-semibold"><i class="bi bi-tags-fill me-1"></i>Palavras frequentes:</span>
+      {% for tag in tags_populares %}
+      <a href="?tag={{ tag }}" class="tag-popular-item {% if tag_filtro == tag %}active{% endif %}">
+        <i class="bi bi-search"></i> {{ tag }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Chips de Filtros Ativos -->
+    {% if tem_filtros_ativos %}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 p-2 rounded" style="background:rgba(15,23,42,0.5); border:1px solid rgba(56,189,248,0.2);">
+      <span class="text-muted small fw-bold"><i class="bi bi-funnel-fill text-info me-1"></i>Filtros aplicados:</span>
+      
+      {% if q %}
+      <span class="filtro-chip">
+        Texto: "{{ q }}"
+        <a href="?tipo={{ tipo_filtro }}&status={{ status_filtro }}&prioridade={{ prioridade_filtro }}&tag={{ tag_filtro }}&setor={{ setor_filtro }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      {% if tipo_filtro and tipo_filtro != 'todos' %}
+      <span class="filtro-chip">
+        Tipo: {{ tipo_filtro }}
+        <a href="?q={{ q }}&status={{ status_filtro }}&prioridade={{ prioridade_filtro }}&tag={{ tag_filtro }}&setor={{ setor_filtro }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      {% if status_filtro and status_filtro != 'todos' %}
+      <span class="filtro-chip">
+        Status: {{ status_filtro }}
+        <a href="?q={{ q }}&tipo={{ tipo_filtro }}&prioridade={{ prioridade_filtro }}&tag={{ tag_filtro }}&setor={{ setor_filtro }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      {% if prioridade_filtro and prioridade_filtro != 'todos' %}
+      <span class="filtro-chip">
+        Prioridade: {{ prioridade_filtro }}
+        <a href="?q={{ q }}&tipo={{ tipo_filtro }}&status={{ status_filtro }}&tag={{ tag_filtro }}&setor={{ setor_filtro }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      {% if tag_filtro %}
+      <span class="filtro-chip">
+        Palavra: "{{ tag_filtro }}"
+        <a href="?q={{ q }}&tipo={{ tipo_filtro }}&status={{ status_filtro }}&prioridade={{ prioridade_filtro }}&setor={{ setor_filtro }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      {% if setor_filtro %}
+      <span class="filtro-chip">
+        Setor: "{{ setor_filtro }}"
+        <a href="?q={{ q }}&tipo={{ tipo_filtro }}&status={{ status_filtro }}&prioridade={{ prioridade_filtro }}&tag={{ tag_filtro }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      {% if data_inicio or data_fim %}
+      <span class="filtro-chip">
+        Período: {{ data_inicio|default:"Início" }} até {{ data_fim|default:"Hoje" }}
+        <a href="?q={{ q }}&tipo={{ tipo_filtro }}&status={{ status_filtro }}&prioridade={{ prioridade_filtro }}&tag={{ tag_filtro }}&setor={{ setor_filtro }}" title="Remover">&times;</a>
+      </span>
+      {% endif %}
+
+      <span class="badge bg-secondary ms-auto">{{ total_filtrados }} processo(s)</span>
+    </div>
+    {% endif %}
+  </form>
+
+  <!-- Abas de Filtro Rápido por Status -->
+  <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--card-border, #334155); padding-bottom:12px; overflow-x:auto;">
+    <a href="?status=todos{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'todos' or not status_filtro %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-collection-fill"></i> Todos <span class="badge bg-dark ms-1">{{ total_geral }}</span>
+    </a>
+    <a href="?status=em_andamento{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'em_andamento' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-arrow-repeat"></i> Em Andamento <span class="badge bg-dark ms-1">{{ total_em_andamento }}</span>
+    </a>
+    <a href="?status=aguardando_resposta{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'aguardando_resposta' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-hourglass-split"></i> Aguardando Resposta <span class="badge bg-dark ms-1">{{ total_aguardando }}</span>
+    </a>
+    <a href="?status=sob_analise{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'sob_analise' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-search"></i> Sob Análise <span class="badge bg-dark ms-1">{{ total_sob_analise }}</span>
+    </a>
+    <a href="?status=concluido{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'concluido' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-check2-circle"></i> Concluídos <span class="badge bg-dark ms-1">{{ total_concluidos }}</span>
+    </a>
+  </div>
+
+  <!-- Lista de Processos -->
+  {% if processos %}
+    <div class="processos-container">
+      {% for proc in processos %}
+      <div class="card-processo-item">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Número SEI com botão de cópia -->
+            <span class="sei-number-pill" title="Clique para copiar o número SEI" onclick="copiarSei('{{ proc.numero_sei }}', this)" style="cursor:pointer;">
+              <i class="bi bi-file-earmark-text"></i> {{ proc.numero_sei }}
+              <i class="bi bi-copy text-muted ms-1" style="font-size:0.85rem;" title="Copiar número"></i>
+            </span>
+
+            <!-- Tipo / Categoria do Processo -->
+            <span class="badge-tipo-sei" title="Categoria do Processo">
+              <i class="bi bi-bookmark-fill"></i> {{ proc.get_tipo_display }}
+            </span>
+
+            <!-- Status -->
+            <span class="badge-status-sei badge-status-{{ proc.status }}">
+              {{ proc.get_status_display }}
+            </span>
+
+            <!-- Prioridade -->
+            {% if proc.prioridade == 'urgente' %}
+            <span class="badge-prioridade-urgente">
+              <i class="bi bi-exclamation-octagon-fill me-1"></i>URGENTE
+            </span>
+            {% elif proc.prioridade == 'alta' %}
+            <span class="badge-prioridade-alta">
+              <i class="bi bi-arrow-up-circle-fill me-1"></i>ALTA PRIORIDADE
+            </span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted" style="font-size:0.82rem;">
+              <i class="bi bi-calendar3 me-1"></i>Abertura: <strong>{{ proc.data_abertura|date:"d/m/Y" }}</strong>
+            </span>
+            <div class="dropdown">
+              <a href="{% url 'detalhe_processo' proc.pk %}" class="btn-gestao btn-gestao-secondary btn-sm" style="padding:4px 10px; font-size:0.82rem;">
+                <i class="bi bi-eye-fill"></i> Detalhes
+              </a>
+              <a href="{% url 'editar_processo' proc.pk %}" class="btn-gestao btn-gestao-secondary btn-sm" style="padding:4px 10px; font-size:0.82rem;">
+                <i class="bi bi-pencil-fill"></i> Editar
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Título do Processo -->
+        <h5 style="color:#f8fafc; font-weight:700; margin-bottom:8px; font-size:1.1rem;">
+          <a href="{% url 'detalhe_processo' proc.pk %}" style="color:inherit; text-decoration:none;">
+            {{ proc.titulo }}
+          </a>
+        </h5>
+
+        <!-- Palavras-chave / Tags clicáveis para busca imediata -->
+        {% if proc.palavras_chave_lista %}
+        <div class="d-flex flex-wrap gap-1 mb-2">
+          {% for tag in proc.palavras_chave_lista %}
+          <a href="?tag={{ tag }}" class="sei-tag" title="Filtrar por esta palavra-chave">
+            <i class="bi bi-tag-fill"></i>{{ tag }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Descrição / Observações (O que se trata o processo) -->
+        {% if proc.descricao %}
+        <div class="desc-box-sei">
+          {{ proc.descricao|linebreaksbr }}
+        </div>
+        {% endif %}
+
+        <!-- Linha de Metadados: Setor Atual, Interessado, Andamentos -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-2 border-top border-secondary border-opacity-25" style="font-size:0.85rem; color:#94a3b8;">
+          <div class="d-flex flex-wrap gap-3">
+            {% if proc.setor_atual %}
+            <div>
+              <i class="bi bi-building text-info me-1"></i>Setor Atual: <strong class="text-white">{{ proc.setor_atual }}</strong>
+            </div>
+            {% endif %}
+
+            {% if proc.interessado %}
+            <div>
+              <i class="bi bi-person text-secondary me-1"></i>Interessado: <strong class="text-white">{{ proc.interessado }}</strong>
+            </div>
+            {% endif %}
+
+            <div>
+              <i class="bi bi-clock-history me-1"></i>Andamentos: <span class="badge bg-secondary">{{ proc.andamentos.count }}</span>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            {% if proc.link_sei %}
+            <a href="{{ proc.link_sei }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info" style="font-size:0.78rem; padding:3px 10px; border-radius:6px;">
+              <i class="bi bi-box-arrow-up-right me-1"></i>Abrir no SEI
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <div style="font-size:3.5rem; color:#475569; margin-bottom:12px;">
+        <i class="bi bi-folder-x"></i>
+      </div>
+      <h5 class="text-white">Nenhum processo encontrado</h5>
+      <p class="text-muted small" style="max-width:480px; margin:0 auto 18px;">
+        {% if tem_filtros_ativos %}
+          Nenhum processo corresponde aos filtros e palavras de busca selecionados. Experimente limpar ou ajustar os critérios.
+        {% else %}
+          Não há processos cadastrados para o filtro selecionado. Clique abaixo para cadastrar um novo processo SEI.
+        {% endif %}
+      </p>
+      {% if tem_filtros_ativos %}
+      <a href="{% url 'listar_processos' %}" class="btn-gestao btn-gestao-secondary me-2">
+        <i class="bi bi-arrow-counterclockwise"></i> Limpar Filtros
+      </a>
+      {% endif %}
+      <a href="{% url 'criar_processo' %}" class="btn-gestao btn-gestao-primary">
+        <i class="bi bi-plus-circle-fill"></i> Cadastrar Novo Processo
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Toast / Notificação de Cópia -->
+<div id="toast-copiado" style="display:none; position:fixed; bottom:24px; right:24px; background:#0284c7; color:#fff; padding:10px 18px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.4); z-index:9999; font-weight:600; font-size:0.9rem;">
+  <i class="bi bi-check-circle-fill me-1"></i> Número SEI copiado para a área de transferência!
+</div>
+
+<script>
+// Toggle painel de filtros avançados
+const btnFiltros = document.getElementById('btn-toggle-filtros');
+const painelFiltros = document.getElementById('painel-filtros-avancados');
+if (btnFiltros && painelFiltros) {
+  btnFiltros.addEventListener('click', function() {
+    if (painelFiltros.style.display === 'none' || painelFiltros.style.display === '') {
+      painelFiltros.style.display = 'block';
+    } else {
+      painelFiltros.style.display = 'none';
+    }
+  });
+}
+
+function copiarSei(texto, el) {
+  navigator.clipboard.writeText(texto).then(() => {
+    const toast = document.getElementById('toast-copiado');
+    if (toast) {
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+  }).catch(err => {
+    console.error('Erro ao copiar: ', err);
+  });
+}
+</script>
+{% endblock %}

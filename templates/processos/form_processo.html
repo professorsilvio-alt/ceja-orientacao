@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo_pagina }} — Processos SEI{% endblock %}
+{% block nav_processos %}active{% endblock %}
+{% block nav_processos_adm %}active{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'listar_processos' %}" class="text-secondary text-decoration-none">
+  <i class="bi bi-folder2-open me-1"></i> Acompanhamento de Processos
+</a>
+<span class="mx-2 text-muted">/</span>
+<span>{{ titulo_pagina }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title d-flex align-items-center gap-2">
+      <i class="bi bi-file-earmark-diff text-primary"></i> {{ titulo_pagina }}
+    </div>
+    <div class="page-subtitle">Preencha as informações do processo para facilitar a localização e o acompanhamento</div>
+  </div>
+  <div>
+    <a href="{% url 'listar_processos' %}" class="btn-gestao btn-gestao-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar à Lista
+    </a>
+  </div>
+</div>
+
+<div class="card-gestao" style="max-width: 900px; margin: 0 auto;">
+  <form method="post" action="">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {% for error in form.non_field_errors %}
+        <p class="mb-0">{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- SEÇÃO 1: Identificação -->
+    <div class="mb-4">
+      <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2 mb-3" style="letter-spacing:0.5px; border-color:var(--card-border, #334155) !important;">
+        <i class="bi bi-bookmark-check-fill me-1"></i> 1. Identificação Principal
+      </h6>
+
+      <div class="row g-3">
+        <div class="col-md-7">
+          <label class="form-label fw-semibold text-white" for="{{ form.numero_sei.id_for_label }}">
+            Número do Processo SEI <span class="text-danger">*</span>
+          </label>
+          {{ form.numero_sei }}
+          {% if form.numero_sei.errors %}
+            <div class="text-danger small mt-1">{{ form.numero_sei.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Exemplo: SEI-030029/000123/2026 ou o padrão utilizado pelo Estado/SEEDUC.</div>
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label fw-semibold text-white" for="{{ form.data_abertura.id_for_label }}">
+            Data de Abertura / Registro <span class="text-danger">*</span>
+          </label>
+          {{ form.data_abertura }}
+          {% if form.data_abertura.errors %}
+            <div class="text-danger small mt-1">{{ form.data_abertura.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold text-white" for="{{ form.titulo.id_for_label }}">
+            Assunto / Título do Processo <span class="text-danger">*</span>
+          </label>
+          {{ form.titulo }}
+          {% if form.titulo.errors %}
+            <div class="text-danger small mt-1">{{ form.titulo.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Resumo curto e objetivo do tema do processo.</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold text-white" for="{{ form.tipo.id_for_label }}">
+            Tipo / Categoria do Processo <span class="text-danger">*</span>
+          </label>
+          {{ form.tipo }}
+          {% if form.tipo.errors %}
+            <div class="text-danger small mt-1">{{ form.tipo.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Classifique por área (Pessoal/RH, Infraestrutura, Pedagógico, Financeiro, etc.) para organizar e facilitar filtros.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: Descrição e Palavras-chave -->
+    <div class="mb-4">
+      <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2 mb-3" style="letter-spacing:0.5px; border-color:var(--card-border, #334155) !important;">
+        <i class="bi bi-card-text me-1"></i> 2. Conteúdo e Palavras-Chave
+      </h6>
+
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-semibold text-white" for="{{ form.palavras_chave.id_for_label }}">
+            Palavras-Chave / Tags de Pesquisa
+          </label>
+          {{ form.palavras_chave }}
+          {% if form.palavras_chave.errors %}
+            <div class="text-danger small mt-1">{{ form.palavras_chave.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Termos separados por vírgula para encontrar rapidamente (ex: Reforma, Merenda, Lotação, GLPI, DIESP).</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold text-white" for="{{ form.descricao.id_for_label }}">
+            Descrição / Observações Detalhadas
+          </label>
+          {{ form.descricao }}
+          {% if form.descricao.errors %}
+            <div class="text-danger small mt-1">{{ form.descricao.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Escreva as informações necessárias para que qualquer pessoa autorizada possa ler e compreender imediatamente a situação.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3: Situação e Tramitação -->
+    <div class="mb-4">
+      <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2 mb-3" style="letter-spacing:0.5px; border-color:var(--card-border, #334155) !important;">
+        <i class="bi bi-diagram-3 me-1"></i> 3. Situação e Tramitação Atual
+      </h6>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-white" for="{{ form.status.id_for_label }}">
+            Status / Situação
+          </label>
+          {{ form.status }}
+          {% if form.status.errors %}
+            <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-white" for="{{ form.prioridade.id_for_label }}">
+            Prioridade
+          </label>
+          {{ form.prioridade }}
+          {% if form.prioridade.errors %}
+            <div class="text-danger small mt-1">{{ form.prioridade.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-white" for="{{ form.setor_atual.id_for_label }}">
+            Setor / Unidade Atual
+          </label>
+          {{ form.setor_atual }}
+          {% if form.setor_atual.errors %}
+            <div class="text-danger small mt-1">{{ form.setor_atual.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Ex: SEEDUC/DGE, DIESP, Regional Metropolitana I, etc.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold text-white" for="{{ form.interessado.id_for_label }}">
+            Interessado / Requerente
+          </label>
+          {{ form.interessado }}
+          {% if form.interessado.errors %}
+            <div class="text-danger small mt-1">{{ form.interessado.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Nome do servidor, setor ou entidade demandante.</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold text-white" for="{{ form.link_sei.id_for_label }}">
+            Link Direto no Portal SEI (Opcional)
+          </label>
+          {{ form.link_sei }}
+          {% if form.link_sei.errors %}
+            <div class="text-danger small mt-1">{{ form.link_sei.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text text-muted">Cole o link completo da página do processo no SEI para acesso direto.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary border-opacity-25">
+      <a href="{% url 'listar_processos' %}" class="btn-gestao btn-gestao-secondary px-4">
+        Cancelar
+      </a>
+      <button type="submit" class="btn-gestao btn-gestao-primary px-4">
+        <i class="bi bi-check-lg me-1"></i> {{ acao }}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

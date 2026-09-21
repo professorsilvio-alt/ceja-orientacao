@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'agenda',
     'totem',
     'orientador_ia',
+    'processos',
 ]
 
 MIDDLEWARE = [

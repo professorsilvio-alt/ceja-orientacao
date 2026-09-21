@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% block title %}{{ processo.numero_sei }} — Detalhes do Processo{% endblock %}
+{% block nav_processos %}active{% endblock %}
+{% block nav_processos_adm %}active{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'listar_processos' %}" class="text-secondary text-decoration-none">
+  <i class="bi bi-folder2-open me-1"></i> Acompanhamento de Processos
+</a>
+<span class="mx-2 text-muted">/</span>
+<span>{{ processo.numero_sei }}</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .timeline-sei {
+    position: relative;
+    padding-left: 28px;
+    margin-top: 15px;
+  }
+  .timeline-sei::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 8px;
+    width: 2px;
+    background: rgba(56, 189, 248, 0.3);
+  }
+  .timeline-item-sei {
+    position: relative;
+    margin-bottom: 22px;
+  }
+  .timeline-dot-sei {
+    position: absolute;
+    left: -28px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #0284c7;
+    border: 3px solid #0f172a;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.6);
+  }
+  .timeline-content-sei {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid var(--card-border, #334155);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .sei-badge-hero {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 10px;
+    padding: 6px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .info-group-sei {
+    margin-bottom: 16px;
+  }
+  .info-group-sei .label {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .info-group-sei .value {
+    font-size: 0.98rem;
+    color: #f8fafc;
+    font-weight: 500;
+  }
+  .badge-status-sei {
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .badge-status-em_andamento {
+    background: rgba(59, 130, 246, 0.18);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+  }
+  .badge-status-aguardando_resposta {
+    background: rgba(234, 179, 8, 0.18);
+    color: #fde047;
+    border: 1px solid rgba(234, 179, 8, 0.4);
+  }
+  .badge-status-sob_analise {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+  }
+  .badge-status-concluido {
+    background: rgba(34, 197, 94, 0.18);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+  .badge-status-arquivado {
+    background: rgba(100, 116, 139, 0.25);
+    color: #cbd5e1;
+    border: 1px solid rgba(100, 116, 139, 0.5);
+  }
+  .badge-status-indeferido {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+      <span class="sei-badge-hero">
+        <i class="bi bi-file-earmark-text"></i> {{ processo.numero_sei }}
+        <button type="button" class="btn btn-sm btn-link text-info p-0 ms-1" onclick="copiarSei('{{ processo.numero_sei }}')" title="Copiar número do processo">
+          <i class="bi bi-copy"></i>
+        </button>
+      </span>
+      <span class="badge-status-sei badge-status-{{ processo.status }}">
+        {{ processo.get_status_display }}
+      </span>
+      <span class="badge" style="background:rgba(99, 102, 241, 0.2); color:#a5b4fc; border:1px solid rgba(99, 102, 241, 0.4); font-size:0.82rem; padding:6px 12px; border-radius:8px; font-weight:600;">
+        <i class="bi bi-bookmark-fill me-1"></i> {{ processo.get_tipo_display }}
+      </span>
+      {% if processo.prioridade == 'urgente' %}
+      <span class="badge bg-danger px-3 py-2 text-uppercase fw-bold">
+        <i class="bi bi-exclamation-octagon-fill me-1"></i> URGENTE
+      </span>
+      {% elif processo.prioridade == 'alta' %}
+      <span class="badge bg-warning text-dark px-3 py-2 text-uppercase fw-bold">
+        <i class="bi bi-arrow-up-circle-fill me-1"></i> ALTA PRIORIDADE
+      </span>
+      {% endif %}
+    </div>
+    <div class="page-title">{{ processo.titulo }}</div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    {% if processo.link_sei %}
+    <a href="{{ processo.link_sei }}" target="_blank" rel="noopener noreferrer" class="btn-gestao btn-gestao-secondary" style="border-color: #38bdf8; color: #38bdf8;">
+      <i class="bi bi-box-arrow-up-right"></i> Abrir no Portal SEI
+    </a>
+    {% endif %}
+    <button onclick="window.print()" class="btn-gestao btn-gestao-secondary" title="Imprimir ficha do processo">
+      <i class="bi bi-printer"></i> Imprimir
+    </button>
+    <a href="{% url 'editar_processo' processo.pk %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-pencil-fill"></i> Editar Processo
+    </a>
+    <a href="{% url 'excluir_processo' processo.pk %}" class="btn-gestao btn-gestao-secondary text-danger border-danger border-opacity-50" title="Excluir processo">
+      <i class="bi bi-trash-fill"></i>
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Coluna da Esquerda: Dados Principais e Observações -->
+  <div class="col-lg-7">
+    <div class="card-gestao mb-4">
+      <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2 mb-3" style="letter-spacing:0.5px; border-color:var(--card-border, #334155) !important;">
+        <i class="bi bi-info-circle-fill me-1"></i> Descrição & Detalhes do Processo
+      </h6>
+
+      <!-- Palavras-chave -->
+      <div class="info-group-sei">
+        <div class="label">Palavras-Chave / Tags</div>
+        <div class="value">
+          {% if processo.palavras_chave_lista %}
+            <div class="d-flex flex-wrap gap-1 mt-1">
+              {% for tag in processo.palavras_chave_lista %}
+              <span style="background:rgba(56, 189, 248, 0.15); color:#7dd3fc; border:1px solid rgba(56, 189, 248, 0.35); padding:3px 10px; border-radius:6px; font-size:0.82rem; font-weight:600;">
+                <i class="bi bi-tag-fill me-1" style="font-size:0.75rem;"></i>{{ tag }}
+              </span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <span class="text-muted">Nenhuma palavra-chave informada</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Descrição Completa -->
+      <div class="info-group-sei mt-3">
+        <div class="label">Descrição e Observações</div>
+        <div class="value" style="background:rgba(15, 23, 42, 0.6); border-left:3px solid #38bdf8; padding:14px 18px; border-radius:0 10px 10px 0; line-height:1.6; font-size:0.95rem;">
+          {% if processo.descricao %}
+            {{ processo.descricao|linebreaksbr }}
+          {% else %}
+            <span class="text-muted">Nenhuma descrição cadastrada.</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Dados Complementares em Grade -->
+      <div class="row g-3 mt-2 pt-3 border-top border-secondary border-opacity-25">
+        <div class="col-sm-6">
+          <div class="info-group-sei">
+            <div class="label">Tipo / Categoria</div>
+            <div class="value">
+              <i class="bi bi-bookmark-fill text-primary me-1"></i>
+              {{ processo.get_tipo_display }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="info-group-sei">
+            <div class="label">Setor / Unidade Atual</div>
+            <div class="value">
+              <i class="bi bi-building text-info me-1"></i>
+              {{ processo.setor_atual|default:"Não especificado" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="info-group-sei">
+            <div class="label">Interessado / Requerente</div>
+            <div class="value">
+              <i class="bi bi-person text-secondary me-1"></i>
+              {{ processo.interessado|default:"Não informado" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="info-group-sei">
+            <div class="label">Data de Abertura / Registro</div>
+            <div class="value">
+              <i class="bi bi-calendar-check text-success me-1"></i>
+              {{ processo.data_abertura|date:"d/m/Y" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="info-group-sei">
+            <div class="label">Cadastrado no Sistema por</div>
+            <div class="value text-muted" style="font-size:0.9rem;">
+              {% if processo.criado_por %}{{ processo.criado_por.nome_completo|default:processo.criado_por.primeiro_nome }}{% else %}Sistema{% endif %}
+              <br><small>{{ processo.criado_em|date:"d/m/Y \à\s H:i" }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coluna da Direita: Histórico de Andamentos & Formulário de Movimentação -->
+  <div class="col-lg-5">
+    <!-- Formulário para Adicionar Andamento -->
+    <div class="card-gestao mb-4">
+      <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2 mb-3" style="letter-spacing:0.5px; border-color:var(--card-border, #334155) !important;">
+        <i class="bi bi-plus-circle-fill me-1"></i> Registrar Novo Andamento / Despacho
+      </h6>
+      <form method="post" action="{% url 'adicionar_andamento' processo.pk %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-white small" for="{{ form_andamento.data.id_for_label }}">Data do Andamento</label>
+          {{ form_andamento.data }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-white small" for="{{ form_andamento.setor.id_for_label }}">Setor / Encaminhado Para</label>
+          {{ form_andamento.setor }}
+          <div class="form-text text-muted small">Atualizará automaticamente o setor atual do processo caso preenchido.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-white small" for="{{ form_andamento.descricao.id_for_label }}">Despacho / Anotação de Acompanhamento</label>
+          {{ form_andamento.descricao }}
+        </div>
+        <button type="submit" class="btn-gestao btn-gestao-primary w-100">
+          <i class="bi bi-check2-circle me-1"></i> Registrar Andamento
+        </button>
+      </form>
+    </div>
+
+    <!-- Linha do Tempo de Andamentos -->
+    <div class="card-gestao">
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3" style="border-color:var(--card-border, #334155) !important;">
+        <h6 class="text-primary fw-bold text-uppercase mb-0" style="letter-spacing:0.5px;">
+          <i class="bi bi-clock-history me-1"></i> Histórico de Movimentações
+        </h6>
+        <span class="badge bg-secondary">{{ andamentos.count }}</span>
+      </div>
+
+      {% if andamentos %}
+      <div class="timeline-sei">
+        {% for a in andamentos %}
+        <div class="timeline-item-sei">
+          <div class="timeline-dot-sei"></div>
+          <div class="timeline-content-sei">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <strong class="text-info" style="font-size:0.88rem;">
+                <i class="bi bi-calendar-event me-1"></i>{{ a.data|date:"d/m/Y" }}
+              </strong>
+              {% if a.setor %}
+              <span class="badge bg-dark border border-secondary text-light small" style="font-size:0.75rem;">
+                {{ a.setor }}
+              </span>
+              {% endif %}
+            </div>
+            <div style="font-size:0.9rem; color:#e2e8f0; line-height:1.5;">
+              {{ a.descricao|linebreaksbr }}
+            </div>
+            <div class="text-muted mt-2 pt-1 border-top border-secondary border-opacity-25" style="font-size:0.75rem;">
+              Registrado por {% if a.registrado_por %}{{ a.registrado_por.primeiro_nome|default:a.registrado_por.nome_completo }}{% else %}Usuário{% endif %} em {{ a.criado_em|date:"d/m/Y H:i" }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-journal-x" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+        Nenhum andamento ou despacho registrado até o momento.
+        <br><small>Utilize o formulário acima para adicionar o primeiro despacho.</small>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Toast / Notificação de Cópia -->
+<div id="toast-copiado" style="display:none; position:fixed; bottom:24px; right:24px; background:#0284c7; color:#fff; padding:10px 18px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.4); z-index:9999; font-weight:600; font-size:0.9rem;">
+  <i class="bi bi-check-circle-fill me-1"></i> Número SEI copiado para a área de transferência!
+</div>
+
+<script>
+function copiarSei(texto) {
+  navigator.clipboard.writeText(texto).then(() => {
+    const toast = document.getElementById('toast-copiado');
+    if (toast) {
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+  }).catch(err => {
+    console.error('Erro ao copiar: ', err);
+  });
+}
+</script>
+{% endblock %}
