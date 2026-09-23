@@ -292,11 +292,11 @@
       text-align: center;
     }
 
-    /* ── GRID DO CALENDÁRIO ──────────────────────── */
+    /* ── GRID DO CALENDÁRIO (SEGUNDA A SEXTA - 5 COLUNAS) ── */
     .calendario-grid {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
     }
 
     .cal-header-day {
@@ -713,15 +713,13 @@
             <span class="cal-chip-evento chip-outro"><i class="bi bi-circle-fill" style="font-size:6px; color:#8b5cf6;"></i> Outro</span>
           </div>
 
-          <!-- Grid do Calendário -->
+          <!-- Grid do Calendário (Segunda a Sexta) -->
           <div class="calendario-grid" id="calendario-grid">
-            <div class="cal-header-day">Dom</div>
             <div class="cal-header-day">Seg</div>
             <div class="cal-header-day">Ter</div>
             <div class="cal-header-day">Qua</div>
             <div class="cal-header-day">Qui</div>
             <div class="cal-header-day">Sex</div>
-            <div class="cal-header-day">Sáb</div>
           </div>
 
           <!-- Detalhes do Dia Selecionado -->
@@ -941,7 +939,18 @@
     // Inicialização
     document.addEventListener('DOMContentLoaded', () => {
       renderizarCalendario(RESERVAS);
-      selecionarDia(HOJE_STR);
+      let dataInicial = HOJE_STR;
+      const hojeObj = new Date();
+      if (hojeObj.getDay() === 0) { // Dom -> próxima Seg
+        const seg = new Date(hojeObj);
+        seg.setDate(hojeObj.getDate() + 1);
+        dataInicial = seg.toISOString().split('T')[0];
+      } else if (hojeObj.getDay() === 6) { // Sáb -> próxima Seg
+        const seg = new Date(hojeObj);
+        seg.setDate(hojeObj.getDate() + 2);
+        dataInicial = seg.toISOString().split('T')[0];
+      }
+      selecionarDia(dataInicial);
       configurarVerificacaoConflito();
     });
 
@@ -951,17 +960,27 @@
 
       const primeiroDia = new Date(ANO, MES - 1, 1);
       const ultimoDia = new Date(ANO, MES, 0);
-      const diaSemanaInicio = primeiroDia.getDay(); // 0=Dom
 
-      // Dias vazios do mês anterior
-      for (let i = 0; i < diaSemanaInicio; i++) {
+      // Calcula offset inicial nos dias úteis (Segunda=0 ... Sexta=4)
+      const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+      let offsetInicio = 0;
+      if (diaSemana1 >= 1 && diaSemana1 <= 5) {
+        offsetInicio = diaSemana1 - 1;
+      }
+
+      // Células vazias para alinhar o primeiro dia útil na coluna correta
+      for (let i = 0; i < offsetInicio; i++) {
         const cell = document.createElement('div');
         cell.className = 'cal-day-cell outro-mes';
         grid.appendChild(cell);
       }
 
-      // Dias do mês
+      // Dias úteis do mês (Segunda a Sexta - exclui sábado e domingo)
       for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const dObj = new Date(ANO, MES - 1, d);
+        const dow = dObj.getDay();
+        if (dow === 0 || dow === 6) continue; // Pula sábado e domingo!
+
         const dataStr = `${ANO}-${String(MES).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const cell = document.createElement('div');
         cell.className = 'cal-day-cell' + (dataStr === HOJE_STR ? ' hoje' : '');
@@ -992,7 +1011,7 @@
           cell.appendChild(mais);
         }
 
-        // 2. Em Mobile: Dots coloridos compactos (evita quebrar as células estreitas)
+        // 2. Em Mobile: Dots coloridos compactos
         if (eventosDoDia.length > 0) {
           const dotsWrap = document.createElement('div');
           dotsWrap.className = 'cal-dots-container';

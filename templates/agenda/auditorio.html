@@ -91,15 +91,13 @@ function copiarLinkPublico() {
         </a>
       </div>
 
-      <!-- Grid do calendário -->
-      <div class="calendario-grid" id="calendario">
-        <div class="cal-header">Dom</div>
+      <!-- Grid do calendário (Segunda a Sexta) -->
+      <div class="calendario-grid" id="calendario" style="grid-template-columns: repeat(5, 1fr);">
         <div class="cal-header">Seg</div>
         <div class="cal-header">Ter</div>
         <div class="cal-header">Qua</div>
         <div class="cal-header">Qui</div>
         <div class="cal-header">Sex</div>
-        <div class="cal-header">Sáb</div>
         <!-- Dias gerados pelo JS -->
       </div>
     </div>
@@ -188,25 +186,33 @@ fetch(`/agenda/auditorio/json/?mes=${MES}&ano=${ANO}`)
 
 function montarCalendario(reservas) {
   const grid = document.getElementById('calendario');
-  // Mantém os 7 headers
-  const headers = Array.from(grid.querySelectorAll('.cal-header'));
 
   // Remove dias anteriores
   grid.querySelectorAll('.cal-day').forEach(el => el.remove());
 
   const primeiroDia = new Date(ANO, MES - 1, 1);
   const ultimoDia = new Date(ANO, MES, 0);
-  const diaSemanaInicio = primeiroDia.getDay(); // 0=Dom
 
-  // Dias vazios antes do mês
-  for (let i = 0; i < diaSemanaInicio; i++) {
+  // Calcula offset inicial nos dias úteis (Segunda=0 ... Sexta=4)
+  const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+  let offsetInicio = 0;
+  if (diaSemana1 >= 1 && diaSemana1 <= 5) {
+    offsetInicio = diaSemana1 - 1;
+  }
+
+  // Dias vazios antes do mês para alinhar na coluna correta
+  for (let i = 0; i < offsetInicio; i++) {
     const el = document.createElement('div');
     el.className = 'cal-day outro-mes';
     grid.appendChild(el);
   }
 
-  // Dias do mês
+  // Dias úteis do mês (Segunda a Sexta - exclui sábado e domingo)
   for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+    const dObj = new Date(ANO, MES - 1, dia);
+    const dow = dObj.getDay();
+    if (dow === 0 || dow === 6) continue; // Pula sábado e domingo!
+
     const dataStr = `${ANO}-${String(MES).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
     const el = document.createElement('div');
     el.className = 'cal-day' + (dataStr === HOJE_STR ? ' hoje' : '');
