@@ -10,11 +10,69 @@
     <div class="page-subtitle">{{ nome_mes }} {{ ano }}</div>
   </div>
   {% if is_diretor %}
-  <a href="{% url 'nova_reserva' %}" class="btn-gestao btn-gestao-primary">
-    <i class="bi bi-calendar-plus-fill"></i> Nova Reserva
-  </a>
+  <div class="d-flex gap-2">
+    <a href="{% url 'agenda_auditorio_publico' %}" target="_blank" class="btn-gestao btn-gestao-secondary" style="border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+      <i class="bi bi-box-arrow-up-right"></i> Ver Página Pública
+    </a>
+    <a href="{% url 'nova_reserva' %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-calendar-plus-fill"></i> Nova Reserva
+    </a>
+  </div>
   {% endif %}
 </div>
+
+<!-- BANNER DE COMPARTILHAMENTO DO LINK PÚBLICO -->
+<div class="card-gestao mb-3" style="background:linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:16px 20px;">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div style="flex:1; min-width:280px;">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge" style="background:rgba(56,189,248,0.2); color:#38bdf8; font-weight:700; border:1px solid rgba(56,189,248,0.3); font-size:0.75rem;">
+          <i class="bi bi-link-45deg"></i> LINK PÚBLICO
+        </span>
+        <span style="font-size:0.8rem; color:#94a3b8;"><i class="bi bi-shield-check text-success"></i> Bloqueia sobreposição de horários</span>
+      </div>
+      <div style="font-weight:700; font-size:0.95rem; color:#fff;">
+        Compartilhe o link para agendamento e consulta do auditório
+      </div>
+      <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">
+        Qualquer pessoa com este link pode consultar datas livres e agendar o uso do auditório diretamente.
+      </div>
+    </div>
+    
+    <div class="d-flex flex-wrap align-items-center gap-2" style="flex:1; max-width:540px; min-width:280px;">
+      <div class="input-group" style="flex:1;">
+        <input type="text" id="input-link-publico" class="form-control" style="background:#0b1120; border-color:rgba(255,255,255,0.12); color:#38bdf8; font-size:0.85rem; font-weight:600;" value="{{ link_publico_url }}" readonly>
+        <button class="btn btn-outline-info" type="button" id="btn-copiar-link" onclick="copiarLinkPublico()" style="font-weight:600; font-size:0.85rem;">
+          <i class="bi bi-clipboard me-1" id="icon-copiar"></i> <span id="txt-copiar">Copiar Link</span>
+        </button>
+      </div>
+      <a href="https://api.whatsapp.com/send?text={{ 'Olá! Para consultar a agenda e agendar o uso do auditório do CEJA, acesse o link: '|urlencode }}{{ link_publico_url|urlencode }}" target="_blank" class="btn btn-success" style="font-weight:600; font-size:0.85rem; background:#10b981; border:none; display:inline-flex; align-items:center; gap:6px;">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function copiarLinkPublico() {
+  const input = document.getElementById('input-link-publico');
+  navigator.clipboard.writeText(input.value).then(() => {
+    const txt = document.getElementById('txt-copiar');
+    const icon = document.getElementById('icon-copiar');
+    const btn = document.getElementById('btn-copiar-link');
+    txt.textContent = 'Copiado!';
+    icon.className = 'bi bi-check2';
+    btn.classList.remove('btn-outline-info');
+    btn.classList.add('btn-info');
+    setTimeout(() => {
+      txt.textContent = 'Copiar Link';
+      icon.className = 'bi bi-clipboard me-1';
+      btn.classList.remove('btn-info');
+      btn.classList.add('btn-outline-info');
+    }, 2500);
+  });
+}
+</script>
 
 <div class="row g-3">
   <!-- CALENDÁRIO -->

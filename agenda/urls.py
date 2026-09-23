@@ -15,4 +15,7 @@ urlpatterns = [
     path('auditorio/<int:pk>/editar/', views.view_editar_reserva, name='editar_reserva'),
     path('auditorio/<int:pk>/excluir/', views.view_excluir_reserva, name='excluir_reserva'),
     path('auditorio/json/', views.view_reservas_json, name='reservas_json'),
+    # Auditório — Link Público de Consulta e Agendamento
+    path('auditorio/publico/', views.view_auditorio_publico, name='agenda_auditorio_publico'),
+    path('auditorio/publico/disponibilidade/', views.view_verificar_disponibilidade_json, name='verificar_disponibilidade_auditorio'),
 ]

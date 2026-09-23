@@ -5,9 +5,11 @@ from django.conf.urls.static import static
 from django.views.static import serve
 from django.urls import path, include, re_path
 from totem import views as totem_views
+from agenda import views as agenda_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('auditorio/', agenda_views.view_auditorio_publico, name='auditorio_atalho'),
     path('totem/', totem_views.view_totem_publico, name='totem_publico'),
     path('api/totem/', include('totem.urls')),
     path('', include('usuarios.urls')),

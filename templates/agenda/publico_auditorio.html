@@ -1,0 +1,978 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditório — Agendamento & Consulta | CEJA Profa Rosa Soares</title>
+  <meta name="description" content="Consulte horários e reserve o auditório do CEJA Professora Rosa Soares.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --bg-card: #151f32;
+      --bg-card-hover: #1e2c45;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(59, 130, 246, 0.3);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #06b6d4;
+      --purple: #8b5cf6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.10) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Topbar */
+    .public-header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .brand-sub {
+      font-size: 0.76rem;
+      color: #38bdf8;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-agendar-cta {
+      background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 15px var(--primary-glow);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-agendar-cta:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    /* Main Container */
+    .main-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .hero-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      font-family: 'Montserrat', sans-serif;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 650px;
+      margin: 0;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Layout Cards */
+    .card-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      height: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    /* Calendário */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .btn-nav-cal {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-nav-cal:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .cal-title-month {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #fff;
+      text-transform: capitalize;
+    }
+
+    .calendario-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .cal-header-day {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 8px 0;
+    }
+
+    .cal-day-cell {
+      min-height: 80px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-md);
+      padding: 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    .cal-day-cell:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .cal-day-cell.outro-mes {
+      opacity: 0.25;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .cal-day-cell.hoje {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .cal-day-cell.selecionado {
+      border-color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.15) !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .cal-day-num {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .cal-day-cell.hoje .cal-day-num {
+      color: #60a5fa;
+    }
+
+    .cal-chip-evento {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 5px;
+      border-radius: 4px;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    .chip-oficina { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .chip-aula { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .chip-evento { background: rgba(6, 182, 212, 0.25); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .chip-reuniao { background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .chip-outro { background: rgba(139, 92, 246, 0.25); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); }
+
+    /* Painel do Dia */
+    .day-detail-box {
+      background: rgba(11, 17, 32, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 18px;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+
+    .timeline-time {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+      min-width: 90px;
+    }
+
+    .timeline-info {
+      flex: 1;
+    }
+
+    .timeline-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .timeline-sub {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    /* Formulário */
+    .form-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+      background-color: #0d1527 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      color: #f1f5f9 !important;
+      border-radius: var(--radius-md) !important;
+      padding: 10px 14px !important;
+      font-size: 0.9rem !important;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+      outline: none;
+    }
+
+    .form-control::placeholder {
+      color: #475569;
+    }
+
+    /* Real-time Indicator */
+    .status-indicador {
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.84rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .status-indicador.disponivel {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+
+    .status-indicador.conflito {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .status-indicador.verificando {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #93c5fd;
+    }
+
+    .status-indicador.neutro {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+
+    /* Upcoming cards */
+    .upcoming-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      transition: all 0.15s ease;
+      border-left: 4px solid var(--primary);
+    }
+
+    .upcoming-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(2px);
+    }
+
+    /* Footer */
+    .public-footer {
+      text-align: center;
+      padding: 30px 20px;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+      .header-container { flex-direction: column; align-items: flex-start; }
+      .btn-agendar-cta { width: 100%; justify-content: center; }
+      .cal-day-cell { min-height: 55px; padding: 4px; }
+      .cal-chip-evento { font-size: 0.65rem; padding: 1px 3px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="public-header">
+    <div class="header-container">
+      <a href="{% url 'agenda_auditorio_publico' %}" class="brand-link">
+        <img src="{% static 'logo.png' %}" alt="Logo CEJA" class="brand-logo" onerror="this.style.display='none'">
+        <div>
+          <div class="brand-title">CEJA Professora Rosa Soares</div>
+          <div class="brand-sub"><i class="bi bi-calendar-event me-1"></i>Agenda & Agendamento do Auditório</div>
+        </div>
+      </a>
+      <a href="#secao-agendamento" class="btn-agendar-cta">
+        <i class="bi bi-plus-circle-fill"></i> Agendar Auditório
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-wrap">
+
+    <!-- HERO BANNER -->
+    <div class="hero-banner">
+      <div>
+        <h1 class="hero-title">Auditório Escolar</h1>
+        <p class="hero-desc">
+          Consulte as datas e horários já agendados e reserve o auditório para reuniões, oficinas, palestras ou aulas. 
+          O sistema bloqueia automaticamente qualquer sobreposição de horários.
+        </p>
+      </div>
+      <div class="hero-badges">
+        <span class="pill-badge" style="color:#6ee7b7; border-color:rgba(16,185,129,0.3);"><i class="bi bi-check-circle-fill"></i> Concomitância Bloqueada</span>
+        <span class="pill-badge" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);"><i class="bi bi-clock-history"></i> Consulta em Tempo Real</span>
+        <span class="pill-badge" style="color:#fde047; border-color:rgba(253,224,71,0.3);"><i class="bi bi-geo-alt-fill"></i> Mesquita / RJ</span>
+      </div>
+    </div>
+
+    <!-- MENSAGENS DJANGO -->
+    {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" style="border-radius:var(--radius-md); font-weight:500;">
+        <i class="bi bi-info-circle-fill me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+      <!-- COLUNA DA ESQUERDA: CALENDÁRIO & LINHA DO TEMPO -->
+      <div class="col-lg-7">
+        <div class="card-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <i class="bi bi-calendar3" style="color:var(--primary);"></i> Calendário de Ocupação
+            </h2>
+            <div class="cal-nav mb-0">
+              <a href="?mes={{ mes_ant }}&ano={{ ano_ant }}" class="btn-nav-cal" title="Mês Anterior">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+              <span class="cal-title-month mx-3">{{ nome_mes }} {{ ano }}</span>
+              <a href="?mes={{ mes_prox }}&ano={{ ano_prox }}" class="btn-nav-cal" title="Próximo Mês">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Legenda de Cores -->
+          <div class="d-flex flex-wrap gap-2 mb-3" style="font-size:0.75rem;">
+            <span class="cal-chip-evento chip-oficina">Oficina</span>
+            <span class="cal-chip-evento chip-aula">Aula</span>
+            <span class="cal-chip-evento chip-evento">Evento / Palestra</span>
+            <span class="cal-chip-evento chip-reuniao">Reunião</span>
+            <span class="cal-chip-evento chip-outro">Outro</span>
+          </div>
+
+          <!-- Grid do Calendário -->
+          <div class="calendario-grid" id="calendario-grid">
+            <div class="cal-header-day">Dom</div>
+            <div class="cal-header-day">Seg</div>
+            <div class="cal-header-day">Ter</div>
+            <div class="cal-header-day">Qua</div>
+            <div class="cal-header-day">Qui</div>
+            <div class="cal-header-day">Sex</div>
+            <div class="cal-header-day">Sáb</div>
+          </div>
+
+          <!-- Detalhes do Dia Selecionado -->
+          <div class="day-detail-box" id="day-detail-box">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h3 style="font-size:0.95rem; font-weight:700; margin:0;" id="detalhe-data-titulo">
+                <i class="bi bi-clock me-1 text-primary"></i> Horários no dia selecionado
+              </h3>
+              <button class="btn btn-sm btn-outline-primary" style="font-size:0.78rem; border-radius:var(--radius-sm);" onclick="preencherDataNoForm()">
+                <i class="bi bi-calendar-plus"></i> Agendar neste dia
+              </button>
+            </div>
+            <div id="detalhe-eventos-lista">
+              <!-- Preenchido via JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA DA DIREITA: FORMULÁRIO DE AGENDAMENTO & PRÓXIMOS EVENTOS -->
+      <div class="col-lg-5">
+        
+        <!-- CARD DO FORMULÁRIO -->
+        <div class="card-panel mb-4" id="secao-agendamento">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <i class="bi bi-pencil-square" style="color:#38bdf8;"></i> Agendar Uso do Auditório
+            </h2>
+            <span style="font-size:0.75rem; color:#94a3b8;"><i class="bi bi-shield-check text-success"></i> Seguro</span>
+          </div>
+
+          <!-- Indicador dinâmico de disponibilidade -->
+          <div id="indicador-disponibilidade" class="status-indicador neutro">
+            <i class="bi bi-info-circle"></i>
+            <span>Selecione a data e os horários para verificar a disponibilidade.</span>
+          </div>
+
+          <form method="post" id="form-agendamento-publico">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger p-2 mb-3" style="font-size:0.85rem; border-radius:var(--radius-sm);">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label" for="id_publico_titulo">Nome da Atividade / Evento *</label>
+              {{ form.titulo }}
+              {% if form.titulo.errors %}<small class="text-danger">{{ form.titulo.errors.0 }}</small>{% endif %}
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="id_tipo">Tipo de Atividade *</label>
+                {{ form.tipo }}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="id_publico_data">Data *</label>
+                {{ form.data }}
+                {% if form.data.errors %}<small class="text-danger">{{ form.data.errors.0 }}</small>{% endif %}
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label" for="id_publico_hora_inicio">Horário Início *</label>
+                {{ form.hora_inicio }}
+                {% if form.hora_inicio.errors %}<small class="text-danger">{{ form.hora_inicio.errors.0 }}</small>{% endif %}
+              </div>
+              <div class="col-6">
+                <label class="form-label" for="id_publico_hora_fim">Horário Término *</label>
+                {{ form.hora_fim }}
+                {% if form.hora_fim.errors %}<small class="text-danger">{{ form.hora_fim.errors.0 }}</small>{% endif %}
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="id_publico_responsavel">Nome do Responsável *</label>
+                {{ form.responsavel }}
+                {% if form.responsavel.errors %}<small class="text-danger">{{ form.responsavel.errors.0 }}</small>{% endif %}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="id_publico_contato">Telefone / WhatsApp *</label>
+                {{ form.contato }}
+                {% if form.contato.errors %}<small class="text-danger">{{ form.contato.errors.0 }}</small>{% endif %}
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-sm-8">
+                <label class="form-label" for="id_publico_turma">Turma / Público Alvo</label>
+                {{ form.turma_publico }}
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label" for="id_publico_capacidade">Pessoas</label>
+                {{ form.capacidade_prevista }}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="id_publico_descricao">Descrição e Recursos Necessários</label>
+              {{ form.descricao }}
+            </div>
+
+            <button type="submit" id="btn-submit-agendamento" class="btn-agendar-cta w-100 justify-content-center py-3">
+              <i class="bi bi-check2-circle fs-5"></i> Confirmar Agendamento do Auditório
+            </button>
+          </form>
+        </div>
+
+        <!-- PRÓXIMAS ATIVIDADES CONFIRMADAS -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <h2 class="panel-title" style="font-size:1.05rem;">
+              <i class="bi bi-list-stars" style="color:var(--warning);"></i> Próximos Eventos Confirmados
+            </h2>
+          </div>
+
+          <div style="max-height: 380px; overflow-y: auto; padding-right:4px;">
+            {% for r in proximas %}
+            <div class="upcoming-card" style="border-left-color: {% if r.tipo == 'oficina' %}var(--primary){% elif r.tipo == 'aula' %}var(--success){% elif r.tipo == 'evento' %}var(--info){% elif r.tipo == 'reuniao' %}var(--warning){% else %}var(--purple){% endif %};">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="cal-chip-evento chip-{{ r.tipo }}">{{ r.get_tipo_display }}</span>
+                <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">
+                  <i class="bi bi-clock me-1"></i>{{ r.hora_inicio|time:"H:i" }}–{{ r.hora_fim|time:"H:i" }}
+                </span>
+              </div>
+              <div style="font-weight:700; font-size:0.88rem; color:#fff;">{{ r.titulo }}</div>
+              <div style="font-size:0.78rem; color:#cbd5e1; margin-top:2px;">
+                <i class="bi bi-calendar-event me-1 text-primary"></i>{{ r.data|date:"d/m/Y (l)" }}
+              </div>
+              <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">
+                <i class="bi bi-person me-1"></i>{{ r.responsavel }}
+                {% if r.turma_publico %}&nbsp;•&nbsp;<i class="bi bi-people me-1"></i>{{ r.turma_publico }}{% endif %}
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-calendar2-check" style="font-size:2.2rem; display:block; margin-bottom:8px; opacity:0.4;"></i>
+              Nenhum agendamento futuro no momento.<br>O auditório está livre!
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DE CONFIRMAÇÃO / SUCESSO -->
+  <div class="modal fade" id="modal-sucesso" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background:var(--bg-card); border:1px solid rgba(16,185,129,0.3); border-radius:var(--radius-lg); color:#fff;">
+        <div class="modal-body text-center p-4">
+          <div style="width:60px; height:60px; background:rgba(16,185,129,0.15); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#10b981; font-size:2rem; margin-bottom:16px;">
+            <i class="bi bi-check-lg"></i>
+          </div>
+          <h3 style="font-weight:800; font-size:1.3rem; margin-bottom:8px;">Agendamento Confirmado!</h3>
+          <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;" id="modal-sucesso-msg">
+            O auditório foi reservado com sucesso e os horários já foram bloqueados.
+          </p>
+          <div style="background:rgba(0,0,0,0.25); border-radius:var(--radius-md); padding:14px; text-align:left; font-size:0.85rem; margin-bottom:20px;" id="modal-sucesso-detalhes">
+            <!-- Dados do evento -->
+          </div>
+          <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" onclick="window.location.reload();">
+            Entendido / Ver na Agenda
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="public-footer">
+    <p>CEJA Professora Rosa Soares — Fundação CECIERJ / SEEDUC-RJ</p>
+    <p style="font-size:0.75rem; margin-top:4px;">Sistema de Gestão & Agendamento Integrado</p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const MES = {{ mes }};
+    const ANO = {{ ano }};
+    const HOJE_STR = '{{ hoje|date:"Y-m-d" }}';
+    const RESERVAS = {{ reservas_json|safe }};
+    let dataSelecionada = HOJE_STR;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      renderizarCalendario(RESERVAS);
+      selecionarDia(HOJE_STR);
+      configurarVerificacaoConflito();
+    });
+
+    function renderizarCalendario(reservas) {
+      const grid = document.getElementById('calendario-grid');
+      // Limpa células anteriores mantendo os 7 headers
+      grid.querySelectorAll('.cal-day-cell').forEach(e => e.remove());
+
+      const primeiroDia = new Date(ANO, MES - 1, 1);
+      const ultimoDia = new Date(ANO, MES, 0);
+      const diaSemanaInicio = primeiroDia.getDay(); // 0=Dom
+
+      // Dias vazios do mês anterior
+      for (let i = 0; i < diaSemanaInicio; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell outro-mes';
+        grid.appendChild(cell);
+      }
+
+      // Dias do mês
+      for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const dataStr = `${ANO}-${String(MES).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell' + (dataStr === HOJE_STR ? ' hoje' : '');
+        cell.setAttribute('data-date', dataStr);
+
+        const numEl = document.createElement('div');
+        numEl.className = 'cal-day-num';
+        numEl.textContent = d;
+        cell.appendChild(numEl);
+
+        // Eventos deste dia
+        const eventosDoDia = reservas.filter(r => r.data === dataStr);
+        eventosDoDia.slice(0, 3).forEach(ev => {
+          const chip = document.createElement('div');
+          chip.className = `cal-chip-evento chip-${ev.tipo}`;
+          chip.textContent = `${ev.hora_inicio} ${ev.titulo}`;
+          chip.title = `${ev.hora_inicio}–${ev.hora_fim}: ${ev.titulo} (${ev.responsavel})`;
+          cell.appendChild(chip);
+        });
+
+        if (eventosDoDia.length > 3) {
+          const mais = document.createElement('div');
+          mais.style.fontSize = '0.65rem';
+          mais.style.color = '#38bdf8';
+          mais.style.fontWeight = 'bold';
+          mais.textContent = `+${eventosDoDia.length - 3} mais`;
+          cell.appendChild(mais);
+        }
+
+        cell.addEventListener('click', () => selecionarDia(dataStr));
+        grid.appendChild(cell);
+      }
+    }
+
+    function selecionarDia(dataStr) {
+      dataSelecionada = dataStr;
+
+      // Destacar visualmente na grid
+      document.querySelectorAll('.cal-day-cell').forEach(c => {
+        if (c.getAttribute('data-date') === dataStr) {
+          c.classList.add('selecionado');
+        } else {
+          c.classList.remove('selecionado');
+        }
+      });
+
+      // Atualizar painel de detalhes do dia
+      const partes = dataStr.split('-');
+      const dObj = new Date(partes[0], partes[1] - 1, partes[2]);
+      const dataFormatada = dObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+      
+      document.getElementById('detalhe-data-titulo').innerHTML = `
+        <i class="bi bi-calendar2-date me-1 text-primary"></i> ${dataFormatada}
+      `;
+
+      const eventos = RESERVAS.filter(r => r.data === dataStr);
+      const listaEl = document.getElementById('detalhe-eventos-lista');
+
+      if (eventos.length === 0) {
+        listaEl.innerHTML = `
+          <div class="text-center py-3" style="color:#6ee7b7; font-size:0.86rem;">
+            <i class="bi bi-check-circle-fill me-1"></i> Auditório 100% livre em todos os horários deste dia!
+          </div>
+        `;
+      } else {
+        let html = '';
+        eventos.forEach(ev => {
+          html += `
+            <div class="timeline-item">
+              <div class="timeline-time">${ev.hora_inicio} às ${ev.hora_fim}</div>
+              <div class="timeline-info">
+                <div class="timeline-title">${ev.titulo}</div>
+                <div class="timeline-sub">
+                  <span class="cal-chip-evento chip-${ev.tipo}" style="display:inline-block; margin-right:4px;">${ev.tipo_display || ev.tipo}</span>
+                  Responsável: <strong>${ev.responsavel}</strong>
+                  ${ev.turma_publico ? `&nbsp;•&nbsp;${ev.turma_publico}` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        listaEl.innerHTML = html;
+      }
+    }
+
+    function preencherDataNoForm() {
+      const dataInput = document.getElementById('id_publico_data');
+      if (dataInput && dataSelecionada) {
+        dataInput.value = dataSelecionada;
+        verificarDisponibilidade();
+        document.getElementById('secao-agendamento').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Verificação de Conflitos em Tempo Real
+    let timerVerificacao = null;
+    function configurarVerificacaoConflito() {
+      const dataInput = document.getElementById('id_publico_data');
+      const inicioInput = document.getElementById('id_publico_hora_inicio');
+      const fimInput = document.getElementById('id_publico_hora_fim');
+
+      [dataInput, inicioInput, fimInput].forEach(el => {
+        if (!el) return;
+        el.addEventListener('change', () => {
+          clearTimeout(timerVerificacao);
+          timerVerificacao = setTimeout(verificarDisponibilidade, 250);
+        });
+        el.addEventListener('input', () => {
+          clearTimeout(timerVerificacao);
+          timerVerificacao = setTimeout(verificarDisponibilidade, 400);
+        });
+      });
+    }
+
+    function verificarDisponibilidade() {
+      const dataVal = document.getElementById('id_publico_data')?.value;
+      const inicioVal = document.getElementById('id_publico_hora_inicio')?.value;
+      const fimVal = document.getElementById('id_publico_hora_fim')?.value;
+      const ind = document.getElementById('indicador-disponibilidade');
+      const btn = document.getElementById('btn-submit-agendamento');
+
+      if (!dataVal || !inicioVal || !fimVal) {
+        ind.className = 'status-indicador neutro';
+        ind.innerHTML = `<i class="bi bi-info-circle"></i><span>Preencha data, horário de início e fim para checar disponibilidade.</span>`;
+        if (btn) btn.disabled = false;
+        return;
+      }
+
+      if (inicioVal >= fimVal) {
+        ind.className = 'status-indicador conflito';
+        ind.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>O horário de início deve ser anterior ao de término.</span>`;
+        if (btn) btn.disabled = true;
+        return;
+      }
+
+      ind.className = 'status-indicador verificando';
+      ind.innerHTML = `<span class="spinner-border spinner-border-sm"></span><span>Verificando agenda do auditório...</span>`;
+
+      fetch(`/agenda/auditorio/publico/disponibilidade/?data=${encodeURIComponent(dataVal)}&hora_inicio=${encodeURIComponent(inicioVal)}&hora_fim=${encodeURIComponent(fimVal)}`)
+        .then(r => r.json())
+        .then(res => {
+          if (res.disponivel) {
+            ind.className = 'status-indicador disponivel';
+            ind.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${res.mensagem || 'Horário 100% livre e disponível!'}</span>`;
+            if (btn) btn.disabled = false;
+          } else {
+            ind.className = 'status-indicador conflito';
+            ind.innerHTML = `<i class="bi bi-x-circle-fill"></i><span>${res.mensagem || 'Horário já ocupado por outro evento.'}</span>`;
+            if (btn) btn.disabled = true;
+          }
+        })
+        .catch(() => {
+          ind.className = 'status-indicador neutro';
+          ind.innerHTML = `<i class="bi bi-info-circle"></i><span>Horário será validado no envio.</span>`;
+          if (btn) btn.disabled = false;
+        });
+    }
+
+    // Envio com AJAX para feedback imediato e sem recarregar a tela
+    const formEl = document.getElementById('form-agendamento-publico');
+    if (formEl) {
+      formEl.addEventListener('submit', function(e) {
+        const btn = document.getElementById('btn-submit-agendamento');
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Gravando Reserva...`;
+
+        e.preventDefault();
+        const formData = new FormData(formEl);
+        formData.append('is_ajax', '1');
+
+        fetch(formEl.action || window.location.href, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('modal-sucesso-msg').textContent = data.mensagem;
+            const r = data.reserva;
+            document.getElementById('modal-sucesso-detalhes').innerHTML = `
+              <p class="mb-1"><strong>Evento:</strong> ${r.titulo}</p>
+              <p class="mb-1"><strong>Data:</strong> ${r.data}</p>
+              <p class="mb-1"><strong>Horário:</strong> ${r.hora_inicio} às ${r.hora_fim}</p>
+              <p class="mb-0"><strong>Responsável:</strong> ${r.responsavel}</p>
+            `;
+            const modal = new bootstrap.Modal(document.getElementById('modal-sucesso'));
+            modal.show();
+          } else {
+            const ind = document.getElementById('indicador-disponibilidade');
+            ind.className = 'status-indicador conflito';
+            ind.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>${data.mensagem || 'Erro ao realizar agendamento.'}</span>`;
+            ind.scrollIntoView({ behavior: 'smooth' });
+            btn.disabled = false;
+            btn.innerHTML = `<i class="bi bi-check2-circle fs-5"></i> Confirmar Agendamento do Auditório`;
+          }
+        })
+        .catch(err => {
+          formEl.submit();
+        });
+      });
+    }
+  </script>
+</body>
+</html>

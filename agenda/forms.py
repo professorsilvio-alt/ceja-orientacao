@@ -107,3 +107,124 @@ class ReservaAuditorioForm(forms.ModelForm):
                     f'das {conflito.hora_inicio:%H:%M} às {conflito.hora_fim:%H:%M}.'
                 )
         return cleaned
+
+
+class AgendamentoPublicoAuditorioForm(forms.ModelForm):
+    """
+    Formulário para agendamento público do auditório.
+    Valida horários, impede conflitos/concomitância e coleta dados do solicitante.
+    """
+    contato = forms.CharField(
+        label='Telefone / WhatsApp de Contato *',
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'id': 'id_publico_contato',
+            'placeholder': '(21) 99999-9999',
+            'autocomplete': 'tel'
+        })
+    )
+
+    class Meta:
+        model = ReservaAuditorio
+        fields = [
+            'titulo', 'tipo', 'data', 'hora_inicio', 'hora_fim',
+            'responsavel', 'turma_publico', 'capacidade_prevista', 'descricao'
+        ]
+        widgets = {
+            'titulo': forms.TextInput(attrs={
+                'id': 'id_publico_titulo',
+                'placeholder': 'Ex: Reunião Pedagógica, Oficina de Artes, Palestra...'
+            }),
+            'data': forms.DateInput(attrs={
+                'type': 'date',
+                'id': 'id_publico_data'
+            }, format='%Y-%m-%d'),
+            'hora_inicio': forms.TimeInput(attrs={
+                'type': 'time',
+                'id': 'id_publico_hora_inicio'
+            }),
+            'hora_fim': forms.TimeInput(attrs={
+                'type': 'time',
+                'id': 'id_publico_hora_fim'
+            }),
+            'responsavel': forms.TextInput(attrs={
+                'id': 'id_publico_responsavel',
+                'placeholder': 'Seu nome completo'
+            }),
+            'turma_publico': forms.TextInput(attrs={
+                'id': 'id_publico_turma',
+                'placeholder': 'Ex: EJA Módulo II, Professores, Comunidade...'
+            }),
+            'capacidade_prevista': forms.NumberInput(attrs={
+                'id': 'id_publico_capacidade',
+                'placeholder': 'Ex: 30',
+                'min': '1'
+            }),
+            'descricao': forms.Textarea(attrs={
+                'rows': 3,
+                'id': 'id_publico_descricao',
+                'placeholder': 'Descreva a atividade e recursos necessários (projetor, som, microfone, ar condicionado)...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['data'].initial = timezone.now().date()
+        self.fields['data'].input_formats = ['%Y-%m-%d']
+        self.fields['turma_publico'].required = False
+        self.fields['capacidade_prevista'].required = False
+        self.fields['descricao'].required = False
+        aplicar_estilo_campos(self)
+
+    def clean_data(self):
+        data = self.cleaned_data.get('data')
+        if data and data < timezone.now().date():
+            raise forms.ValidationError('A data do agendamento não pode ser no passado.')
+        return data
+
+    def clean(self):
+        cleaned = super().clean()
+        data = cleaned.get('data')
+        inicio = cleaned.get('hora_inicio')
+        fim = cleaned.get('hora_fim')
+
+        if inicio and fim:
+            if inicio >= fim:
+                raise forms.ValidationError('O horário de início deve ser anterior ao horário de término.')
+
+        # Validação estrita de não-concomitância (sem sobreposição de horários)
+        if data and inicio and fim:
+            conflitos = ReservaAuditorio.objects.filter(
+                data=data,
+                status__in=['confirmada', 'pendente'],
+                hora_inicio__lt=fim,
+                hora_fim__gt=inicio,
+            )
+            if self.instance.pk:
+                conflitos = conflitos.exclude(pk=self.instance.pk)
+
+            if conflitos.exists():
+                c = conflitos.first()
+                raise forms.ValidationError(
+                    f'Horário indisponível! O auditório já está agendado em {data.strftime("%d/%m/%Y")} '
+                    f'das {c.hora_inicio:%H:%M} às {c.hora_fim:%H:%M} para "{c.titulo}" ({c.responsavel}). '
+                    f'Por favor, escolha outro horário ou dia.'
+                )
+        return cleaned
+
+    def save(self, commit=True):
+        reserva = super().save(commit=False)
+        contato = self.cleaned_data.get('contato', '').strip()
+        obs_linhas = []
+        if contato:
+            obs_linhas.append(f"Contato: {contato}")
+        obs_linhas.append("Agendado via Link Público.")
+        if reserva.observacoes:
+            obs_linhas.append(reserva.observacoes)
+        reserva.observacoes = "\n".join(obs_linhas)
+        reserva.status = 'confirmada'
+        if commit:
+            reserva.save()
+        return reserva
+
