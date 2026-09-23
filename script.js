@@ -1237,12 +1237,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const qrImg = document.getElementById('totem-auditorio-qrcode');
-    if (qrImg) {
-      const publicUrl = window.location.origin + '/auditorio/';
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(publicUrl)}`;
-    }
-
     carregarDadosAuditorioTotem();
   }
 
