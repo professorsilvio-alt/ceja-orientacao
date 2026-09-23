@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Auditório — Agendamento & Consulta | CEJA Profa Rosa Soares</title>
   <meta name="description" content="Consulte horários e reserve o auditório do CEJA Professora Rosa Soares.">
 
@@ -35,7 +35,7 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
-      --radius-lg: 18px;
+      --radius-lg: 16px;
       --radius-md: 12px;
       --radius-sm: 8px;
     }
@@ -47,116 +47,153 @@
       background-color: var(--bg-dark);
       background-image: 
         radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.10) 0px, transparent 50%);
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
       background-attachment: fixed;
       color: var(--text-main);
       min-height: 100vh;
       line-height: 1.5;
+      padding-bottom: 40px;
     }
 
-    /* Topbar */
+    /* ── TOPBAR RESPONSIVA ────────────────────────── */
     .public-header {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .header-container {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 14px 20px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 12px;
     }
 
     .brand-link {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       text-decoration: none;
       color: inherit;
     }
 
     .brand-logo {
-      height: 44px;
+      height: 38px;
       width: auto;
       object-fit: contain;
     }
 
     .brand-title {
       font-family: 'Montserrat', sans-serif;
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: #fff;
-      line-height: 1.1;
+      line-height: 1.15;
     }
 
     .brand-sub {
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       color: #38bdf8;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.03em;
     }
 
-    .btn-agendar-cta {
+    .btn-header-cta {
       background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
       color: #fff;
       border: none;
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: var(--radius-md);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       text-decoration: none;
-      box-shadow: 0 4px 15px var(--primary-glow);
+      box-shadow: 0 4px 12px var(--primary-glow);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── NAVEGAÇÃO POR ABAS NO MOBILE ─────────────── */
+    .mobile-tab-bar {
+      display: none;
+      background: #111b2e;
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 12px;
+      position: sticky;
+      top: 59px;
+      z-index: 990;
+    }
+
+    .tab-pills {
+      display: flex;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .tab-pill-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       transition: all 0.2s ease;
       cursor: pointer;
     }
 
-    .btn-agendar-cta:hover {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    .tab-pill-btn.active {
+      background: var(--primary);
       color: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px var(--primary-glow);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
     }
 
-    /* Main Container */
+    /* ── CONTAINER PRINCIPAL ──────────────────────── */
     .main-wrap {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 28px 20px 60px;
+      padding: 16px 16px 40px;
     }
 
-    /* Hero Banner */
+    /* ── HERO BANNER COMPACTO ─────────────────────── */
     .hero-banner {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 28px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      gap: 12px;
     }
 
     .hero-title {
-      font-size: 1.8rem;
+      font-size: 1.35rem;
       font-weight: 800;
       font-family: 'Montserrat', sans-serif;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       background: linear-gradient(90deg, #ffffff, #cbd5e1);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -164,129 +201,134 @@
 
     .hero-desc {
       color: var(--text-muted);
-      font-size: 0.95rem;
+      font-size: 0.86rem;
       max-width: 650px;
       margin: 0;
+      line-height: 1.4;
     }
 
     .hero-badges {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
     }
 
     .pill-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
+      gap: 5px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 0.8rem;
+      font-size: 0.74rem;
       font-weight: 600;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-color);
     }
 
-    /* Layout Cards */
+    /* ── CARDS DO LAYOUT ─────────────────────────── */
     .card-panel {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 22px;
-      height: 100%;
+      padding: 18px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     }
 
     .panel-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border-color);
     }
 
     .panel-title {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       color: #fff;
+      margin: 0;
     }
 
-    /* Calendário */
+    /* ── CONTROLES DO CALENDÁRIO ─────────────────── */
     .cal-nav {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
+      gap: 8px;
     }
 
     .btn-nav-cal {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
       text-decoration: none;
       transition: all 0.15s ease;
+      font-size: 0.85rem;
     }
 
     .btn-nav-cal:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.14);
       color: #fff;
     }
 
     .cal-title-month {
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: 0.98rem;
       color: #fff;
       text-transform: capitalize;
+      min-width: 130px;
+      text-align: center;
     }
 
+    /* ── GRID DO CALENDÁRIO ──────────────────────── */
     .calendario-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
+      gap: 4px;
     }
 
     .cal-header-day {
       text-align: center;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
       color: var(--text-dim);
-      padding: 8px 0;
+      padding: 6px 0;
     }
 
     .cal-day-cell {
-      min-height: 80px;
+      min-height: 70px;
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: var(--radius-md);
-      padding: 6px;
+      border-radius: var(--radius-sm);
+      padding: 5px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      transition: all 0.18s ease;
+      transition: all 0.15s ease;
       position: relative;
     }
 
     .cal-day-cell:hover {
       background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.18);
     }
 
     .cal-day-cell.outro-mes {
-      opacity: 0.25;
+      opacity: 0.2;
       cursor: default;
       pointer-events: none;
     }
@@ -298,27 +340,29 @@
 
     .cal-day-cell.selecionado {
       border-color: #38bdf8 !important;
-      background: rgba(56, 189, 248, 0.15) !important;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.16) !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
     }
 
     .cal-day-num {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 700;
       color: var(--text-muted);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
+      text-align: center;
     }
 
     .cal-day-cell.hoje .cal-day-num {
       color: #60a5fa;
     }
 
+    /* Eventos em Desktop (chips de texto) */
     .cal-chip-evento {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 600;
-      padding: 2px 5px;
+      padding: 2px 4px;
       border-radius: 4px;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -331,13 +375,43 @@
     .chip-reuniao { background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
     .chip-outro { background: rgba(139, 92, 246, 0.25); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); }
 
-    /* Painel do Dia */
+    /* Indicador de Eventos em Mobile (dots) */
+    .cal-dots-container {
+      display: none;
+      justify-content: center;
+      gap: 3px;
+      margin-top: 4px;
+    }
+
+    .cal-event-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .dot-oficina { background: #3b82f6; }
+    .dot-aula { background: #10b981; }
+    .dot-evento { background: #06b6d4; }
+    .dot-reuniao { background: #f59e0b; }
+    .dot-outro { background: #8b5cf6; }
+
+    /* ── DETALHES DO DIA SELECIONADO ─────────────── */
     .day-detail-box {
-      background: rgba(11, 17, 32, 0.7);
+      background: rgba(11, 17, 32, 0.85);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 16px;
-      margin-top: 18px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .day-detail-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .timeline-item {
@@ -349,7 +423,7 @@
     .timeline-item:last-child { border-bottom: none; }
 
     .timeline-time {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: #38bdf8;
       min-width: 90px;
@@ -368,14 +442,15 @@
     .timeline-sub {
       font-size: 0.76rem;
       color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    /* Formulário */
+    /* ── FORMULÁRIO DE AGENDAMENTO ───────────────── */
     .form-label {
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: #cbd5e1;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .form-control, .form-select {
@@ -383,9 +458,10 @@
       border: 1px solid rgba(255, 255, 255, 0.12) !important;
       color: #f1f5f9 !important;
       border-radius: var(--radius-md) !important;
-      padding: 10px 14px !important;
-      font-size: 0.9rem !important;
+      padding: 10px 12px !important;
+      font-size: 16px !important; /* Previne auto-zoom no Safari iOS */
       transition: all 0.2s ease;
+      min-height: 44px;
     }
 
     .form-control:focus, .form-select:focus {
@@ -396,19 +472,19 @@
 
     .form-control::placeholder {
       color: #475569;
+      font-size: 0.85rem;
     }
 
-    /* Real-time Indicator */
+    /* Indicador em tempo real */
     .status-indicador {
-      padding: 10px 14px;
+      padding: 10px 12px;
       border-radius: var(--radius-md);
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 16px;
-      transition: all 0.2s ease;
+      margin-bottom: 14px;
     }
 
     .status-indicador.disponivel {
@@ -435,36 +511,117 @@
       color: var(--text-muted);
     }
 
-    /* Upcoming cards */
+    /* Próximos eventos */
     .upcoming-card {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: var(--radius-md);
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      transition: all 0.15s ease;
+      padding: 10px 12px;
+      margin-bottom: 8px;
       border-left: 4px solid var(--primary);
-    }
-
-    .upcoming-card:hover {
-      background: rgba(255, 255, 255, 0.05);
-      transform: translateX(2px);
     }
 
     /* Footer */
     .public-footer {
       text-align: center;
-      padding: 30px 20px;
+      padding: 24px 16px;
       border-top: 1px solid var(--border-color);
       color: var(--text-dim);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
-    @media (max-width: 768px) {
-      .header-container { flex-direction: column; align-items: flex-start; }
-      .btn-agendar-cta { width: 100%; justify-content: center; }
-      .cal-day-cell { min-height: 55px; padding: 4px; }
-      .cal-chip-evento { font-size: 0.65rem; padding: 1px 3px; }
+    /* ── AJUSTES RESPONSIVOS MOBILE (< 768px) ────── */
+    @media (max-width: 767.98px) {
+      .header-container {
+        padding: 8px 12px;
+      }
+      .brand-title {
+        font-size: 0.86rem;
+      }
+      .brand-sub {
+        font-size: 0.68rem;
+      }
+      .brand-logo {
+        height: 32px;
+      }
+      .btn-header-cta {
+        display: none; /* Em celular a navegação é feita pelas abas */
+      }
+      .mobile-tab-bar {
+        display: block; /* Ativa as abas superiores */
+      }
+      .main-wrap {
+        padding: 12px 10px 40px;
+      }
+      .hero-banner {
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .hero-title {
+        font-size: 1.15rem;
+      }
+      .hero-desc {
+        font-size: 0.8rem;
+      }
+      .pill-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+      }
+      .card-panel {
+        padding: 12px;
+      }
+
+      /* Calendário no mobile vira grade limpa com DOTS */
+      .cal-day-cell {
+        min-height: 48px;
+        padding: 4px 2px;
+        border-radius: 6px;
+      }
+      .cal-day-num {
+        font-size: 0.82rem;
+      }
+      .cal-chip-evento {
+        display: none !important; /* Esconde texto dentro da célula para não espremer */
+      }
+      .cal-dots-container {
+        display: flex; /* Exibe bolinhas coloridas */
+      }
+
+      /* Legenda simplificada */
+      .legenda-chips {
+        gap: 4px !important;
+      }
+      .legenda-chips span {
+        font-size: 0.68rem !important;
+        padding: 2px 6px !important;
+      }
+
+      /* Botão de agendar no dia selecionado */
+      .btn-agendar-dia {
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px 12px;
+      }
+
+      /* Esconder/Mostrar conforme a aba selecionada no mobile */
+      .mobile-view-agenda.active-tab-content {
+        display: block !important;
+      }
+      .mobile-view-agenda:not(.active-tab-content) {
+        display: none !important;
+      }
+      .mobile-view-formulario.active-tab-content {
+        display: block !important;
+      }
+      .mobile-view-formulario:not(.active-tab-content) {
+        display: none !important;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .mobile-view-agenda, .mobile-view-formulario {
+        display: block !important;
+      }
     }
   </style>
 </head>
@@ -476,60 +633,71 @@
       <a href="{% url 'agenda_auditorio_publico' %}" class="brand-link">
         <img src="{% static 'logo.png' %}" alt="Logo CEJA" class="brand-logo" onerror="this.style.display='none'">
         <div>
-          <div class="brand-title">CEJA Professora Rosa Soares</div>
-          <div class="brand-sub"><i class="bi bi-calendar-event me-1"></i>Agenda & Agendamento do Auditório</div>
+          <div class="brand-title">CEJA Profa Rosa Soares</div>
+          <div class="brand-sub"><i class="bi bi-calendar-event me-1"></i>Auditório Escolar</div>
         </div>
       </a>
-      <a href="#secao-agendamento" class="btn-agendar-cta">
-        <i class="bi bi-plus-circle-fill"></i> Agendar Auditório
-      </a>
+      <button type="button" class="btn-header-cta" onclick="irParaFormulario()">
+        <i class="bi bi-plus-circle-fill"></i> Agendar Horário
+      </button>
     </div>
   </header>
+
+  <!-- ABAS MOBILE (Fácil alternância com 1 toque no celular) -->
+  <div class="mobile-tab-bar">
+    <div class="tab-pills">
+      <button class="tab-pill-btn active" id="tab-btn-agenda" onclick="mudarAba('agenda')">
+        <i class="bi bi-calendar-month"></i> 1. Ver Agenda
+      </button>
+      <button class="tab-pill-btn" id="tab-btn-form" onclick="mudarAba('formulario')">
+        <i class="bi bi-pencil-square"></i> 2. Fazer Agendamento
+      </button>
+    </div>
+  </div>
 
   <!-- MAIN -->
   <main class="main-wrap">
 
-    <!-- HERO BANNER -->
+    <!-- HERO BANNER COMPACTO -->
     <div class="hero-banner">
       <div>
-        <h1 class="hero-title">Auditório Escolar</h1>
+        <h1 class="hero-title">Auditório — Consulta & Agendamento</h1>
         <p class="hero-desc">
-          Consulte as datas e horários já agendados e reserve o auditório para reuniões, oficinas, palestras ou aulas. 
-          O sistema bloqueia automaticamente qualquer sobreposição de horários.
+          Consulte datas livres e reserve horários sem risco de sobreposição. O sistema bloqueia automaticamente qualquer concomitância.
         </p>
       </div>
       <div class="hero-badges">
-        <span class="pill-badge" style="color:#6ee7b7; border-color:rgba(16,185,129,0.3);"><i class="bi bi-check-circle-fill"></i> Concomitância Bloqueada</span>
-        <span class="pill-badge" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);"><i class="bi bi-clock-history"></i> Consulta em Tempo Real</span>
-        <span class="pill-badge" style="color:#fde047; border-color:rgba(253,224,71,0.3);"><i class="bi bi-geo-alt-fill"></i> Mesquita / RJ</span>
+        <span class="pill-badge" style="color:#6ee7b7; border-color:rgba(16,185,129,0.3);"><i class="bi bi-shield-check"></i> Sem Conflitos</span>
+        <span class="pill-badge" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);"><i class="bi bi-lightning-charge"></i> Instantâneo</span>
       </div>
     </div>
 
     <!-- MENSAGENS DJANGO -->
     {% if messages %}
-    <div class="mb-4">
+    <div class="mb-3">
       {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" style="border-radius:var(--radius-md); font-weight:500;">
-        <i class="bi bi-info-circle-fill me-2"></i>{{ message }}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show py-2" style="border-radius:var(--radius-md); font-size:0.88rem;">
+        <i class="bi bi-info-circle-fill me-1"></i>{{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
       {% endfor %}
     </div>
     {% endif %}
 
-    <div class="row g-4">
-      <!-- COLUNA DA ESQUERDA: CALENDÁRIO & LINHA DO TEMPO -->
-      <div class="col-lg-7">
+    <div class="row g-3">
+
+      <!-- BLOCO DA ESQUERDA: CALENDÁRIO & HORÁRIOS OCUPADOS (ABA 1 NO CELULAR) -->
+      <div class="col-lg-7 mobile-view-agenda active-tab-content">
         <div class="card-panel">
           <div class="panel-header">
             <h2 class="panel-title">
               <i class="bi bi-calendar3" style="color:var(--primary);"></i> Calendário de Ocupação
             </h2>
-            <div class="cal-nav mb-0">
+            <div class="cal-nav">
               <a href="?mes={{ mes_ant }}&ano={{ ano_ant }}" class="btn-nav-cal" title="Mês Anterior">
                 <i class="bi bi-chevron-left"></i>
               </a>
-              <span class="cal-title-month mx-3">{{ nome_mes }} {{ ano }}</span>
+              <span class="cal-title-month">{{ nome_mes }} {{ ano }}</span>
               <a href="?mes={{ mes_prox }}&ano={{ ano_prox }}" class="btn-nav-cal" title="Próximo Mês">
                 <i class="bi bi-chevron-right"></i>
               </a>
@@ -537,12 +705,12 @@
           </div>
 
           <!-- Legenda de Cores -->
-          <div class="d-flex flex-wrap gap-2 mb-3" style="font-size:0.75rem;">
-            <span class="cal-chip-evento chip-oficina">Oficina</span>
-            <span class="cal-chip-evento chip-aula">Aula</span>
-            <span class="cal-chip-evento chip-evento">Evento / Palestra</span>
-            <span class="cal-chip-evento chip-reuniao">Reunião</span>
-            <span class="cal-chip-evento chip-outro">Outro</span>
+          <div class="d-flex flex-wrap gap-2 mb-2 legenda-chips" style="font-size:0.72rem;">
+            <span class="cal-chip-evento chip-oficina"><i class="bi bi-circle-fill" style="font-size:6px; color:#3b82f6;"></i> Oficina</span>
+            <span class="cal-chip-evento chip-aula"><i class="bi bi-circle-fill" style="font-size:6px; color:#10b981;"></i> Aula</span>
+            <span class="cal-chip-evento chip-evento"><i class="bi bi-circle-fill" style="font-size:6px; color:#06b6d4;"></i> Evento</span>
+            <span class="cal-chip-evento chip-reuniao"><i class="bi bi-circle-fill" style="font-size:6px; color:#f59e0b;"></i> Reunião</span>
+            <span class="cal-chip-evento chip-outro"><i class="bi bi-circle-fill" style="font-size:6px; color:#8b5cf6;"></i> Outro</span>
           </div>
 
           <!-- Grid do Calendário -->
@@ -558,12 +726,12 @@
 
           <!-- Detalhes do Dia Selecionado -->
           <div class="day-detail-box" id="day-detail-box">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-              <h3 style="font-size:0.95rem; font-weight:700; margin:0;" id="detalhe-data-titulo">
+            <div class="day-detail-header">
+              <h3 style="font-size:0.92rem; font-weight:700; margin:0;" id="detalhe-data-titulo">
                 <i class="bi bi-clock me-1 text-primary"></i> Horários no dia selecionado
               </h3>
-              <button class="btn btn-sm btn-outline-primary" style="font-size:0.78rem; border-radius:var(--radius-sm);" onclick="preencherDataNoForm()">
-                <i class="bi bi-calendar-plus"></i> Agendar neste dia
+              <button type="button" class="btn btn-sm btn-primary btn-agendar-dia" style="font-size:0.8rem; font-weight:600; border-radius:var(--radius-sm);" onclick="preencherDataNoForm()">
+                <i class="bi bi-plus-circle me-1"></i> Agendar neste dia
               </button>
             </div>
             <div id="detalhe-eventos-lista">
@@ -571,31 +739,65 @@
             </div>
           </div>
         </div>
+
+        <!-- PRÓXIMAS ATIVIDADES CONFIRMADAS (Visível na aba da agenda) -->
+        <div class="card-panel mt-3">
+          <div class="panel-header">
+            <h2 class="panel-title" style="font-size:0.95rem;">
+              <i class="bi bi-list-stars" style="color:var(--warning);"></i> Próximos Eventos Confirmados
+            </h2>
+          </div>
+
+          <div style="max-height: 280px; overflow-y: auto; padding-right:2px;">
+            {% for r in proximas %}
+            <div class="upcoming-card" style="border-left-color: {% if r.tipo == 'oficina' %}var(--primary){% elif r.tipo == 'aula' %}var(--success){% elif r.tipo == 'evento' %}var(--info){% elif r.tipo == 'reuniao' %}var(--warning){% else %}var(--purple){% endif %};">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="cal-chip-evento chip-{{ r.tipo }}">{{ r.get_tipo_display }}</span>
+                <span style="font-size:0.74rem; color:#94a3b8; font-weight:600;">
+                  <i class="bi bi-clock me-1"></i>{{ r.hora_inicio|time:"H:i" }}–{{ r.hora_fim|time:"H:i" }}
+                </span>
+              </div>
+              <div style="font-weight:700; font-size:0.86rem; color:#fff;">{{ r.titulo }}</div>
+              <div style="font-size:0.76rem; color:#cbd5e1; margin-top:2px;">
+                <i class="bi bi-calendar-event me-1 text-primary"></i>{{ r.data|date:"d/m/Y (l)" }}
+              </div>
+              <div style="font-size:0.74rem; color:#94a3b8; margin-top:1px;">
+                <i class="bi bi-person me-1"></i>{{ r.responsavel }}
+                {% if r.turma_publico %}&nbsp;•&nbsp;{{ r.turma_publico }}{% endif %}
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-3 text-muted" style="font-size:0.85rem;">
+              <i class="bi bi-calendar2-check" style="font-size:1.8rem; display:block; margin-bottom:6px; opacity:0.4;"></i>
+              Nenhum agendamento futuro no momento.<br>O auditório está disponível!
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
       </div>
 
-      <!-- COLUNA DA DIREITA: FORMULÁRIO DE AGENDAMENTO & PRÓXIMOS EVENTOS -->
-      <div class="col-lg-5">
-        
-        <!-- CARD DO FORMULÁRIO -->
-        <div class="card-panel mb-4" id="secao-agendamento">
+      <!-- BLOCO DA DIREITA: FORMULÁRIO DE AGENDAMENTO (ABA 2 NO CELULAR) -->
+      <div class="col-lg-5 mobile-view-formulario">
+        <div class="card-panel" id="secao-agendamento">
           <div class="panel-header">
             <h2 class="panel-title">
-              <i class="bi bi-pencil-square" style="color:#38bdf8;"></i> Agendar Uso do Auditório
+              <i class="bi bi-pencil-square" style="color:#38bdf8;"></i> Agendar Auditório
             </h2>
-            <span style="font-size:0.75rem; color:#94a3b8;"><i class="bi bi-shield-check text-success"></i> Seguro</span>
+            <span style="font-size:0.75rem; color:#10b981; font-weight:600;"><i class="bi bi-shield-check"></i> Sem Conflito</span>
           </div>
 
           <!-- Indicador dinâmico de disponibilidade -->
           <div id="indicador-disponibilidade" class="status-indicador neutro">
             <i class="bi bi-info-circle"></i>
-            <span>Selecione a data e os horários para verificar a disponibilidade.</span>
+            <span>Escolha data e horários para validar a disponibilidade.</span>
           </div>
 
           <form method="post" id="form-agendamento-publico">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-            <div class="alert alert-danger p-2 mb-3" style="font-size:0.85rem; border-radius:var(--radius-sm);">
+            <div class="alert alert-danger p-2 mb-3" style="font-size:0.84rem; border-radius:var(--radius-sm);">
               <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ form.non_field_errors.0 }}
             </div>
             {% endif %}
@@ -607,12 +809,12 @@
             </div>
 
             <div class="row g-2 mb-3">
-              <div class="col-sm-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label" for="id_tipo">Tipo de Atividade *</label>
                 {{ form.tipo }}
               </div>
-              <div class="col-sm-6">
-                <label class="form-label" for="id_publico_data">Data *</label>
+              <div class="col-12 col-sm-6">
+                <label class="form-label" for="id_publico_data">Data do Agendamento *</label>
                 {{ form.data }}
                 {% if form.data.errors %}<small class="text-danger">{{ form.data.errors.0 }}</small>{% endif %}
               </div>
@@ -632,12 +834,12 @@
             </div>
 
             <div class="row g-2 mb-3">
-              <div class="col-sm-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label" for="id_publico_responsavel">Nome do Responsável *</label>
                 {{ form.responsavel }}
                 {% if form.responsavel.errors %}<small class="text-danger">{{ form.responsavel.errors.0 }}</small>{% endif %}
               </div>
-              <div class="col-sm-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label" for="id_publico_contato">Telefone / WhatsApp *</label>
                 {{ form.contato }}
                 {% if form.contato.errors %}<small class="text-danger">{{ form.contato.errors.0 }}</small>{% endif %}
@@ -645,11 +847,11 @@
             </div>
 
             <div class="row g-2 mb-3">
-              <div class="col-sm-8">
-                <label class="form-label" for="id_publico_turma">Turma / Público Alvo</label>
+              <div class="col-8">
+                <label class="form-label" for="id_publico_turma">Turma / Público</label>
                 {{ form.turma_publico }}
               </div>
-              <div class="col-sm-4">
+              <div class="col-4">
                 <label class="form-label" for="id_publico_capacidade">Pessoas</label>
                 {{ form.capacidade_prevista }}
               </div>
@@ -660,48 +862,13 @@
               {{ form.descricao }}
             </div>
 
-            <button type="submit" id="btn-submit-agendamento" class="btn-agendar-cta w-100 justify-content-center py-3">
-              <i class="bi bi-check2-circle fs-5"></i> Confirmar Agendamento do Auditório
+            <button type="submit" id="btn-submit-agendamento" class="btn btn-primary w-100 py-3" style="font-weight:700; border-radius:var(--radius-md); font-size:0.95rem; box-shadow:0 4px 14px rgba(59,130,246,0.35);">
+              <i class="bi bi-check2-circle fs-5 me-1"></i> Confirmar Agendamento
             </button>
           </form>
         </div>
-
-        <!-- PRÓXIMAS ATIVIDADES CONFIRMADAS -->
-        <div class="card-panel">
-          <div class="panel-header">
-            <h2 class="panel-title" style="font-size:1.05rem;">
-              <i class="bi bi-list-stars" style="color:var(--warning);"></i> Próximos Eventos Confirmados
-            </h2>
-          </div>
-
-          <div style="max-height: 380px; overflow-y: auto; padding-right:4px;">
-            {% for r in proximas %}
-            <div class="upcoming-card" style="border-left-color: {% if r.tipo == 'oficina' %}var(--primary){% elif r.tipo == 'aula' %}var(--success){% elif r.tipo == 'evento' %}var(--info){% elif r.tipo == 'reuniao' %}var(--warning){% else %}var(--purple){% endif %};">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="cal-chip-evento chip-{{ r.tipo }}">{{ r.get_tipo_display }}</span>
-                <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">
-                  <i class="bi bi-clock me-1"></i>{{ r.hora_inicio|time:"H:i" }}–{{ r.hora_fim|time:"H:i" }}
-                </span>
-              </div>
-              <div style="font-weight:700; font-size:0.88rem; color:#fff;">{{ r.titulo }}</div>
-              <div style="font-size:0.78rem; color:#cbd5e1; margin-top:2px;">
-                <i class="bi bi-calendar-event me-1 text-primary"></i>{{ r.data|date:"d/m/Y (l)" }}
-              </div>
-              <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">
-                <i class="bi bi-person me-1"></i>{{ r.responsavel }}
-                {% if r.turma_publico %}&nbsp;•&nbsp;<i class="bi bi-people me-1"></i>{{ r.turma_publico }}{% endif %}
-              </div>
-            </div>
-            {% empty %}
-            <div class="text-center py-4 text-muted">
-              <i class="bi bi-calendar2-check" style="font-size:2.2rem; display:block; margin-bottom:8px; opacity:0.4;"></i>
-              Nenhum agendamento futuro no momento.<br>O auditório está livre!
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-
       </div>
+
     </div>
   </main>
 
@@ -710,18 +877,16 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content" style="background:var(--bg-card); border:1px solid rgba(16,185,129,0.3); border-radius:var(--radius-lg); color:#fff;">
         <div class="modal-body text-center p-4">
-          <div style="width:60px; height:60px; background:rgba(16,185,129,0.15); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#10b981; font-size:2rem; margin-bottom:16px;">
+          <div style="width:56px; height:56px; background:rgba(16,185,129,0.15); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#10b981; font-size:1.8rem; margin-bottom:14px;">
             <i class="bi bi-check-lg"></i>
           </div>
-          <h3 style="font-weight:800; font-size:1.3rem; margin-bottom:8px;">Agendamento Confirmado!</h3>
-          <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;" id="modal-sucesso-msg">
+          <h3 style="font-weight:800; font-size:1.25rem; margin-bottom:6px;">Agendamento Confirmado!</h3>
+          <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:18px;" id="modal-sucesso-msg">
             O auditório foi reservado com sucesso e os horários já foram bloqueados.
           </p>
-          <div style="background:rgba(0,0,0,0.25); border-radius:var(--radius-md); padding:14px; text-align:left; font-size:0.85rem; margin-bottom:20px;" id="modal-sucesso-detalhes">
-            <!-- Dados do evento -->
-          </div>
-          <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" onclick="window.location.reload();">
-            Entendido / Ver na Agenda
+          <div style="background:rgba(0,0,0,0.25); border-radius:var(--radius-md); padding:12px; text-align:left; font-size:0.84rem; margin-bottom:18px;" id="modal-sucesso-detalhes"></div>
+          <button type="button" class="btn btn-primary w-100 py-2" data-bs-dismiss="modal" onclick="window.location.reload();">
+            Ver na Agenda
           </button>
         </div>
       </div>
@@ -731,7 +896,7 @@
   <!-- FOOTER -->
   <footer class="public-footer">
     <p>CEJA Professora Rosa Soares — Fundação CECIERJ / SEEDUC-RJ</p>
-    <p style="font-size:0.75rem; margin-top:4px;">Sistema de Gestão & Agendamento Integrado</p>
+    <p style="font-size:0.75rem; margin-top:2px;">Sistema de Gestão & Agendamento Integrado</p>
   </footer>
 
   <!-- Bootstrap JS -->
@@ -744,6 +909,35 @@
     const RESERVAS = {{ reservas_json|safe }};
     let dataSelecionada = HOJE_STR;
 
+    // Controle de Abas Mobile
+    function mudarAba(aba) {
+      const btnAgenda = document.getElementById('tab-btn-agenda');
+      const btnForm = document.getElementById('tab-btn-form');
+      const viewAgenda = document.querySelector('.mobile-view-agenda');
+      const viewForm = document.querySelector('.mobile-view-formulario');
+
+      if (aba === 'agenda') {
+        btnAgenda.classList.add('active');
+        btnForm.classList.remove('active');
+        viewAgenda.classList.add('active-tab-content');
+        viewForm.classList.remove('active-tab-content');
+      } else {
+        btnForm.classList.add('active');
+        btnAgenda.classList.remove('active');
+        viewForm.classList.add('active-tab-content');
+        viewAgenda.classList.remove('active-tab-content');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function irParaFormulario() {
+      if (window.innerWidth < 768) {
+        mudarAba('formulario');
+      } else {
+        document.getElementById('secao-agendamento').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
     // Inicialização
     document.addEventListener('DOMContentLoaded', () => {
       renderizarCalendario(RESERVAS);
@@ -753,7 +947,6 @@
 
     function renderizarCalendario(reservas) {
       const grid = document.getElementById('calendario-grid');
-      // Limpa células anteriores mantendo os 7 headers
       grid.querySelectorAll('.cal-day-cell').forEach(e => e.remove());
 
       const primeiroDia = new Date(ANO, MES - 1, 1);
@@ -779,9 +972,10 @@
         numEl.textContent = d;
         cell.appendChild(numEl);
 
-        // Eventos deste dia
         const eventosDoDia = reservas.filter(r => r.data === dataStr);
-        eventosDoDia.slice(0, 3).forEach(ev => {
+
+        // 1. Em Desktop: Chips com horário e título
+        eventosDoDia.slice(0, 2).forEach(ev => {
           const chip = document.createElement('div');
           chip.className = `cal-chip-evento chip-${ev.tipo}`;
           chip.textContent = `${ev.hora_inicio} ${ev.titulo}`;
@@ -789,13 +983,25 @@
           cell.appendChild(chip);
         });
 
-        if (eventosDoDia.length > 3) {
+        if (eventosDoDia.length > 2) {
           const mais = document.createElement('div');
-          mais.style.fontSize = '0.65rem';
+          mais.className = 'cal-chip-evento';
           mais.style.color = '#38bdf8';
           mais.style.fontWeight = 'bold';
-          mais.textContent = `+${eventosDoDia.length - 3} mais`;
+          mais.textContent = `+${eventosDoDia.length - 2} mais`;
           cell.appendChild(mais);
+        }
+
+        // 2. Em Mobile: Dots coloridos compactos (evita quebrar as células estreitas)
+        if (eventosDoDia.length > 0) {
+          const dotsWrap = document.createElement('div');
+          dotsWrap.className = 'cal-dots-container';
+          eventosDoDia.slice(0, 3).forEach(ev => {
+            const dot = document.createElement('span');
+            dot.className = `cal-event-dot dot-${ev.tipo}`;
+            dotsWrap.appendChild(dot);
+          });
+          cell.appendChild(dotsWrap);
         }
 
         cell.addEventListener('click', () => selecionarDia(dataStr));
@@ -806,7 +1012,6 @@
     function selecionarDia(dataStr) {
       dataSelecionada = dataStr;
 
-      // Destacar visualmente na grid
       document.querySelectorAll('.cal-day-cell').forEach(c => {
         if (c.getAttribute('data-date') === dataStr) {
           c.classList.add('selecionado');
@@ -815,10 +1020,9 @@
         }
       });
 
-      // Atualizar painel de detalhes do dia
       const partes = dataStr.split('-');
       const dObj = new Date(partes[0], partes[1] - 1, partes[2]);
-      const dataFormatada = dObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const dataFormatada = dObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
       
       document.getElementById('detalhe-data-titulo').innerHTML = `
         <i class="bi bi-calendar2-date me-1 text-primary"></i> ${dataFormatada}
@@ -829,8 +1033,8 @@
 
       if (eventos.length === 0) {
         listaEl.innerHTML = `
-          <div class="text-center py-3" style="color:#6ee7b7; font-size:0.86rem;">
-            <i class="bi bi-check-circle-fill me-1"></i> Auditório 100% livre em todos os horários deste dia!
+          <div class="text-center py-2" style="color:#6ee7b7; font-size:0.84rem;">
+            <i class="bi bi-check-circle-fill me-1"></i> Auditório totalmente livre em todos os horários!
           </div>
         `;
       } else {
@@ -859,7 +1063,7 @@
       if (dataInput && dataSelecionada) {
         dataInput.value = dataSelecionada;
         verificarDisponibilidade();
-        document.getElementById('secao-agendamento').scrollIntoView({ behavior: 'smooth' });
+        irParaFormulario();
       }
     }
 
@@ -892,27 +1096,27 @@
 
       if (!dataVal || !inicioVal || !fimVal) {
         ind.className = 'status-indicador neutro';
-        ind.innerHTML = `<i class="bi bi-info-circle"></i><span>Preencha data, horário de início e fim para checar disponibilidade.</span>`;
+        ind.innerHTML = `<i class="bi bi-info-circle"></i><span>Preencha data, início e término para checar horários.</span>`;
         if (btn) btn.disabled = false;
         return;
       }
 
       if (inicioVal >= fimVal) {
         ind.className = 'status-indicador conflito';
-        ind.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>O horário de início deve ser anterior ao de término.</span>`;
+        ind.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>O início deve ser anterior ao término.</span>`;
         if (btn) btn.disabled = true;
         return;
       }
 
       ind.className = 'status-indicador verificando';
-      ind.innerHTML = `<span class="spinner-border spinner-border-sm"></span><span>Verificando agenda do auditório...</span>`;
+      ind.innerHTML = `<span class="spinner-border spinner-border-sm"></span><span>Verificando disponibilidade...</span>`;
 
       fetch(`/agenda/auditorio/publico/disponibilidade/?data=${encodeURIComponent(dataVal)}&hora_inicio=${encodeURIComponent(inicioVal)}&hora_fim=${encodeURIComponent(fimVal)}`)
         .then(r => r.json())
         .then(res => {
           if (res.disponivel) {
             ind.className = 'status-indicador disponivel';
-            ind.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${res.mensagem || 'Horário 100% livre e disponível!'}</span>`;
+            ind.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${res.mensagem || 'Horário livre e disponível!'}</span>`;
             if (btn) btn.disabled = false;
           } else {
             ind.className = 'status-indicador conflito';
@@ -927,7 +1131,7 @@
         });
     }
 
-    // Envio com AJAX para feedback imediato e sem recarregar a tela
+    // Envio com AJAX
     const formEl = document.getElementById('form-agendamento-publico');
     if (formEl) {
       formEl.addEventListener('submit', function(e) {
@@ -965,7 +1169,7 @@
             ind.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>${data.mensagem || 'Erro ao realizar agendamento.'}</span>`;
             ind.scrollIntoView({ behavior: 'smooth' });
             btn.disabled = false;
-            btn.innerHTML = `<i class="bi bi-check2-circle fs-5"></i> Confirmar Agendamento do Auditório`;
+            btn.innerHTML = `<i class="bi bi-check2-circle fs-5 me-1"></i> Confirmar Agendamento`;
           }
         })
         .catch(err => {
