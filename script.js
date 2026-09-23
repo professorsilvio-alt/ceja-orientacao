@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'screen-matricula':    '📝 Matrícula',
     'screen-disciplinas':  '📚 Disciplinas',
     'screen-faleconosco':  '💬 Fale Conosco',
+    'screen-auditorio':    '🏛️ Agenda do Auditório',
   };
 
   let currentScreen = 'screen-home';
@@ -65,6 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.CEJA_SYNC) {
         window.CEJA_SYNC.syncHorariosOnline();
       }
+    }
+
+    if (targetId === 'screen-auditorio') {
+      renderAuditorioTotem();
     }
 
     // Exit current
@@ -1187,6 +1192,210 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+
+  // ==========================================================================
+  // 12. AGENDA DO AUDITÓRIO NO TOTEM
+  // ==========================================================================
+  let totemAuditorioMes = (new Date()).getMonth() + 1;
+  let totemAuditorioAno = (new Date()).getFullYear();
+  let totemAuditorioReservas = [];
+  let totemAuditorioEventsInitialized = false;
+  let totemDataSelecionada = null;
+
+  const MESES_NOMES = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
+  function renderAuditorioTotem() {
+    if (!totemAuditorioEventsInitialized) {
+      totemAuditorioEventsInitialized = true;
+      const btnAnt = document.getElementById('btn-totem-auditorio-ant');
+      const btnProx = document.getElementById('btn-totem-auditorio-prox');
+      if (btnAnt) {
+        btnAnt.addEventListener('click', () => {
+          if (totemAuditorioMes === 1) {
+            totemAuditorioMes = 12;
+            totemAuditorioAno--;
+          } else {
+            totemAuditorioMes--;
+          }
+          carregarDadosAuditorioTotem();
+        });
+      }
+      if (btnProx) {
+        btnProx.addEventListener('click', () => {
+          if (totemAuditorioMes === 12) {
+            totemAuditorioMes = 1;
+            totemAuditorioAno++;
+          } else {
+            totemAuditorioMes++;
+          }
+          carregarDadosAuditorioTotem();
+        });
+      }
+    }
+
+    const qrImg = document.getElementById('totem-auditorio-qrcode');
+    if (qrImg) {
+      const publicUrl = window.location.origin + '/auditorio/';
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(publicUrl)}`;
+    }
+
+    carregarDadosAuditorioTotem();
+  }
+
+  function carregarDadosAuditorioTotem() {
+    const lblMesAno = document.getElementById('totem-auditorio-mes-ano');
+    if (lblMesAno) {
+      lblMesAno.textContent = `${MESES_NOMES[totemAuditorioMes - 1]} ${totemAuditorioAno}`;
+    }
+
+    fetch(`/api/totem/auditorio/?mes=${totemAuditorioMes}&ano=${totemAuditorioAno}`)
+      .then(r => r.json())
+      .then(data => {
+        totemAuditorioReservas = data.reservas || [];
+        montarGridAuditorioTotem(totemAuditorioReservas);
+
+        const hojeIso = data.hoje || (new Date()).toISOString().split('T')[0];
+        const partesHoje = hojeIso.split('-');
+        if (parseInt(partesHoje[1]) === totemAuditorioMes && parseInt(partesHoje[0]) === totemAuditorioAno) {
+          selecionarDiaTotem(hojeIso);
+        } else if (totemAuditorioReservas.length > 0) {
+          selecionarDiaTotem(totemAuditorioReservas[0].data);
+        } else {
+          selecionarDiaTotem(null);
+        }
+      })
+      .catch(err => {
+        console.warn('Erro ao carregar agenda do auditório no totem:', err);
+      });
+  }
+
+  function montarGridAuditorioTotem(reservas) {
+    const grid = document.getElementById('totem-auditorio-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const hoje = new Date();
+    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+
+    const primeiroDia = new Date(totemAuditorioAno, totemAuditorioMes - 1, 1);
+    const ultimoDia = new Date(totemAuditorioAno, totemAuditorioMes, 0);
+
+    const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+    let offsetInicio = 0;
+    if (diaSemana1 >= 1 && diaSemana1 <= 5) {
+      offsetInicio = diaSemana1 - 1;
+    }
+
+    for (let i = 0; i < offsetInicio; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'totem-cal-cell outro-mes';
+      grid.appendChild(cell);
+    }
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+      const dObj = new Date(totemAuditorioAno, totemAuditorioMes - 1, d);
+      const dow = dObj.getDay();
+      if (dow === 0 || dow === 6) continue; // Pula sábado e domingo
+
+      const dataStr = `${totemAuditorioAno}-${String(totemAuditorioMes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const cell = document.createElement('div');
+      cell.className = 'totem-cal-cell' + (dataStr === hojeStr ? ' hoje' : '');
+      cell.setAttribute('data-date', dataStr);
+
+      const numEl = document.createElement('div');
+      numEl.className = 'totem-cal-day-num';
+      numEl.textContent = d;
+      cell.appendChild(numEl);
+
+      const eventos = reservas.filter(r => r.data === dataStr);
+      eventos.slice(0, 2).forEach(ev => {
+        const chip = document.createElement('div');
+        chip.className = `totem-event-chip badge-tipo-${ev.tipo}`;
+        chip.textContent = `${ev.hora_inicio} ${ev.titulo}`;
+        chip.title = `${ev.titulo} (${ev.responsavel})`;
+        cell.appendChild(chip);
+      });
+
+      if (eventos.length > 2) {
+        const mais = document.createElement('div');
+        mais.style.fontSize = '10px';
+        mais.style.fontWeight = 'bold';
+        mais.style.color = '#0284c7';
+        mais.textContent = `+${eventos.length - 2} mais`;
+        cell.appendChild(mais);
+      }
+
+      cell.addEventListener('click', () => selecionarDiaTotem(dataStr));
+      grid.appendChild(cell);
+    }
+  }
+
+  function selecionarDiaTotem(dataStr) {
+    totemDataSelecionada = dataStr;
+    const grid = document.getElementById('totem-auditorio-grid');
+    if (grid) {
+      grid.querySelectorAll('.totem-cal-cell').forEach(c => {
+        if (c.getAttribute('data-date') === dataStr) {
+          c.classList.add('selecionado');
+        } else {
+          c.classList.remove('selecionado');
+        }
+      });
+    }
+
+    const titleEl = document.getElementById('totem-detalhe-data-titulo');
+    const listEl = document.getElementById('totem-detalhes-eventos-lista');
+    if (!listEl) return;
+
+    if (!dataStr) {
+      if (titleEl) titleEl.textContent = '📋 Próximas Atividades no Auditório';
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 24px; color: var(--text-muted); font-size: 15px;">
+          Nenhum evento agendado para este mês no momento.
+        </div>
+      `;
+      return;
+    }
+
+    const partes = dataStr.split('-');
+    const dObj = new Date(partes[0], partes[1] - 1, partes[2]);
+    const dataFormatada = dObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    if (titleEl) {
+      titleEl.innerHTML = `📅 Programação de <strong>${dataFormatada}</strong>`;
+    }
+
+    const eventos = totemAuditorioReservas.filter(r => r.data === dataStr);
+    if (eventos.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 20px; color: #16a34a; font-size: 15px; font-weight: 700;">
+          ✨ Auditório 100% livre em todos os horários deste dia!
+        </div>
+      `;
+    } else {
+      let html = '';
+      eventos.forEach(ev => {
+        html += `
+          <div class="totem-event-card">
+            <div class="totem-event-time">⏰ ${ev.hora_inicio} às ${ev.hora_fim}</div>
+            <div class="totem-event-body">
+              <div class="totem-event-title">${ev.titulo}</div>
+              <div class="totem-event-sub">
+                <span class="badge-tipo badge-tipo-${ev.tipo}">${ev.tipo_display || ev.tipo}</span>
+                &nbsp;Responsável: <strong>${ev.responsavel}</strong>
+                ${ev.turma_publico ? `&nbsp;•&nbsp;${ev.turma_publico}` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      listEl.innerHTML = html;
+    }
+  }
 
 
   // ==========================================================================

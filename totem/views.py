@@ -103,3 +103,74 @@ def view_info_escola(request):
         ],
         'localAtendimento': 'Secretaria - 2º Andar (Prédio do CIEP Nelson Ramos)',
     })
+
+
+def view_auditorio_totem(request):
+    """
+    GET /api/totem/auditorio/
+    Retorna as reservas ativas do auditório para exibição no totem.
+    """
+    from agenda.models import ReservaAuditorio
+    from datetime import date, timedelta
+    hoje = timezone.now().date()
+    mes = int(request.GET.get('mes', hoje.month))
+    ano = int(request.GET.get('ano', hoje.year))
+
+    primeiro_dia = date(ano, mes, 1)
+    if mes == 12:
+        ultimo_dia = date(ano + 1, 1, 1) - timedelta(days=1)
+    else:
+        ultimo_dia = date(ano, mes + 1, 1) - timedelta(days=1)
+
+    reservas = ReservaAuditorio.objects.filter(
+        data__gte=primeiro_dia,
+        data__lte=ultimo_dia,
+        status__in=['confirmada', 'pendente']
+    ).order_by('data', 'hora_inicio')
+
+    lista = []
+    for r in reservas:
+        lista.append({
+            'id': r.id,
+            'titulo': r.titulo,
+            'tipo': r.tipo,
+            'tipo_display': r.get_tipo_display(),
+            'data': r.data.isoformat(),
+            'hora_inicio': r.hora_inicio.strftime('%H:%M'),
+            'hora_fim': r.hora_fim.strftime('%H:%M'),
+            'responsavel': r.responsavel,
+            'turma_publico': r.turma_publico,
+            'status': r.status,
+            'badge_color': r.badge_color,
+        })
+
+    # Próximas reservas a partir de hoje
+    proximas = ReservaAuditorio.objects.filter(
+        data__gte=hoje,
+        status__in=['confirmada', 'pendente']
+    ).order_by('data', 'hora_inicio')[:15]
+
+    proximas_lista = []
+    for r in proximas:
+        proximas_lista.append({
+            'id': r.id,
+            'titulo': r.titulo,
+            'tipo': r.tipo,
+            'tipo_display': r.get_tipo_display(),
+            'data': r.data.isoformat(),
+            'data_formatada': r.data.strftime('%d/%m/%Y'),
+            'hora_inicio': r.hora_inicio.strftime('%H:%M'),
+            'hora_fim': r.hora_fim.strftime('%H:%M'),
+            'responsavel': r.responsavel,
+            'turma_publico': r.turma_publico,
+            'badge_color': r.badge_color,
+        })
+
+    return JsonResponse({
+        'ano': ano,
+        'mes': mes,
+        'hoje': hoje.isoformat(),
+        'reservas': lista,
+        'proximas': proximas_lista,
+    })
+

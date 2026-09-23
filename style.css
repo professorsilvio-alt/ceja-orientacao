@@ -3011,3 +3011,300 @@ input, select, textarea {
   }
 }
 
+/* ── AUDITÓRIO NO TOTEM ────────────────────────────────────────── */
+#btn-menu-auditorio { border-top: 3px solid #0284c7; }
+
+.auditorio-kiosk-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 16px 40px;
+}
+
+.auditorio-kiosk-banner {
+  background: linear-gradient(135deg, #071242 0%, #0c1f6e 100%);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  color: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.auditorio-kiosk-banner-info {
+  flex: 1;
+  min-width: 280px;
+}
+
+.auditorio-kiosk-banner-info h3 {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #ffd84e;
+}
+
+.auditorio-kiosk-banner-info p {
+  font-size: 15px;
+  color: #dce3f5;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.auditorio-kiosk-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.auditorio-kiosk-pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f4fc;
+}
+
+.auditorio-kiosk-qrbox {
+  background: #ffffff;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.auditorio-kiosk-qrbox img {
+  width: 125px;
+  height: 125px;
+  display: block;
+}
+
+.auditorio-kiosk-qrbox span {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0c1f6e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Navegação do Mês no Totem */
+.auditorio-kiosk-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  background: #ffffff;
+  padding: 14px 20px;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+}
+
+.auditorio-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.totem-auditorio-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0;
+  min-width: 180px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.auditorio-kiosk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.badge-tipo {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.badge-tipo-oficina { background: #e0f2fe; color: #0284c7; }
+.badge-tipo-aula    { background: #dcfce7; color: #16a34a; }
+.badge-tipo-evento  { background: #fef3c7; color: #d97706; }
+.badge-tipo-reuniao { background: #ede9fe; color: #7c3aed; }
+.badge-tipo-outro   { background: #f1f5f9; color: #475569; }
+
+/* Grid do Totem (5 colunas Seg-Sex) */
+.auditorio-totem-grid-container {
+  background: #ffffff;
+  border-radius: var(--r-md);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.auditorio-totem-headers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.auditorio-totem-headers > div {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  padding: 6px 0;
+  background: rgba(12,31,110,0.05);
+  border-radius: var(--r-sm);
+}
+
+.auditorio-totem-cells {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.totem-cal-cell {
+  min-height: 85px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.totem-cal-cell:hover {
+  background: #ffffff;
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(12,31,110,0.1);
+}
+
+.totem-cal-cell.outro-mes {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+.totem-cal-cell.hoje {
+  border: 2px solid var(--primary);
+  background: #f0f4fc;
+}
+
+.totem-cal-cell.selecionado {
+  border: 2px solid #0284c7 !important;
+  background: #e0f2fe !important;
+  box-shadow: 0 0 10px rgba(2,132,199,0.3);
+}
+
+.totem-cal-day-num {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.totem-cal-cell.hoje .totem-cal-day-num {
+  color: var(--primary);
+}
+
+.totem-event-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Detalhes do Dia / Eventos */
+.auditorio-totem-details {
+  background: #ffffff;
+  border-radius: var(--r-md);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+}
+
+.auditorio-details-header {
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.auditorio-details-header h4 {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0;
+}
+
+.totem-event-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
+  background: var(--bg-card2);
+  border-left: 5px solid var(--primary);
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.totem-event-card:hover {
+  background: #f0f4fc;
+  transform: translateX(4px);
+}
+
+.totem-event-time {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+  min-width: 110px;
+}
+
+.totem-event-body {
+  flex: 1;
+}
+
+.totem-event-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.totem-event-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+

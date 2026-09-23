@@ -108,6 +108,12 @@
             <div class="menu-card-sub">Sugestões, elogios e reclamações</div>
           </button>
 
+          <button class="menu-card" data-screen="screen-auditorio" id="btn-menu-auditorio">
+            <div class="menu-card-icon">🏛️</div>
+            <div class="menu-card-label">Agenda do Auditório</div>
+            <div class="menu-card-sub">Eventos, palestras e atividades</div>
+          </button>
+
         </div>
 
         <!-- Rodapé Home -->
@@ -490,6 +496,76 @@
                 Mensagem</button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           TELA 8 — AGENDA DO AUDITÓRIO
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-auditorio">
+        <div class="screen-header">
+          <h2>🏛️ Agenda do Auditório</h2>
+          <p>Consulte os eventos agendados ou aponte a câmera para agendar no seu celular</p>
+        </div>
+
+        <div class="auditorio-kiosk-wrap">
+          <!-- Banner Superior com QR Code de Agendamento -->
+          <div class="auditorio-kiosk-banner">
+            <div class="auditorio-kiosk-banner-info">
+              <h3>Deseja reservar o auditório?</h3>
+              <p>Aponte a câmera do seu celular para o QR Code ao lado para acessar o link público e solicitar seu agendamento com bloqueio automático de horários.</p>
+              <div class="auditorio-kiosk-pills">
+                <span class="auditorio-kiosk-pill">🔒 Sem conflitos de horários</span>
+                <span class="auditorio-kiosk-pill">⚡ Atualizado em tempo real</span>
+                <span class="auditorio-kiosk-pill">📱 Agende pelo celular</span>
+              </div>
+            </div>
+            <div class="auditorio-kiosk-qrbox">
+              <img id="totem-auditorio-qrcode" src="" alt="QR Code Link Público Auditório">
+              <span>Escanear p/ Agendar</span>
+            </div>
+          </div>
+
+          <!-- Navegação de Meses e Indicador -->
+          <div class="auditorio-kiosk-nav">
+            <div class="auditorio-nav-btns">
+              <button type="button" class="btn-kiosk btn-kiosk--secondary btn-sm" id="btn-totem-auditorio-ant">◀ Mês Anterior</button>
+              <h3 id="totem-auditorio-mes-ano" class="totem-auditorio-title">Carregando...</h3>
+              <button type="button" class="btn-kiosk btn-kiosk--secondary btn-sm" id="btn-totem-auditorio-prox">Próximo Mês ▶</button>
+            </div>
+            <div class="auditorio-kiosk-legend">
+              <span class="badge-tipo badge-tipo-oficina">● Oficina</span>
+              <span class="badge-tipo badge-tipo-aula">● Aula</span>
+              <span class="badge-tipo badge-tipo-evento">● Evento</span>
+              <span class="badge-tipo badge-tipo-reuniao">● Reunião</span>
+              <span class="badge-tipo badge-tipo-outro">● Outro</span>
+            </div>
+          </div>
+
+          <!-- Grid do Calendário (Segunda a Sexta - 5 Colunas) -->
+          <div class="auditorio-totem-grid-container">
+            <div class="auditorio-totem-headers">
+              <div>Segunda</div>
+              <div>Terça</div>
+              <div>Quarta</div>
+              <div>Quinta</div>
+              <div>Sexta</div>
+            </div>
+            <div class="auditorio-totem-cells" id="totem-auditorio-grid">
+              <!-- Gerado via JS -->
+            </div>
+          </div>
+
+          <!-- Linha do Tempo / Próximos Eventos em Destaque -->
+          <div class="auditorio-totem-details" id="totem-auditorio-details">
+            <div class="auditorio-details-header">
+              <h4 id="totem-detalhe-data-titulo">📋 Programação do Dia Selecionado</h4>
+            </div>
+            <div id="totem-detalhes-eventos-lista">
+              <!-- Inserido dinamicamente -->
+            </div>
+          </div>
+
         </div>
       </div>
 

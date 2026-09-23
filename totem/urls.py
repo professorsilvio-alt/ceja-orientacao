@@ -4,5 +4,6 @@ from . import views
 
 urlpatterns = [
     path('horarios/', views.view_horarios_totem, name='api_horarios_totem'),
+    path('auditorio/', views.view_auditorio_totem, name='api_auditorio_totem'),
     path('escola/', views.view_info_escola, name='api_info_escola'),
 ]
