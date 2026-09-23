@@ -16,7 +16,113 @@
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=20260902_v11">
+  <link rel="stylesheet" href="style.css?v=20260923_v3">
+
+  <style>
+    /* ── BLINDAGEM VISUAL: AUDITÓRIO NO TOTEM ── */
+    #btn-menu-auditorio { border-top: 3px solid #0284c7 !important; }
+    .auditorio-kiosk-wrap { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
+    .auditorio-kiosk-banner {
+      background: linear-gradient(135deg, #071242 0%, #0c1f6e 100%) !important;
+      border-radius: var(--r-lg, 24px) !important;
+      padding: 22px 24px !important;
+      color: #fff !important;
+      box-shadow: 0 8px 16px rgba(12,31,110,0.08) !important;
+      margin-bottom: 20px !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+    }
+    .auditorio-kiosk-banner-info h3 { font-family: 'Montserrat', sans-serif !important; font-size: 20px !important; font-weight: 800 !important; margin-bottom: 6px !important; color: #ffd84e !important; }
+    .auditorio-kiosk-banner-info p { font-size: 14px !important; color: #dce3f5 !important; line-height: 1.5 !important; margin-bottom: 12px !important; }
+    .auditorio-kiosk-pills { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
+    .auditorio-kiosk-pill { background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; padding: 4px 12px !important; border-radius: 20px !important; font-size: 12px !important; font-weight: 700 !important; color: #f0f4fc !important; }
+
+    .auditorio-kiosk-nav {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 14px !important;
+      margin-bottom: 16px !important;
+      background: #ffffff !important;
+      padding: 12px 18px !important;
+      border-radius: var(--r-md, 16px) !important;
+      box-shadow: 0 4px 12px rgba(12,31,110,0.06) !important;
+      border: 1px solid #dce3f5 !important;
+    }
+    .auditorio-nav-btns { display: flex !important; align-items: center !important; gap: 12px !important; }
+    .totem-auditorio-title { font-family: 'Montserrat', sans-serif !important; font-size: 17px !important; font-weight: 800 !important; color: #0c1f6e !important; margin: 0 !important; min-width: 170px !important; text-align: center !important; text-transform: capitalize !important; }
+    .auditorio-kiosk-legend { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
+    .badge-tipo { font-size: 12px !important; font-weight: 700 !important; padding: 3px 8px !important; border-radius: 6px !important; }
+    .badge-tipo-oficina { background: #e0f2fe !important; color: #0284c7 !important; }
+    .badge-tipo-aula    { background: #dcfce7 !important; color: #16a34a !important; }
+    .badge-tipo-evento  { background: #fef3c7 !important; color: #d97706 !important; }
+    .badge-tipo-reuniao { background: #ede9fe !important; color: #7c3aed !important; }
+    .badge-tipo-outro   { background: #f1f5f9 !important; color: #475569 !important; }
+
+    .auditorio-totem-grid-container {
+      background: #ffffff !important;
+      border-radius: var(--r-md, 16px) !important;
+      padding: 16px !important;
+      box-shadow: 0 4px 12px rgba(12,31,110,0.06) !important;
+      border: 1px solid #dce3f5 !important;
+      margin-bottom: 18px !important;
+    }
+    .auditorio-totem-headers {
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 6px !important;
+      margin-bottom: 8px !important;
+    }
+    .auditorio-totem-headers > div {
+      text-align: center !important;
+      font-family: 'Montserrat', sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      color: #0c1f6e !important;
+      text-transform: uppercase !important;
+      padding: 6px 0 !important;
+      background: rgba(12,31,110,0.05) !important;
+      border-radius: 8px !important;
+    }
+    .auditorio-totem-cells {
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 6px !important;
+    }
+    .totem-cal-cell {
+      min-height: 80px !important;
+      background: #f7f9ff !important;
+      border: 1px solid #dce3f5 !important;
+      border-radius: 8px !important;
+      padding: 6px 8px !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .totem-cal-cell:hover { background: #ffffff !important; border-color: #1a3aad !important; transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(12,31,110,0.1) !important; }
+    .totem-cal-cell.outro-mes { opacity: 0.25 !important; cursor: default !important; pointer-events: none !important; }
+    .totem-cal-cell.hoje { border: 2px solid #0c1f6e !important; background: #f0f4fc !important; }
+    .totem-cal-cell.selecionado { border: 2px solid #0284c7 !important; background: #e0f2fe !important; }
+    .totem-cal-day-num { font-family: 'Montserrat', sans-serif !important; font-size: 13px !important; font-weight: 800 !important; color: #1a2255 !important; margin-bottom: 4px !important; }
+    .totem-cal-cell.hoje .totem-cal-day-num { color: #0c1f6e !important; }
+    .totem-event-chip { font-size: 11px !important; font-weight: 700 !important; padding: 2px 6px !important; border-radius: 4px !important; margin-bottom: 3px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; line-height: 1.2 !important; }
+
+    .auditorio-totem-details {
+      background: #ffffff !important;
+      border-radius: var(--r-md, 16px) !important;
+      padding: 18px !important;
+      box-shadow: 0 4px 12px rgba(12,31,110,0.06) !important;
+      border: 1px solid #dce3f5 !important;
+    }
+    .auditorio-details-header { border-bottom: 2px solid #dce3f5 !important; padding-bottom: 10px !important; margin-bottom: 14px !important; }
+    .auditorio-details-header h4 { font-family: 'Montserrat', sans-serif !important; font-size: 16px !important; font-weight: 800 !important; color: #0c1f6e !important; margin: 0 !important; }
+    .totem-event-card { display: flex !important; align-items: center !important; gap: 14px !important; padding: 12px 14px !important; border-radius: 8px !important; background: #f7f9ff !important; border-left: 5px solid #0c1f6e !important; margin-bottom: 8px !important; }
+    .totem-event-time { font-family: 'Montserrat', sans-serif !important; font-size: 14px !important; font-weight: 800 !important; color: #0c1f6e !important; white-space: nowrap !important; min-width: 105px !important; }
+    .totem-event-body { flex: 1 !important; }
+    .totem-event-title { font-size: 15px !important; font-weight: 800 !important; color: #1a2255 !important; margin-bottom: 2px !important; }
+    .totem-event-sub { font-size: 13px !important; color: #5e668c !important; }
+  </style>
 </head>
 
 <body>
@@ -885,9 +991,22 @@
   </div>
 
   <!-- Scripts -->
-  <script src="dados_escola.js?v=20260911_v1"></script>
-  <script src="sync_client.js?v=20260911_v1"></script>
-  <script src="script.js?v=20260911_v1"></script>
+  <script src="dados_escola.js?v=20260923_v3"></script>
+  <script src="sync_client.js?v=20260923_v3"></script>
+  <script src="script.js?v=20260923_v3"></script>
+  <script>
+    // Inicialização direta e imediata do auditório ao tocar no card
+    document.addEventListener('click', function(e) {
+      const card = e.target.closest('#btn-menu-auditorio') || (e.target.dataset && e.target.dataset.screen === 'screen-auditorio');
+      if (card) {
+        setTimeout(function() {
+          if (typeof renderAuditorioTotem === 'function') {
+            renderAuditorioTotem();
+          }
+        }, 50);
+      }
+    });
+  </script>
 </body>
 
 </html>

@@ -1246,8 +1246,14 @@ document.addEventListener('DOMContentLoaded', () => {
       lblMesAno.textContent = `${MESES_NOMES[totemAuditorioMes - 1]} ${totemAuditorioAno}`;
     }
 
+    // Renderiza a grade imediatamente mesmo antes do retorno da rede
+    montarGridAuditorioTotem(totemAuditorioReservas);
+
     fetch(`/api/totem/auditorio/?mes=${totemAuditorioMes}&ano=${totemAuditorioAno}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('Status HTTP: ' + r.status);
+        return r.json();
+      })
       .then(data => {
         totemAuditorioReservas = data.reservas || [];
         montarGridAuditorioTotem(totemAuditorioReservas);
@@ -1263,7 +1269,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        console.warn('Erro ao carregar agenda do auditório no totem:', err);
+        console.warn('Erro ao carregar /api/totem/auditorio/, tentando fallback /agenda/auditorio/json/:', err);
+        fetch(`/agenda/auditorio/json/?mes=${totemAuditorioMes}&ano=${totemAuditorioAno}`)
+          .then(r => r.json())
+          .then(data => {
+            totemAuditorioReservas = data.reservas || [];
+            montarGridAuditorioTotem(totemAuditorioReservas);
+            if (totemAuditorioReservas.length > 0) {
+              selecionarDiaTotem(totemAuditorioReservas[0].data);
+            }
+          })
+          .catch(() => {});
       });
   }
 
