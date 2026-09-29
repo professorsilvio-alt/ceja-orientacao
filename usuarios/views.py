@@ -51,6 +51,32 @@ def diretor_required(view_func):
     return wrapper
 
 
+def coordenador_ou_diretor_required(view_func):
+    """Permite acesso a usuários com perfil 'diretor' ou 'coordenador_pedagogico'."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if request.user.perfil not in ['diretor', 'coordenador_pedagogico'] and not request.user.is_superuser:
+            messages.error(request, 'Acesso restrito à Direção e Coordenação Pedagógica.')
+            return redirect('dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def quadro_horarios_required(view_func):
+    """Permite acesso ao Quadro de Horários para 'diretor', 'coordenador_pedagogico' e 'orientador_educacional'."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if request.user.perfil not in ['diretor', 'coordenador_pedagogico', 'orientador_educacional'] and not request.user.is_superuser:
+            messages.error(request, 'Acesso restrito à Direção, Coordenação Pedagógica e Orientação Educacional.')
+            return redirect('dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
 def verificar_primeiro_acesso(view_func):
     """Redireciona para troca de senha se for o primeiro acesso."""
     @wraps(view_func)
@@ -196,7 +222,7 @@ def view_dashboard(request):
         'usuario': request.user,
     }
 
-    if request.user.perfil == 'diretor' or request.user.is_superuser:
+    if request.user.perfil in ['diretor', 'coordenador_pedagogico', 'orientador_educacional'] or request.user.is_superuser:
         contexto.update({
             'total_professores': Professor.objects.count(),
             'total_administrativos': FuncionarioAdministrativo.objects.count(),
@@ -239,6 +265,8 @@ def view_listar_usuarios(request):
     contagem_perfis = {
         'todos': User.objects.count(),
         'diretor': User.objects.filter(perfil='diretor').count(),
+        'coordenador_pedagogico': User.objects.filter(perfil='coordenador_pedagogico').count(),
+        'orientador_educacional': User.objects.filter(perfil='orientador_educacional').count(),
         'professor': User.objects.filter(perfil='professor').count(),
         'administrativo': User.objects.filter(perfil='administrativo').count(),
         'terceirizado': User.objects.filter(perfil='terceirizado').count(),

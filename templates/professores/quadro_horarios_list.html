@@ -177,6 +177,7 @@
       </select>
     </div>
 
+    {% if pode_editar %}
     <!-- Botões de Ação -->
     <form method="post" class="d-inline">
       {% csrf_token %}
@@ -190,6 +191,11 @@
     <button type="button" class="btn-gestao btn-gestao-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNovaTurma" style="font-size:0.78rem; padding:4px 10px;">
       <i class="bi bi-plus-circle me-1"></i> Nova Turma
     </button>
+    {% else %}
+    <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:0.78rem; padding:6px 12px; font-weight:700;">
+      <i class="bi bi-eye me-1"></i> Modo Visualização
+    </span>
+    {% endif %}
   </div>
 </div>
 
@@ -274,14 +280,16 @@
           <td class="text-end" style="padding-right:14px;">
             <div class="d-inline-flex align-items-center gap-1 justify-content-end">
               <a href="{% url 'grade_turma' t.pk %}" class="btn-gestao btn-gestao-primary btn-sm text-nowrap" style="padding:4px 10px; font-weight:700; font-size:0.78rem;">
-                <i class="bi bi-grid-3x3 me-1"></i>Grade
+                <i class="bi bi-grid-3x3 me-1"></i>{% if pode_editar %}Grade{% else %}Visualizar Grade{% endif %}
               </a>
+              {% if pode_editar %}
               <form method="post" action="{% url 'excluir_turma' t.pk %}" class="d-inline" onsubmit="return confirm('Deseja excluir a turma {{ t.codigo_turma }}?');">
                 {% csrf_token %}
                 <button type="submit" class="btn-gestao btn-gestao-danger btn-sm p-1" title="Excluir turma" style="height:28px; width:28px; display:inline-flex; align-items:center; justify-content:center;">
                   <i class="bi bi-trash" style="font-size:0.8rem;"></i>
                 </button>
               </form>
+              {% endif %}
             </div>
           </td>
         </tr>
@@ -299,6 +307,7 @@
   </div>
 </div>
 
+{% if pode_editar %}
 <!-- Modal Nova Turma / Componente -->
 <div class="modal fade" id="modalNovaTurma" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -343,4 +352,5 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}

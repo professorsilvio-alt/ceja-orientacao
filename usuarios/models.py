@@ -51,6 +51,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     PERFIL_CHOICES = [
         ('diretor', 'Diretor'),
+        ('coordenador_pedagogico', 'Coordenador Pedagógico'),
+        ('orientador_educacional', 'Orientador Educacional'),
         ('professor', 'Professor'),
         ('administrativo', 'Funcionário Administrativo'),
         ('terceirizado', 'Funcionário Terceirizado'),
@@ -68,7 +70,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     matricula = models.CharField(max_length=30, blank=True, verbose_name='Matrícula', help_text='Ex: 2427227')
     email = models.EmailField(unique=True, verbose_name='E-mail')
     telefone = models.CharField(max_length=20, blank=True, verbose_name='Telefone')
-    perfil = models.CharField(max_length=20, choices=PERFIL_CHOICES, verbose_name='Perfil')
+    perfil = models.CharField(max_length=30, choices=PERFIL_CHOICES, verbose_name='Perfil')
 
     # Controle de acesso
     is_active = models.BooleanField(default=True, verbose_name='Ativo')

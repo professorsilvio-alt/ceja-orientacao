@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db import models
 from django.db.models import Q
-from usuarios.views import diretor_required, verificar_primeiro_acesso
+from usuarios.views import diretor_required, quadro_horarios_required, verificar_primeiro_acesso
 from .models import (
     Professor, HorarioProfessor, ConfiguracaoEscola, DisciplinaOfertada, 
     Disciplina, UnidadeEscolar, TurmaComponente, AlocacaoHorarioTurma, 
@@ -716,7 +716,7 @@ def view_configuracao_escola(request):
 
 # ── Módulo de Quadro de Horários & Alocação ────────────────────────────────────
 
-@diretor_required
+@quadro_horarios_required
 @never_cache
 def view_listar_quadro_horarios(request):
     """Painel principal do Quadro de Horários por Unidade e Ano Letivo."""
@@ -748,6 +748,11 @@ def view_listar_quadro_horarios(request):
         ano_letivo=ano_req,
         defaults={'ativo': True, 'duracao_hora_aula': 50}
     )
+
+    pode_editar = request.user.perfil == 'diretor' or request.user.is_superuser
+    if request.method == 'POST' and not pode_editar:
+        messages.error(request, 'Apenas a Direção possui permissão para criar ou alterar turmas.')
+        return redirect(f'/professores/horarios/quadro/?unidade={unidade_atual.pk}&ano={config.ano_letivo}')
 
     # Ação POST: Criar nova turma/componente
     if request.method == 'POST' and request.POST.get('action') == 'nova_turma':
@@ -810,10 +815,12 @@ def view_listar_quadro_horarios(request):
         'total_turmas': total_turmas,
         'turmas_ok': turmas_ok,
         'turmas_pendentes': turmas_pendentes,
+        'pode_editar': pode_editar,
+        'is_diretor': pode_editar,
     })
 
 
-@diretor_required
+@quadro_horarios_required
 @never_cache
 def view_grade_turma(request, pk):
     """Tela interativa da Grade Horária de uma Turma/Componente."""
@@ -1004,6 +1011,8 @@ def view_grade_turma(request, pk):
         'profs_da_disciplina': profs_da_disciplina,
         'outros_profs': outros_profs,
         'profs_administrativos': profs_administrativos,
+        'pode_editar': request.user.perfil == 'diretor' or request.user.is_superuser,
+        'is_diretor': request.user.perfil == 'diretor' or request.user.is_superuser,
     })
 
 

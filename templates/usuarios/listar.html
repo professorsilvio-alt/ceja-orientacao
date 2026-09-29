@@ -23,6 +23,12 @@
     <a href="{% url 'listar_usuarios' %}?perfil=diretor" class="btn-gestao {% if perfil_filtro == 'diretor' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
       <i class="bi bi-shield-shaded me-1" style="color:#eab308;"></i> Diretores <span class="badge bg-dark ms-1">{{ contagem.diretor }}</span>
     </a>
+    <a href="{% url 'listar_usuarios' %}?perfil=coordenador_pedagogico" class="btn-gestao {% if perfil_filtro == 'coordenador_pedagogico' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-mortarboard-fill me-1" style="color:#c084fc;"></i> Coordenação <span class="badge bg-dark ms-1">{{ contagem.coordenador_pedagogico }}</span>
+    </a>
+    <a href="{% url 'listar_usuarios' %}?perfil=orientador_educacional" class="btn-gestao {% if perfil_filtro == 'orientador_educacional' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
+      <i class="bi bi-compass-fill me-1" style="color:#f472b6;"></i> Orientação <span class="badge bg-dark ms-1">{{ contagem.orientador_educacional }}</span>
+    </a>
     <a href="{% url 'listar_usuarios' %}?perfil=professor" class="btn-gestao {% if perfil_filtro == 'professor' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="padding:6px 14px; font-size:0.82rem;">
       <i class="bi bi-person-video3 me-1" style="color:#22c55e;"></i> Professores <span class="badge bg-dark ms-1">{{ contagem.professor }}</span>
     </a>
@@ -77,6 +83,8 @@
               <select name="perfil" class="form-select form-select-sm" onchange="this.form.submit()" 
                 style="font-size:0.82rem; font-weight:600; padding:4px 28px 4px 10px; cursor:pointer;
                 {% if u.perfil == 'diretor' %}background:rgba(234,179,8,0.15) !important; color:#fde047 !important; border-color:rgba(234,179,8,0.4) !important;
+                {% elif u.perfil == 'coordenador_pedagogico' %}background:rgba(168,85,247,0.15) !important; color:#d8b4fe !important; border-color:rgba(168,85,247,0.4) !important;
+                {% elif u.perfil == 'orientador_educacional' %}background:rgba(236,72,153,0.15) !important; color:#f472b6 !important; border-color:rgba(236,72,153,0.4) !important;
                 {% elif u.perfil == 'professor' %}background:rgba(34,197,94,0.15) !important; color:#86efac !important; border-color:rgba(34,197,94,0.4) !important;
                 {% elif u.perfil == 'administrativo' %}background:rgba(6,182,212,0.15) !important; color:#67e8f9 !important; border-color:rgba(6,182,212,0.4) !important;
                 {% else %}background:rgba(148,163,184,0.15) !important; color:#cbd5e1 !important; border-color:rgba(148,163,184,0.4) !important;{% endif %}">
@@ -123,43 +131,63 @@
 
 <!-- Guia de Permissões de Acesso -->
 <div class="row g-3">
-  <div class="col-md-3">
-    <div style="background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.2); border-radius:14px; padding:16px;">
-      <div style="font-weight:700; color:#fde047; font-size:0.9rem; margin-bottom:6px;">
-        <i class="bi bi-shield-shaded me-1"></i> Perfil Diretor
+  <div class="col-md-4 col-lg-2">
+    <div style="background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.2); border-radius:14px; padding:16px; height:100%;">
+      <div style="font-weight:700; color:#fde047; font-size:0.88rem; margin-bottom:6px;">
+        <i class="bi bi-shield-shaded me-1"></i> Diretor
       </div>
       <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
-        Acesso total: gerencia usuários, aprova horários, edita cadastros de professores e funcionários, gera relatórios e auditoria.
+        Acesso total: gestão de usuários, turmas, quadro de horários, professores, funcionários e auditoria.
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:14px; padding:16px;">
-      <div style="font-weight:700; color:#86efac; font-size:0.9rem; margin-bottom:6px;">
-        <i class="bi bi-person-video3 me-1"></i> Perfil Professor
+  <div class="col-md-4 col-lg-2">
+    <div style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2); border-radius:14px; padding:16px; height:100%;">
+      <div style="font-weight:700; color:#d8b4fe; font-size:0.88rem; margin-bottom:6px;">
+        <i class="bi bi-mortarboard-fill me-1"></i> Coord. Pedagógica
       </div>
       <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
-        Acesso ao próprio painel: cadastro e envio de disponibilidade de horários, registro de presenças e consulta de grade.
+        Gestão do Auditório (agendamento, edição e exclusão) e visualização do Quadro de Horários da escola.
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); border-radius:14px; padding:16px;">
-      <div style="font-weight:700; color:#67e8f9; font-size:0.9rem; margin-bottom:6px;">
-        <i class="bi bi-briefcase-fill me-1"></i> Perfil Administrativo
+  <div class="col-md-4 col-lg-2">
+    <div style="background:rgba(236,72,153,0.08); border:1px solid rgba(236,72,153,0.2); border-radius:14px; padding:16px; height:100%;">
+      <div style="font-weight:700; color:#f472b6; font-size:0.88rem; margin-bottom:6px;">
+        <i class="bi bi-compass-fill me-1"></i> Orient. Educacional
       </div>
       <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
-        Acesso administrativo: registros de frequência de funcionários, reservas de auditório e rotinas da secretaria.
+        Visualização da agenda do Auditório e visualização do Quadro de Horários da escola (somente leitura).
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div style="background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.2); border-radius:14px; padding:16px;">
-      <div style="font-weight:700; color:#e2e8f0; font-size:0.9rem; margin-bottom:6px;">
-        <i class="bi bi-person-badge me-1"></i> Perfil Terceirizado
+  <div class="col-md-4 col-lg-2">
+    <div style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:14px; padding:16px; height:100%;">
+      <div style="font-weight:700; color:#86efac; font-size:0.88rem; margin-bottom:6px;">
+        <i class="bi bi-person-video3 me-1"></i> Professor
       </div>
       <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
-        Acesso básico: consulta de pontos registrados, dados contratuais e identificação na unidade escolar.
+        Acesso ao próprio painel: envio de disponibilidade de horários e consulta de grade.
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); border-radius:14px; padding:16px; height:100%;">
+      <div style="font-weight:700; color:#67e8f9; font-size:0.88rem; margin-bottom:6px;">
+        <i class="bi bi-briefcase-fill me-1"></i> Administrativo
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+        Acompanhamento de processos internos e rotinas operacionais da secretaria.
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div style="background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.2); border-radius:14px; padding:16px; height:100%;">
+      <div style="font-weight:700; color:#e2e8f0; font-size:0.88rem; margin-bottom:6px;">
+        <i class="bi bi-person-badge me-1"></i> Terceirizado
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+        Acesso básico: consulta de pontos registrados e identificação na unidade escolar.
       </div>
     </div>
   </div>

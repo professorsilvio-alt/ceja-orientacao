@@ -90,13 +90,17 @@
           <i class="bi bi-shield-lock-fill"></i> Usuários e Permissões
         </a>
       </li>
+      {% endif %}
 
+      {% if user.perfil == 'diretor' or user.perfil == 'coordenador_pedagogico' or user.perfil == 'orientador_educacional' or user.is_superuser %}
       <li class="sidebar-section">Agenda</li>
+      {% if user.perfil == 'diretor' or user.is_superuser %}
       <li>
         <a href="{% url 'listar_presencas' %}" class="sidebar-link {% block nav_presencas %}{% endblock %}">
           <i class="bi bi-clipboard-check-fill"></i> Presenças e Faltas
         </a>
       </li>
+      {% endif %}
       <li>
         <a href="{% url 'agenda_auditorio' %}" class="sidebar-link {% block nav_auditorio %}{% endblock %}">
           <i class="bi bi-calendar-event-fill"></i> Auditório
@@ -120,19 +124,12 @@
           <i class="bi bi-folder-check"></i> Acervo de Normas & IA
         </a>
       </li>
+      {% endif %}
 
+      {% if user.perfil == 'diretor' or user.is_superuser or user.perfil == 'administrativo' %}
       <li class="sidebar-section">Processos</li>
       <li>
         <a href="{% url 'listar_processos' %}" class="sidebar-link {% block nav_processos %}{% endblock %}">
-          <i class="bi bi-folder2-open"></i> Acompanhamento de Processos
-        </a>
-      </li>
-      {% endif %}
-
-      {% if user.perfil == 'administrativo' %}
-      <li class="sidebar-section">Processos</li>
-      <li>
-        <a href="{% url 'listar_processos' %}" class="sidebar-link {% block nav_processos_adm %}{% endblock %}">
           <i class="bi bi-folder2-open"></i> Acompanhamento de Processos
         </a>
       </li>

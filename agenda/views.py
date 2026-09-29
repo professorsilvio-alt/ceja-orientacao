@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.urls import reverse
 from datetime import date, timedelta, time
-from usuarios.views import diretor_required, verificar_primeiro_acesso
+from usuarios.views import diretor_required, coordenador_ou_diretor_required, verificar_primeiro_acesso
 from .models import RegistroPresenca, ReservaAuditorio
 from .forms import RegistroPresencaForm, ReservaAuditorioForm, AgendamentoPublicoAuditorioForm
 from professores.models import Professor
@@ -185,12 +185,12 @@ def view_agenda_auditorio(request):
         'ultimo_dia': ultimo_dia,
         'mes_ant': mes_ant, 'ano_ant': ano_ant,
         'mes_prox': mes_prox, 'ano_prox': ano_prox,
-        'is_diretor': request.user.perfil == 'diretor' or request.user.is_superuser,
+        'is_diretor': request.user.perfil in ['diretor', 'coordenador_pedagogico'] or request.user.is_superuser,
         'link_publico_url': request.build_absolute_uri(reverse('agenda_auditorio_publico')),
     })
 
 
-@diretor_required
+@coordenador_ou_diretor_required
 def view_nova_reserva(request):
     form = ReservaAuditorioForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -204,7 +204,7 @@ def view_nova_reserva(request):
     })
 
 
-@diretor_required
+@coordenador_ou_diretor_required
 def view_editar_reserva(request, pk):
     reserva = get_object_or_404(ReservaAuditorio, pk=pk)
     form = ReservaAuditorioForm(request.POST or None, instance=reserva)
@@ -219,7 +219,7 @@ def view_editar_reserva(request, pk):
     })
 
 
-@diretor_required
+@coordenador_ou_diretor_required
 def view_excluir_reserva(request, pk):
     reserva = get_object_or_404(ReservaAuditorio, pk=pk)
     if request.method == 'POST':

@@ -364,6 +364,7 @@
   </div>
   {% endif %}
 
+  {% if pode_editar %}
   <!-- Barra de Ferramentas: Tabuleiro Interativo & Modo Pintura Rápida (Cópia Contínua) -->
   <div class="copy-paste-bar no-print">
     <div class="d-flex align-items-center gap-2 flex-wrap" style="flex:1;">
@@ -381,6 +382,14 @@
       </button>
     </div>
   </div>
+  {% else %}
+  <div class="alert py-2 px-3 mb-3 d-flex align-items-center gap-2 no-print" style="background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:10px; color:#38bdf8;">
+    <i class="bi bi-eye-fill fs-5"></i>
+    <div>
+      <strong>Modo de Visualização:</strong> Você está visualizando a grade de horários da turma (somente leitura). Alterações são restritas à Direção.
+    </div>
+  </div>
+  {% endif %}
 
   <!-- MATRIZ DE GRADE COM COLGROUP E BORDAS CIANO/BRANCA 100% VISÍVEIS -->
   <div class="grade-table-container">
@@ -416,7 +425,18 @@
                 {% if cell.alocacao %}
                 <td class="cell-alocada grid-cell"
                     id="cell-{{ cell.dia_code }}-{{ row.hora_inicio|slugify }}"
+                    {% if pode_editar %}
                     draggable="true"
+                    ondragstart="arrastarInicio(event, this)"
+                    ondragover="arrastarSobre(event, this)"
+                    ondragleave="arrastarSair(this)"
+                    ondrop="soltarItem(event, this)"
+                    onclick="clicarCelulaGrid(this)"
+                    title="Clique para editar ou use Ctrl+C para copiar"
+                    {% else %}
+                    style="cursor:default;"
+                    title="{{ cell.professor_nome }}"
+                    {% endif %}
                     data-diacode="{{ cell.dia_code }}"
                     data-dianome="{{ cell.dia_nome }}"
                     data-horainicio="{{ row.hora_inicio }}"
@@ -431,13 +451,7 @@
                     data-dispnome1="{{ cell.display_name_1|default:cell.professor_nome }}"
                     data-dispnome2="{{ cell.display_name_2 }}"
                     data-matnum1="{{ cell.matricula_num_1 }}"
-                    data-matnum2="{{ cell.matricula_num_2 }}"
-                    ondragstart="arrastarInicio(event, this)"
-                    ondragover="arrastarSobre(event, this)"
-                    ondragleave="arrastarSair(this)"
-                    ondrop="soltarItem(event, this)"
-                    onclick="clicarCelulaGrid(this)"
-                    title="Clique para editar ou use Ctrl+C para copiar">
+                    data-matnum2="{{ cell.matricula_num_2 }}">
                   <div class="cell-content-wrapper">
                     <div class="cell-prof-container">
                       <div class="cell-prof-row">
@@ -471,12 +485,15 @@
                       {% endif %}
                     </div>
 
+                    {% if pode_editar %}
                     <button type="button" class="btn-trash-clean no-print" onclick="deletarSlotDireto(event, '{{ cell.dia_code }}', '{{ row.hora_inicio }}')" title="Excluir este horário">
                       <i class="bi bi-trash-fill"></i>
                     </button>
+                    {% endif %}
                   </div>
                 </td>
                 {% else %}
+                {% if pode_editar %}
                 <td class="cell-livre grid-cell"
                     id="cell-{{ cell.dia_code }}-{{ row.hora_inicio|slugify }}"
                     data-diacode="{{ cell.dia_code }}"
@@ -503,6 +520,13 @@
                     <i class="bi bi-plus-lg opacity-75 text-info" style="font-size:1.2rem;"></i>
                   </div>
                 </td>
+                {% else %}
+                <td class="cell-livre grid-cell" style="cursor:default;" title="Horário livre">
+                  <div class="cell-content-wrapper text-muted opacity-25">
+                    <span>—</span>
+                  </div>
+                </td>
+                {% endif %}
                 {% endif %}
               {% endif %}
             {% endfor %}
@@ -514,6 +538,7 @@
   </div>
 </div>
 
+{% if pode_editar %}
 <!-- Modal Interativo de Alocação de Slot -->
 <div class="modal fade no-print" id="modalAlocarSlot" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -612,6 +637,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 <style>
   #modalAlocarSlot {
     z-index: 1060 !important;
@@ -624,6 +650,7 @@
 
 {% block extra_js %}
 <script>
+  const PODE_EDITAR = {{ pode_editar|yesno:"true,false" }};
   let celulaSelecionada = null;
   let dadosCopiados = null;
   let itemArrastado = null;
@@ -673,6 +700,7 @@
 
   /* ── DRAG AND DROP (Tabuleiro de Xadrez) ── */
   function arrastarInicio(e, cellElem) {
+    if (!PODE_EDITAR) return;
     itemArrastado = {
       diaCode: cellElem.dataset.diacode,
       horaInicio: cellElem.dataset.horainicio,
@@ -687,6 +715,7 @@
   }
 
   function arrastarSobre(e, cellElem) {
+    if (!PODE_EDITAR) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     cellElem.classList.add('cell-drag-over');
@@ -724,6 +753,7 @@
   }
 
   function soltarItem(e, targetElem) {
+    if (!PODE_EDITAR) return;
     e.preventDefault();
     targetElem.classList.remove('cell-drag-over');
     document.querySelectorAll('.grid-cell').forEach(c => c.style.opacity = '1');
@@ -750,6 +780,7 @@
 
   /* ── EXCLUSÃO DIRETA COM 1 CLIQUE ── */
   function deletarSlotDireto(e, diaCode, horaInicio) {
+    if (!PODE_EDITAR) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -888,6 +919,7 @@
 
   /* ── CLIQUE NA CÉLULA: PREENCHIMENTO RÁPIDO OU MODAL ── */
   function clicarCelulaGrid(cellElem) {
+    if (!PODE_EDITAR) return;
     document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('cell-selected'));
     cellElem.classList.add('cell-selected');
     celulaSelecionada = cellElem;
@@ -1104,6 +1136,7 @@
 
   /* ── ATALHOS DE TECLADO ── */
   document.addEventListener('keydown', function(e) {
+    if (!PODE_EDITAR) return;
     if (e.key === 'Escape') {
       if (dadosCopiados) {
         limparCopiaForcado();
