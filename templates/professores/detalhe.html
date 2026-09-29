@@ -50,6 +50,9 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
+      <a href="#secao-observacoes" class="btn-gestao" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; font-weight: 600;">
+        <i class="bi bi-journal-check me-1"></i> Observações <span class="badge bg-black bg-opacity-25 ms-1">{{ anotacoes.count }}</span>
+      </a>
       <a href="{% url 'horarios_professor' professor.pk %}" class="btn-gestao btn-gestao-success">
         <i class="bi bi-clock-fill me-1"></i> Horários
       </a>
@@ -185,11 +188,11 @@
           <div style="font-weight:700; font-size:0.95rem;">{{ professor.data_nascimento|date:"d/m/Y"|default:"—" }}</div>
         </div>
 
-        {% if professor.ch_regencia or professor.ch_planejamento %}
+        {% if professor.ch_regencia or professor.ch_planejamento or professor.tempos_aula %}
         <div class="col-12 mt-2 pt-2 border-top" style="border-color:var(--card-border) !important;">
           <div style="font-size:0.85rem; color:var(--text-secondary);" class="d-flex gap-4 flex-wrap">
-            <span>Regência: <strong class="text-white">{{ professor.ch_regencia|default:0 }}h</strong></span>
-            <span>Planejamento: <strong class="text-white">{{ professor.ch_planejamento|default:0 }}h</strong></span>
+            <span>Regência: <strong class="text-white">{{ professor.regencia_efetiva }}h</strong></span>
+            <span>Planejamento: <strong class="text-white">{{ professor.planejamento_efetivo }}h</strong></span>
             <span>Complementação: <strong class="text-white">{{ professor.ch_complementacao|default:0 }}h</strong></span>
             <span class="ms-auto">Tempo na escola (1ª mat.): <strong style="color:var(--green);">{{ professor.tempo_na_escola }}</strong></span>
           </div>
@@ -273,7 +276,13 @@
         </div>
         <div class="col-xl-3 col-md-4 col-sm-6">
           <div style="font-size:0.72rem; letter-spacing:0.5px; color:var(--text-muted);" class="fw-bold text-uppercase">TEMPO NA ESCOLA (2ª MAT.)</div>
-          <div style="font-weight:700; font-size:0.95rem; color:var(--green);">{{ professor.tempo_na_escola_acumulacao|default:"—" }}</div>
+          <div style="font-weight:700; font-size:0.95rem;">
+            {% if professor.acumulacao_nesta_escola %}
+              <span style="color:var(--green);">{{ professor.tempo_na_escola_acumulacao|default:"Não informado" }}</span>
+            {% else %}
+              <span style="color:var(--text-muted); font-size:0.85rem; font-weight:normal;"><i class="bi bi-dash-circle me-1"></i>Não leciona nesta escola</span>
+            {% endif %}
+          </div>
         </div>
 
         {% if professor.total_tempos_aula %}
@@ -281,7 +290,19 @@
           <div style="font-size:0.9rem; color:var(--text-secondary);" class="d-flex align-items-center gap-3 flex-wrap">
             <span><i class="bi bi-calendar2-week text-info me-1"></i> <strong>Total de Tempos de Aula na Escola:</strong></span>
             <span class="badge bg-success" style="font-size:0.95rem; padding:6px 12px;">{{ professor.total_tempos_aula }} tempos semanais</span>
-            <span class="text-muted" style="font-size:0.8rem;">({{ professor.tempos_aula|default:0 }} tempos na 1ª mat. + {{ professor.tempos_aula_acumulacao|default:0 }} tempos na 2ª mat.)</span>
+            <span class="text-muted" style="font-size:0.82rem;">
+              {% if professor.acumulacao_nesta_escola and professor.mat2_em_sala %}
+                ({{ professor.tempos_aula|default:0 }} tempos na 1ª mat. + {{ professor.tempos_aula_acumulacao|default:0 }} tempos na 2ª mat.)
+              {% elif not professor.acumulacao_nesta_escola %}
+                (Apenas {{ professor.tempos_aula|default:0 }} tempos da 1ª mat. — 2ª matrícula em outra unidade/órgão)
+              {% elif professor.situacao_matricula_2 != 'ativo' %}
+                (Apenas {{ professor.tempos_aula|default:0 }} tempos da 1ª mat. — 2ª matrícula: {{ professor.get_situacao_matricula_2_display }})
+              {% elif professor.mat2_em_desvio %}
+                (Apenas {{ professor.tempos_aula|default:0 }} tempos da 1ª mat. — 2ª matrícula em função administrativa)
+              {% else %}
+                ({{ professor.total_tempos_aula }} tempos na 1ª mat.)
+              {% endif %}
+            </span>
           </div>
         </div>
         {% endif %}
@@ -289,6 +310,244 @@
     </div>
   </div>
   {% endif %}
+
+  <!-- SEÇÃO OBSERVAÇÕES & ACOMPANHAMENTO DA VIDA DO SERVIDOR (FULL WIDTH) -->
+  <div class="col-12" id="secao-observacoes">
+    <div class="card-gestao" style="border-left: 4px solid #38bdf8; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));">
+      
+      <!-- Cabeçalho da Seção -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom" style="border-color: var(--card-border) !important;">
+        <div>
+          <h6 style="font-weight: 700; color: #38bdf8; margin: 0; font-size: 1.05rem;" class="d-flex align-items-center">
+            <i class="bi bi-journal-check me-2" style="font-size: 1.25rem;"></i>Observações & Acompanhamento da Vida do Servidor
+          </h6>
+          <small style="color: var(--text-muted); font-size: 0.82rem;">
+            Histórico cronológico da vida funcional: publicações em D.O., qualificações, portarias, progressões e anotações gerais.
+          </small>
+        </div>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+          <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.82rem; padding: 6px 12px; font-weight: 600;">
+            <i class="bi bi-clock-history me-1"></i>{{ anotacoes.count }} registro{{ anotacoes.count|pluralize:"s" }}
+          </span>
+          <button class="btn-gestao btn-gestao-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseObsGeral" aria-expanded="false" style="font-size: 0.78rem;">
+            <i class="bi bi-card-text me-1"></i>Observação Fixa da Ficha
+          </button>
+        </div>
+      </div>
+
+      <!-- Bloco Colapsável: Observação Fixa Geral da Ficha (professor.observacoes) -->
+      <div class="collapse mb-3" id="collapseObsGeral">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(148, 163, 184, 0.3); border-radius: 10px; padding: 16px;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span style="font-size: 0.78rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">
+              <i class="bi bi-info-circle me-1 text-info"></i>Observação Fixa Permanente da Ficha Cadastral
+            </span>
+            {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+            <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.75rem;" data-bs-toggle="collapse" data-bs-target="#formObsFixa">
+              <i class="bi bi-pencil me-1"></i>Editar Observação Fixa
+            </button>
+            {% endif %}
+          </div>
+          
+          <div style="color: var(--text-primary); font-size: 0.9rem; font-style: italic; white-space: pre-line;">
+            {{ professor.observacoes|default:"Nenhuma observação fixa geral informada no cadastro." }}
+          </div>
+
+          {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+          <div class="collapse mt-3 pt-3 border-top" id="formObsFixa" style="border-color: var(--card-border) !important;">
+            <form method="post" action="{% url 'atualizar_observacoes_gerais_professor' professor.pk %}">
+              {% csrf_token %}
+              <label class="form-label" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">EDITAR OBSERVAÇÃO FIXA:</label>
+              <textarea name="observacoes" class="form-control" rows="2" style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid var(--card-border); font-size: 0.88rem;">{{ professor.observacoes }}</textarea>
+              <div class="text-end mt-2">
+                <button type="submit" class="btn-gestao btn-gestao-primary btn-sm">
+                  <i class="bi bi-check-lg me-1"></i> Salvar Observação Fixa
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+      <!-- FORMULÁRIO DE ADIÇÃO DE NOVA OBSERVAÇÃO / REGISTRO FUNCIONAL -->
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;">
+        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+          <span style="font-weight: 700; color: #fff; font-size: 0.92rem;">
+            <i class="bi bi-plus-circle-fill text-info me-2"></i>Registrar Nova Observação ou Acompanhamento Funcional
+          </span>
+          <div class="d-flex gap-1 flex-wrap">
+            <button type="button" class="btn btn-sm py-1 px-2 btn-atalho-categoria" data-cat="do" data-titulo="Publicação em D.O." style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.74rem; border-radius: 6px;">
+              📰 D.O.
+            </button>
+            <button type="button" class="btn btn-sm py-1 px-2 btn-atalho-categoria" data-cat="qualificacao" data-titulo="Qualificação / Titulação" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 0.74rem; border-radius: 6px;">
+              🎓 Qualificação
+            </button>
+            <button type="button" class="btn btn-sm py-1 px-2 btn-atalho-categoria" data-cat="funcional" data-titulo="Alteração Funcional" style="background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); font-size: 0.74rem; border-radius: 6px;">
+              ⚡ Funcional
+            </button>
+            <button type="button" class="btn btn-sm py-1 px-2 btn-atalho-categoria" data-cat="licenca" data-titulo="Licença / Afastamento" style="background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); font-size: 0.74rem; border-radius: 6px;">
+              🏥 Licença
+            </button>
+            <button type="button" class="btn btn-sm py-1 px-2 btn-atalho-categoria" data-cat="geral" data-titulo="" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); font-size: 0.74rem; border-radius: 6px;">
+              📝 Geral
+            </button>
+          </div>
+        </div>
+
+        <form method="post" action="{% url 'adicionar_anotacao_servidor' tipo_servidor='professor' pk=professor.pk %}" id="formNovaObservacao">
+          {% csrf_token %}
+          <div class="row g-2 align-items-end">
+            <div class="col-lg-2 col-md-4 col-sm-6">
+              <label class="form-label mb-1" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">DATA DO EVENTO *</label>
+              <input type="date" name="data_registro" id="id_data_registro" class="form-control" value="{% now 'Y-m-d' %}" required style="height: 38px; font-size: 0.85rem; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: #fff; border-radius: 8px;">
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <label class="form-label mb-1" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">CATEGORIA *</label>
+              <select name="categoria" id="id_categoria_obs" class="form-select" style="height: 38px; font-size: 0.85rem; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: #fff; border-radius: 8px;">
+                <option value="geral">📝 Observação Geral</option>
+                <option value="do">📰 Publicação em D.O.</option>
+                <option value="qualificacao">🎓 Qualificação / Titulação</option>
+                <option value="licenca">🏥 Licença / Afastamento</option>
+                <option value="funcional">⚡ Evolução / Alteração Funcional</option>
+                <option value="elogio">⭐ Elogio / Mérito Funcional</option>
+                <option value="outro">📁 Outro Registro Funcional</option>
+              </select>
+            </div>
+            <div class="col-lg-7 col-md-4 col-sm-12">
+              <label class="form-label mb-1" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">TÍTULO / ASSUNTO (OPCIONAL)</label>
+              <input type="text" name="titulo" id="id_titulo_obs" class="form-control" placeholder="Ex: Publicado D.O. de Qualificação / Portaria..." style="height: 38px; font-size: 0.85rem; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: #fff; border-radius: 8px;">
+            </div>
+            <div class="col-12 mt-2">
+              <label class="form-label mb-1" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">DETALHES DA OBSERVAÇÃO / REGISTRO *</label>
+              <textarea name="texto" id="id_texto_obs" class="form-control" rows="3" placeholder="Descreva os detalhes da observação, publicação de D.O. ou acontecimento da vida do servidor..." required style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: #fff; border-radius: 8px; font-size: 0.88rem;"></textarea>
+            </div>
+            <div class="col-12 text-end mt-2">
+              <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, #0284c7, #2563eb); border: none;">
+                <i class="bi bi-save me-1"></i> Salvar Observação no Histórico
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- LISTA / FEED CRONOLÓGICO DE OBSERVAÇÕES -->
+      {% if anotacoes %}
+      <div class="d-flex flex-column gap-3">
+        {% for note in anotacoes %}
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-left: 4px solid {% if note.categoria == 'do' %}#38bdf8{% elif note.categoria == 'qualificacao' %}#c084fc{% elif note.categoria == 'licenca' %}#fde047{% elif note.categoria == 'funcional' %}#86efac{% elif note.categoria == 'elogio' %}#f59e0b{% else %}#64748b{% endif %}; border-radius: 10px; padding: 14px 18px;">
+          
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 pb-2 border-bottom" style="border-color: rgba(255, 255, 255, 0.06) !important;">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge" style="font-size: 0.82rem; font-weight: 700; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff;">
+                <i class="bi bi-calendar-event me-1 text-info"></i>{{ note.data_registro|date:"d/m/Y" }}
+              </span>
+              <span class="badge" style="font-size: 0.75rem; font-weight: 600;
+                {% if note.categoria == 'do' %}background:rgba(56,189,248,0.2); color:#38bdf8;
+                {% elif note.categoria == 'qualificacao' %}background:rgba(192,132,252,0.2); color:#c084fc;
+                {% elif note.categoria == 'licenca' %}background:rgba(253,224,71,0.2); color:#fde047;
+                {% elif note.categoria == 'funcional' %}background:rgba(134,239,172,0.2); color:#86efac;
+                {% elif note.categoria == 'elogio' %}background:rgba(245,158,11,0.2); color:#fbbf24;
+                {% else %}background:rgba(148,163,184,0.2); color:#cbd5e1;{% endif %}">
+                {% if note.categoria == 'do' %}📰 Publicação em D.O.
+                {% elif note.categoria == 'qualificacao' %}🎓 Qualificação / Titulação
+                {% elif note.categoria == 'licenca' %}🏥 Licença / Afastamento
+                {% elif note.categoria == 'funcional' %}⚡ Evolução Funcional
+                {% elif note.categoria == 'elogio' %}⭐ Elogio / Mérito
+                {% else %}📝 Observação Geral{% endif %}
+              </span>
+              {% if note.titulo %}
+              <strong style="color: #fff; font-size: 0.95rem;">{{ note.titulo }}</strong>
+              {% endif %}
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">
+                <i class="bi bi-person me-1"></i>{{ note.criado_por.nome_completo|default:note.criado_por.cpf|default:"Sistema" }}
+                <span class="d-none d-sm-inline">({{ note.criado_em|date:"d/m/Y H:i" }})</span>
+              </span>
+
+              {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+              <div class="d-flex gap-1 ms-2">
+                <button type="button" class="btn-gestao btn-gestao-primary" style="padding: 2px 7px; font-size: 0.72rem;" data-bs-toggle="modal" data-bs-target="#modalEditarObsPrincipal{{ note.pk }}" title="Editar Observação">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <a href="{% url 'excluir_anotacao_servidor' note.pk %}" onclick="return confirm('Deseja realmente remover esta observação do histórico?');" class="btn-gestao btn-gestao-danger" style="padding: 2px 7px; font-size: 0.72rem;" title="Excluir Observação">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div style="font-size: 0.92rem; color: #e2e8f0; white-space: pre-line; line-height: 1.5;">{{ note.texto }}</div>
+        </div>
+
+        {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+        <!-- Modal Editar Observação -->
+        <div class="modal fade" id="modalEditarObsPrincipal{{ note.pk }}" tabindex="-1" aria-hidden="true" style="text-align: left;">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="background: #0f172a; color: #fff; border: 1px solid var(--card-border);">
+              <div class="modal-header" style="border-bottom: 1px solid var(--card-border);">
+                <h5 class="modal-title" style="font-weight: 700; color: #38bdf8;">
+                  <i class="bi bi-pencil-square me-2"></i>Editar Observação / Acompanhamento Funcional
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="post" action="{% url 'editar_anotacao_servidor' note.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">DATA DO EVENTO</label>
+                      <input type="date" name="data_registro" class="form-control" value="{{ note.data_registro|date:'Y-m-d' }}" style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid var(--card-border);">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">CATEGORIA</label>
+                      <select name="categoria" class="form-select" style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid var(--card-border);">
+                        <option value="geral" {% if note.categoria == 'geral' %}selected{% endif %}>📝 Observação Geral</option>
+                        <option value="do" {% if note.categoria == 'do' %}selected{% endif %}>📰 Publicação em D.O.</option>
+                        <option value="qualificacao" {% if note.categoria == 'qualificacao' %}selected{% endif %}>🎓 Qualificação / Titulação</option>
+                        <option value="licenca" {% if note.categoria == 'licenca' %}selected{% endif %}>🏥 Licença / Afastamento</option>
+                        <option value="funcional" {% if note.categoria == 'funcional' %}selected{% endif %}>⚡ Evolução Funcional</option>
+                        <option value="elogio" {% if note.categoria == 'elogio' %}selected{% endif %}>⭐ Elogio / Mérito</option>
+                        <option value="outro" {% if note.categoria == 'outro' %}selected{% endif %}>📁 Outro</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">TÍTULO / ASSUNTO</label>
+                      <input type="text" name="titulo" class="form-control" value="{{ note.titulo }}" placeholder="Título ou resumo..." style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid var(--card-border);">
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">DETALHES DA OBSERVAÇÃO</label>
+                      <textarea name="texto" class="form-control" rows="4" required style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid var(--card-border);">{{ note.texto }}</textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--card-border);">
+                  <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" class="btn-gestao btn-gestao-primary">Salvar Alterações</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align: center; padding: 28px; color: var(--text-muted); background: rgba(255, 255, 255, 0.01); border-radius: 8px; border: 1px dashed var(--card-border);">
+        <i class="bi bi-journal-plus" style="font-size: 2.2rem; display: block; margin-bottom: 8px; color: #38bdf8; opacity: 0.7;"></i>
+        <div style="font-size: 0.95rem; font-weight: 600; color: #cbd5e1;">Nenhuma observação ou acompanhamento registrado ainda.</div>
+        <div style="font-size: 0.82rem; margin-top: 4px;">Use o formulário acima para registrar publicações em D.O., qualificações, portarias ou notas da vida funcional do professor.</div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
 
   <!-- CONTATO E ENDEREÇO (FULL WIDTH) -->
   <div class="col-12">
@@ -433,4 +692,25 @@
     {% include "professores/_pasta_digital_componente.html" with funcionario_pk=professor.pk tipo_servidor='professor' %}
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.btn-atalho-categoria').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const cat = this.getAttribute('data-cat');
+      const titulo = this.getAttribute('data-titulo');
+      const select = document.getElementById('id_categoria_obs');
+      const inputTitulo = document.getElementById('id_titulo_obs');
+      if (select) select.value = cat;
+      if (inputTitulo && titulo && !inputTitulo.value) {
+        inputTitulo.value = titulo;
+      }
+      const textarea = document.getElementById('id_texto_obs');
+      if (textarea) {
+        textarea.focus();
+      }
+    });
+  });
+});
+</script>
 {% endblock %}

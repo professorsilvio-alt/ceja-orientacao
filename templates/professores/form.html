@@ -41,10 +41,18 @@
         {{ form.nome_completo }}
       </div>
       <div class="col-md-3">
+        <label class="form-label" style="color:#38bdf8; font-weight:600;"><i class="bi bi-calendar-heart me-1"></i>Data de Nascimento</label>
+        {{ form.data_nascimento }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Sexo</label>
+        {{ form.sexo }}
+      </div>
+      <div class="col-md-6">
         <label class="form-label">CH Total 1ª Matrícula (Horas)</label>
         {{ form.ch_total }}
       </div>
-      <div class="col-md-3">
+      <div class="col-md-6">
         <label class="form-label" style="color:#67e8f9; font-weight:700;"><i class="bi bi-clock-history me-1"></i>Tempos de Aula (1ª Matrícula)</label>
         {{ form.tempos_aula }}
         <small style="color:var(--text-muted); font-size:0.75rem;">Tempos semanais na escola</small>
@@ -211,12 +219,20 @@
         {{ form.data_ingresso_unidade }}
       </div>
 
-      <!-- Contato -->
-      <div class="col-12 mt-3"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;"><i class="bi bi-telephone me-1"></i> Contato</h6></div>
+      <!-- Contato e Endereço Residencial -->
+      <div class="col-12 mt-3"><h6 style="color:var(--blue); font-weight:700; border-bottom:1px solid var(--card-border); padding-bottom:8px;"><i class="bi bi-telephone me-1"></i> Contato e Endereço Residencial</h6></div>
 
       <div class="col-md-4">
         <label class="form-label">E-mail Interno</label>
         {{ form.email }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">E-mail Google</label>
+        {{ form.email_google }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">E-mail Alternativo</label>
+        {{ form.email_alternativo }}
       </div>
       <div class="col-md-3">
         <label class="form-label">Celular</label>
@@ -226,9 +242,30 @@
         <label class="form-label">Telefone Fixo</label>
         {{ form.telefone }}
       </div>
-      <div class="col-md-2">
+      <div class="col-md-6">
         <label class="form-label">Foto</label>
         {{ form.foto }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Endereço Residencial</label>
+        {{ form.endereco }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Número</label>
+        {{ form.numero }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Complemento</label>
+        {{ form.complemento }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Bairro</label>
+        {{ form.bairro }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Município</label>
+        {{ form.municipio }}
       </div>
 
       <!-- Status e observações -->

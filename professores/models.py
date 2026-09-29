@@ -291,12 +291,16 @@ class Professor(models.Model):
 
     @property
     def data_ingresso_escola_acumulacao_efetiva(self):
-        """Retorna a melhor data de ingresso na escola da 2ª matrícula."""
-        return self.data_ingresso_unidade_acumulacao or self.data_ci_movimentacao_acumulacao or self.data_admissao_acumulacao
+        """Retorna a data de chegada na escola da 2ª matrícula (apenas se leciona nesta escola)."""
+        if not self.acumulacao_nesta_escola:
+            return None
+        return self.data_ingresso_unidade_acumulacao or self.data_ci_movimentacao_acumulacao
 
     @property
     def tempo_na_escola_acumulacao(self):
         """Retorna string com anos e meses desde o ingresso na unidade referente à 2ª matrícula."""
+        if not self.acumulacao_nesta_escola:
+            return None
         data_ref = self.data_ingresso_escola_acumulacao_efetiva
         if not data_ref:
             return None
@@ -351,28 +355,24 @@ class Professor(models.Model):
 
     @property
     def tem_multiplos_vinculos_na_escola(self):
-        """
-        Retorna True se o professor possui 2 vínculos/matrículas atuando nesta unidade escolar.
-        Considera True se acumulacao_nesta_escola for True, ou se tiver 2ª matrícula cadastrada
-        com dados de disciplina/cargo/CH de acumulação.
-        """
-        if not self.matricula_acumulacao:
-            return False
-        if self.acumulacao_nesta_escola:
-            return True
-        if self.disciplina_ingresso_acumulacao or self.cargo_acumulacao or self.ch_total_acumulacao or self.tempos_aula_acumulacao:
-            return True
-        return False
+        """Retorna True se o professor possui 2 vínculos/matrículas atuando nesta unidade escolar."""
+        return bool(self.matricula_acumulacao and self.acumulacao_nesta_escola)
 
     @property
     def mat1_em_sala(self):
-        """Retorna True se a 1ª matrícula leciona em sala de aula."""
+        """Retorna True se a 1ª matrícula leciona em sala de aula nesta escola."""
+        if self.situacao_matricula_1 != 'ativo':
+            return False
         return not self.mat1_em_desvio
 
     @property
     def mat2_em_sala(self):
         """Retorna True se a 2ª matrícula leciona em sala de aula nesta escola."""
-        return bool(self.matricula_acumulacao and self.tem_multiplos_vinculos_na_escola and not self.mat2_em_desvio)
+        if not self.matricula_acumulacao or not self.acumulacao_nesta_escola:
+            return False
+        if self.situacao_matricula_2 != 'ativo':
+            return False
+        return not self.mat2_em_desvio
 
     @property
     def descricao_desvio_matriculas(self):
@@ -391,12 +391,27 @@ class Professor(models.Model):
         return nome_funcao
 
     @property
+    def regencia_efetiva(self):
+        """Retorna a regência calculada da 1ª matrícula."""
+        if self.ch_regencia is not None:
+            return self.ch_regencia
+        return self.tempos_aula or 0
+
+    @property
+    def planejamento_efetivo(self):
+        """Retorna o planejamento calculado da 1ª matrícula."""
+        if self.ch_planejamento is not None:
+            return self.ch_planejamento
+        if self.ch_total is not None and self.tempos_aula is not None:
+            return max(0, self.ch_total - self.tempos_aula)
+        return 0
+
+    @property
     def total_tempos_aula(self):
-        """Retorna a soma dos tempos de aula lecionados na escola considerando se a matrícula está em sala ou no desvio."""
-        t1 = (self.tempos_aula or 0) if self.mat1_em_sala else 0
+        """Retorna a soma dos tempos de aula lecionados nesta escola considerando se a matrícula está ativa em sala."""
+        t1_val = self.tempos_aula if self.tempos_aula is not None else (self.ch_regencia or 0)
+        t1 = t1_val if self.mat1_em_sala else 0
         t2 = (self.tempos_aula_acumulacao or 0) if self.mat2_em_sala else 0
-        if not self.mat1_em_sala and not self.mat2_em_sala:
-            return 0
         return t1 + t2
 
     def save(self, *args, **kwargs):
@@ -410,6 +425,13 @@ class Professor(models.Model):
             self.funcao_administrativa = ''
         if not self.matricula_acumulacao:
             self.abrangencia_desvio = 'ambas'
+        
+        # Sincroniza regência e planejamento automaticamente
+        if self.tempos_aula is not None:
+            self.ch_regencia = self.tempos_aula
+        if self.ch_total is not None and self.ch_regencia is not None:
+            if self.ch_total >= self.ch_regencia:
+                self.ch_planejamento = self.ch_total - self.ch_regencia
         super().save(*args, **kwargs)
 
 
@@ -1016,10 +1038,23 @@ class OcorrenciaFolgaServidor(models.Model):
 
 class AnotacaoServidor(models.Model):
     """Anotações e histórico de observações da pasta do servidor."""
+    CATEGORIA_CHOICES = [
+        ('geral', 'Observação Geral'),
+        ('do', 'Publicação em Diário Oficial (D.O.)'),
+        ('qualificacao', 'Qualificação / Titulação / Curso'),
+        ('licenca', 'Licença / Afastamento / Atestado'),
+        ('funcional', 'Evolução / Alteração Funcional'),
+        ('elogio', 'Elogio / Mérito Funcional'),
+        ('outro', 'Outro Registro Funcional'),
+    ]
+
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     servidor = GenericForeignKey('content_type', 'object_id')
 
+    titulo = models.CharField(max_length=200, blank=True, verbose_name='Título / Assunto')
+    categoria = models.CharField(max_length=30, choices=CATEGORIA_CHOICES, default='geral', verbose_name='Categoria')
+    data_registro = models.DateField(default=timezone.now, verbose_name='Data da Ocorrência / Registro')
     texto = models.TextField(verbose_name='Anotação / Observação')
     criado_em = models.DateTimeField(auto_now_add=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
@@ -1027,7 +1062,8 @@ class AnotacaoServidor(models.Model):
     class Meta:
         verbose_name = 'Anotação do Servidor'
         verbose_name_plural = 'Anotações do Servidor'
-        ordering = ['-criado_em']
+        ordering = ['-data_registro', '-criado_em']
 
     def __str__(self):
-        return f"Anotação de {self.criado_em.strftime('%d/%m/%Y %H:%M')}"
+        t = f": {self.titulo}" if self.titulo else ""
+        return f"Anotação {self.data_registro.strftime('%d/%m/%Y')}{t}"

@@ -407,7 +407,29 @@
         </h6>
         <form method="post" action="{% url 'adicionar_anotacao_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}">
           {% csrf_token %}
-          <label class="form-label">Anotação / Registro na Ficha</label>
+          <div class="row g-2 mb-2">
+            <div class="col-md-3">
+              <label class="form-label">Data Ocorrência *</label>
+              <input type="date" name="data_registro" class="form-control" value="{% now 'Y-m-d' %}" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Categoria *</label>
+              <select name="categoria" class="form-select">
+                <option value="geral">📝 Observação Geral</option>
+                <option value="do">📰 Publicação em D.O.</option>
+                <option value="qualificacao">🎓 Qualificação / Titulação</option>
+                <option value="licenca">🏥 Licença / Afastamento</option>
+                <option value="funcional">⚡ Alteração Funcional</option>
+                <option value="elogio">⭐ Elogio / Mérito</option>
+                <option value="outro">📁 Outro Registro</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Título / Assunto (Opcional)</label>
+              <input type="text" name="titulo" class="form-control" placeholder="Ex: Publicado D.O. de Qualificação...">
+            </div>
+          </div>
+          <label class="form-label">Anotação / Registro na Ficha *</label>
           <textarea name="texto" class="form-control" rows="3" placeholder="Digite uma observação, ocorrência ou registro importante sobre este servidor..." required></textarea>
           <div class="text-end mt-3">
             <button type="submit" class="btn-gestao btn-gestao-primary py-2 px-4" style="font-size:0.88rem; font-weight:700; min-height:44px;">
@@ -422,44 +444,73 @@
       {% if anotacoes %}
       <div style="display:flex; flex-direction:column; gap:12px;">
         {% for note in anotacoes %}
-        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-left:3px solid var(--blue); border-radius:8px; padding:12px 16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.78rem; color:var(--text-muted);">
-            <span><i class="bi bi-person me-1"></i>{{ note.criado_por.nome_completo|default:note.criado_por.cpf|default:"Sistema" }} — {{ note.criado_em|date:"d/m/Y H:i" }}</span>
-            {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
-            <div class="d-flex gap-1">
-              <button type="button" class="btn-gestao btn-gestao-primary" style="padding:2px 6px; font-size:0.7rem;" data-bs-toggle="modal" data-bs-target="#modalEditarAnotacao{{ note.pk }}" title="Editar Anotação">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <a href="{% url 'excluir_anotacao_servidor' note.pk %}" onclick="return confirm('Deseja remover esta anotação da pasta?');" class="btn-gestao btn-gestao-danger" style="padding:2px 6px; font-size:0.7rem;" title="Excluir Anotação">
-                <i class="bi bi-trash"></i>
-              </a>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-left:3px solid {% if note.categoria == 'do' %}#38bdf8{% elif note.categoria == 'qualificacao' %}#c084fc{% elif note.categoria == 'licenca' %}#fde047{% elif note.categoria == 'funcional' %}#86efac{% elif note.categoria == 'elogio' %}#f59e0b{% else %}var(--blue){% endif %}; border-radius:8px; padding:12px 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.78rem; color:var(--text-muted); flex-wrap:wrap; gap:4px;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-secondary" style="font-size:0.75rem;">{{ note.data_registro|date:"d/m/Y" }}</span>
+              <span class="badge" style="background:rgba(255,255,255,0.08); color:#cbd5e1; font-size:0.72rem;">{{ note.get_categoria_display }}</span>
+              {% if note.titulo %}<strong style="color:#fff;">{{ note.titulo }}</strong>{% endif %}
             </div>
+            <div class="d-flex align-items-center gap-2">
+              <span><i class="bi bi-person me-1"></i>{{ note.criado_por.nome_completo|default:note.criado_por.cpf|default:"Sistema" }} — {{ note.criado_em|date:"d/m/Y H:i" }}</span>
+              {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
+              <div class="d-flex gap-1">
+                <button type="button" class="btn-gestao btn-gestao-primary" style="padding:2px 6px; font-size:0.7rem;" data-bs-toggle="modal" data-bs-target="#modalEditarAnotacao{{ note.pk }}" title="Editar Anotação">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <a href="{% url 'excluir_anotacao_servidor' note.pk %}" onclick="return confirm('Deseja remover esta anotação da pasta?');" class="btn-gestao btn-gestao-danger" style="padding:2px 6px; font-size:0.7rem;" title="Excluir Anotação">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
 
-            <!-- Modal Editar Anotação -->
-            <div class="modal fade" id="modalEditarAnotacao{{ note.pk }}" tabindex="-1" aria-hidden="true" style="text-align:left;">
-              <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
-                  <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
-                    <h5 class="modal-title" style="font-weight:700; color:var(--blue);">
-                      <i class="bi bi-pencil-square me-2"></i>Editar Anotação / Registro
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              <!-- Modal Editar Anotação -->
+              <div class="modal fade" id="modalEditarAnotacao{{ note.pk }}" tabindex="-1" aria-hidden="true" style="text-align:left;">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                  <div class="modal-content" style="background:#0f172a; color:#fff; border:1px solid var(--card-border);">
+                    <div class="modal-header" style="border-bottom:1px solid var(--card-border);">
+                      <h5 class="modal-title" style="font-weight:700; color:var(--blue);">
+                        <i class="bi bi-pencil-square me-2"></i>Editar Anotação / Registro
+                      </h5>
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'editar_anotacao_servidor' note.pk %}">
+                      {% csrf_token %}
+                      <div class="modal-body">
+                        <div class="row g-2 mb-2">
+                          <div class="col-md-3">
+                            <label class="form-label">Data Ocorrência</label>
+                            <input type="date" name="data_registro" class="form-control" value="{{ note.data_registro|date:'Y-m-d' }}">
+                          </div>
+                          <div class="col-md-3">
+                            <label class="form-label">Categoria</label>
+                            <select name="categoria" class="form-select">
+                              <option value="geral" {% if note.categoria == 'geral' %}selected{% endif %}>📝 Observação Geral</option>
+                              <option value="do" {% if note.categoria == 'do' %}selected{% endif %}>📰 Publicação em D.O.</option>
+                              <option value="qualificacao" {% if note.categoria == 'qualificacao' %}selected{% endif %}>🎓 Qualificação / Titulação</option>
+                              <option value="licenca" {% if note.categoria == 'licenca' %}selected{% endif %}>🏥 Licença / Afastamento</option>
+                              <option value="funcional" {% if note.categoria == 'funcional' %}selected{% endif %}>⚡ Alteração Funcional</option>
+                              <option value="elogio" {% if note.categoria == 'elogio' %}selected{% endif %}>⭐ Elogio / Mérito</option>
+                              <option value="outro" {% if note.categoria == 'outro' %}selected{% endif %}>📁 Outro Registro</option>
+                            </select>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Título / Assunto</label>
+                            <input type="text" name="titulo" class="form-control" value="{{ note.titulo }}">
+                          </div>
+                        </div>
+                        <label class="form-label">Anotação / Texto do Registro</label>
+                        <textarea name="texto" class="form-control" rows="4" required>{{ note.texto }}</textarea>
+                      </div>
+                      <div class="modal-footer" style="border-top:1px solid var(--card-border);">
+                        <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-gestao btn-gestao-primary">Salvar Alterações</button>
+                      </div>
+                    </form>
                   </div>
-                  <form method="post" action="{% url 'editar_anotacao_servidor' note.pk %}">
-                    {% csrf_token %}
-                    <div class="modal-body">
-                      <label class="form-label">Anotação / Texto do Registro</label>
-                      <textarea name="texto" class="form-control" rows="4" required>{{ note.texto }}</textarea>
-                    </div>
-                    <div class="modal-footer" style="border-top:1px solid var(--card-border);">
-                      <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Cancelar</button>
-                      <button type="submit" class="btn-gestao btn-gestao-primary">Salvar Alterações</button>
-                    </div>
-                  </form>
                 </div>
               </div>
+              {% endif %}
             </div>
-            {% endif %}
           </div>
           <div style="font-size:0.9rem; color:var(--text-primary); white-space:pre-line;">{{ note.texto }}</div>
         </div>

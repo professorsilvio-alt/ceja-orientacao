@@ -86,13 +86,16 @@ class ProfessorForm(forms.ModelForm):
         model = Professor
         fields = [
             'cpf', 'id_vinculo', 'matricula', 'situacao_matricula_1', 'ch_total', 'tempos_aula',
+            'data_nascimento', 'sexo',
             'em_desvio_funcao', 'funcao_administrativa', 'abrangencia_desvio', 'ch_administrativa',
             'id_vinculo_acumulacao', 'matricula_acumulacao', 'situacao_matricula_2', 'acumulacao_nesta_escola',
             'cargo_acumulacao', 'disciplina_ingresso_acumulacao', 'funcao_acumulacao', 'funcao_administrativa_acumulacao', 'ch_total_acumulacao', 'tempos_aula_acumulacao',
             'data_admissao_acumulacao', 'data_ci_movimentacao_acumulacao', 'data_ingresso_unidade_acumulacao',
             'nome_completo', 'cargo', 'disciplina_ingresso', 'disciplinas_lecionadas',
             'data_admissao', 'data_ci_movimentacao', 'data_ingresso_unidade', 'classificacao',
-            'email', 'telefone', 'celular', 'foto', 'ativo', 'observacoes',
+            'email', 'email_google', 'email_alternativo', 'telefone', 'celular',
+            'endereco', 'numero', 'complemento', 'bairro', 'municipio',
+            'foto', 'ativo', 'observacoes',
         ]
         widgets = {
             'cpf': forms.TextInput(attrs={'placeholder': '00000000000', 'id': 'id_cpf_prof'}),
@@ -101,6 +104,8 @@ class ProfessorForm(forms.ModelForm):
             'situacao_matricula_1': forms.Select(attrs={'id': 'id_sit_mat1'}),
             'ch_total': forms.NumberInput(attrs={'id': 'id_ch_total', 'placeholder': 'Ex: 16, 20, 30, 40'}),
             'tempos_aula': forms.NumberInput(attrs={'id': 'id_tempos_aula', 'placeholder': 'Ex: 12, 16 (0 se administrativo)'}),
+            'data_nascimento': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_nasc'}, format='%Y-%m-%d'),
+            'sexo': forms.Select(choices=[('', 'Selecione...'), ('M', 'Masculino'), ('F', 'Feminino'), ('Outro', 'Outro')], attrs={'id': 'id_sexo'}),
             'em_desvio_funcao': forms.CheckboxInput(attrs={'id': 'id_em_desvio_funcao', 'class': 'form-check-input'}),
             'funcao_administrativa': forms.Select(attrs={'id': 'id_funcao_adm'}),
             'abrangencia_desvio': forms.Select(attrs={'id': 'id_abrangencia_desvio'}),
@@ -130,8 +135,15 @@ class ProfessorForm(forms.ModelForm):
             ),
             'classificacao': forms.NumberInput(attrs={'min': 1, 'id': 'id_classificacao'}),
             'email': forms.EmailInput(attrs={'id': 'id_email_prof'}),
+            'email_google': forms.EmailInput(attrs={'id': 'id_email_google', 'placeholder': 'nome@educa.rj.gov.br'}),
+            'email_alternativo': forms.EmailInput(attrs={'id': 'id_email_alt'}),
             'telefone': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_tel_prof'}),
             'celular': forms.TextInput(attrs={'placeholder': '(21) 99999-9999', 'id': 'id_cel_prof'}),
+            'endereco': forms.TextInput(attrs={'id': 'id_endereco', 'placeholder': 'Rua, Avenida, etc.'}),
+            'numero': forms.TextInput(attrs={'id': 'id_numero', 'placeholder': 'Nº'}),
+            'complemento': forms.TextInput(attrs={'id': 'id_comp', 'placeholder': 'Apto, Bloco, etc.'}),
+            'bairro': forms.TextInput(attrs={'id': 'id_bairro'}),
+            'municipio': forms.TextInput(attrs={'id': 'id_municipio'}),
             'observacoes': forms.Textarea(attrs={'rows': 3, 'id': 'id_obs_prof'}),
             'disciplinas_lecionadas': forms.CheckboxSelectMultiple(),
         }

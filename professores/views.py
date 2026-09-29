@@ -256,13 +256,20 @@ def view_adicionar_anotacao_servidor(request, tipo_servidor, pk):
         servidor = get_object_or_404(model_cls, pk=pk)
         ct = ContentType.objects.get_for_model(model_cls)
 
+        titulo = request.POST.get('titulo', '').strip()
+        categoria = request.POST.get('categoria', 'geral')
+        data_registro = request.POST.get('data_registro') or timezone.now().date()
+
         AnotacaoServidor.objects.create(
             content_type=ct,
             object_id=servidor.pk,
+            titulo=titulo,
+            categoria=categoria,
+            data_registro=data_registro,
             texto=texto,
             criado_por=request.user
         )
-        messages.success(request, 'Anotação salva na pasta do servidor.')
+        messages.success(request, 'Observação / anotação registrada com sucesso.')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
@@ -327,8 +334,13 @@ def view_editar_anotacao_servidor(request, pk):
             return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
         note.texto = texto
+        note.titulo = request.POST.get('titulo', '').strip()
+        note.categoria = request.POST.get('categoria', note.categoria or 'geral')
+        data_registro = request.POST.get('data_registro')
+        if data_registro:
+            note.data_registro = data_registro
         note.save()
-        messages.success(request, 'Anotação atualizada com sucesso!')
+        messages.success(request, 'Observação / anotação atualizada com sucesso!')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
@@ -338,8 +350,23 @@ def view_excluir_anotacao_servidor(request, pk):
     from .models import AnotacaoServidor
     note = get_object_or_404(AnotacaoServidor, pk=pk)
     note.delete()
-    messages.success(request, 'Anotação removida da pasta.')
+    messages.success(request, 'Anotação removida com sucesso.')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+
+@login_required
+def view_atualizar_observacoes_gerais_professor(request, pk):
+    """Atualiza o campo de observações gerais na ficha do professor."""
+    professor = get_object_or_404(Professor, pk=pk)
+    if request.method == 'POST':
+        observacoes = request.POST.get('observacoes', '').strip()
+        professor.observacoes = observacoes
+        professor.save(update_fields=['observacoes'])
+        messages.success(request, 'Observações gerais da ficha salvas com sucesso!')
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('detalhe_professor', pk=pk)
 
 
 @diretor_required
