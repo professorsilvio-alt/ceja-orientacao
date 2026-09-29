@@ -399,8 +399,8 @@ def view_horarios_professor(request, pk):
     except (ValueError, TypeError):
         ano = timezone.now().year
 
-    # Professores só podem ver/editar seus próprios horários
-    if request.user.perfil == 'professor':
+    # Professores, Coordenadores e Orientadores só podem ver/editar seus próprios horários
+    if request.user.perfil in ['professor', 'coordenador_pedagogico', 'orientador_educacional']:
         if professor.cpf != request.user.cpf:
             messages.error(request, 'Você só pode editar seus próprios horários.')
             return redirect('dashboard')
@@ -565,11 +565,16 @@ def view_aprovar_horario(request, horario_pk):
     return redirect(f"{reverse('horarios_professor', kwargs={'pk': horario.professor.pk})}?ano={horario.ano_letivo}")
 
 
-@diretor_required
+@login_required
 def view_editar_horario(request, horario_pk):
     horario = get_object_or_404(HorarioProfessor, pk=horario_pk)
     prof_pk = horario.professor.pk
     ano_letivo = horario.ano_letivo
+
+    is_direcao = request.user.perfil == 'diretor' or request.user.is_superuser
+    if not is_direcao and horario.professor.cpf != request.user.cpf:
+        messages.error(request, 'Você só pode editar seus próprios horários.')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         form = HorarioProfessorForm(request.POST, instance=horario)
@@ -586,11 +591,17 @@ def view_editar_horario(request, horario_pk):
     return redirect(f"{reverse('horarios_professor', kwargs={'pk': prof_pk})}?ano={ano_letivo}")
 
 
-@diretor_required
+@login_required
 def view_remover_horario(request, horario_pk):
     horario = get_object_or_404(HorarioProfessor, pk=horario_pk)
     prof_pk = horario.professor.pk
     ano_letivo = horario.ano_letivo
+
+    is_direcao = request.user.perfil == 'diretor' or request.user.is_superuser
+    if not is_direcao and horario.professor.cpf != request.user.cpf:
+        messages.error(request, 'Você só pode remover seus próprios horários.')
+        return redirect('dashboard')
+
     horario.delete()
     messages.success(request, 'Horário removido.')
     return redirect(f"{reverse('horarios_professor', kwargs={'pk': prof_pk})}?ano={ano_letivo}")

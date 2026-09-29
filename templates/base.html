@@ -135,18 +135,20 @@
       </li>
       {% endif %}
 
-      {% if user.perfil == 'professor' %}
+      {% if user.perfil == 'professor' or user.perfil == 'coordenador_pedagogico' or user.perfil == 'orientador_educacional' %}
       <li class="sidebar-section">Meus Dados</li>
+      {% if user.professor_obj %}
       <li>
-        <a href="#" class="sidebar-link">
-          <i class="bi bi-person-circle"></i> Meu Perfil
+        <a href="{% url 'detalhe_professor' user.professor_obj.pk %}" class="sidebar-link">
+          <i class="bi bi-person-circle"></i> Meu Perfil Docente
         </a>
       </li>
       <li>
-        <a href="#" class="sidebar-link">
+        <a href="{% url 'horarios_professor' user.professor_obj.pk %}" class="sidebar-link">
           <i class="bi bi-clock-fill"></i> Meus Horários
         </a>
       </li>
+      {% endif %}
       {% endif %}
 
       <li class="sidebar-section">Sistema</li>

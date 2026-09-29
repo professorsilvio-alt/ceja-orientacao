@@ -567,8 +567,8 @@ select:-webkit-autofill {
 /* ── CALENDÁRIO DO AUDITÓRIO ────────────────────────────────── */
 .calendario-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .cal-header {
@@ -1125,8 +1125,8 @@ form input[type="file"]::file-selector-button:hover,
 
   /* Calendário do Auditório no tablet/celular */
   .calendario-grid {
-    grid-template-columns: repeat(7, 1fr) !important;
-    gap: 3px !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 4px !important;
   }
 
   .cal-header {
@@ -1184,6 +1184,7 @@ form input[type="file"]::file-selector-button:hover,
   }
 
   .calendario-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     gap: 2px !important;
   }
 

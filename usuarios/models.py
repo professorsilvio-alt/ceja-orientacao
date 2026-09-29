@@ -123,6 +123,17 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         """Método padrão Django para retornar o nome completo do usuário."""
         return self.nome_completo
 
+    @property
+    def professor_obj(self):
+        """Retorna o registro do Professor vinculado a este usuário pelo CPF, se existir."""
+        from professores.models import Professor
+        return Professor.objects.filter(cpf=self.cpf).first()
+
+    @property
+    def is_docente(self):
+        """Indica se o perfil herda prerrogativas docentes (Professor, Coordenador Pedagógico ou Orientador Educacional)."""
+        return self.perfil in ['professor', 'coordenador_pedagogico', 'orientador_educacional']
+
     def save(self, *args, **kwargs):
         self.cpf = re.sub(r'\D', '', self.cpf)
         super().save(*args, **kwargs)

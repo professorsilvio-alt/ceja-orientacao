@@ -3,6 +3,139 @@
 {% block nav_auditorio %}active{% endblock %}
 {% block breadcrumb %}<i class="bi bi-calendar-event-fill me-1"></i> Agenda do Auditório{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ── GRID DO CALENDÁRIO PADRONIZADO ── */
+  .calendario-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .cal-header {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .cal-day {
+    height: 108px !important;
+    min-height: 108px !important;
+    max-height: 108px !important;
+    min-width: 0 !important;
+    background: rgba(30, 41, 59, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    position: relative !important;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .cal-day:hover {
+    border-color: rgba(56, 189, 248, 0.3) !important;
+  }
+  .cal-day.outro-mes {
+    opacity: 0.25 !important;
+    background: rgba(15, 23, 42, 0.3) !important;
+    border: 1px dashed rgba(255, 255, 255, 0.05) !important;
+    pointer-events: none;
+  }
+  .cal-day.hoje {
+    border-color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+  }
+  .cal-day-num {
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    color: #94a3b8 !important;
+    margin-bottom: 6px !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+  }
+  .cal-day.hoje .cal-day-num {
+    color: #38bdf8 !important;
+  }
+  .cal-eventos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+  }
+  .cal-eventos-container::-webkit-scrollbar {
+    width: 3px;
+  }
+  .cal-eventos-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .cal-eventos-container::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.3);
+    border-radius: 3px;
+  }
+  .cal-evento {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 3px 6px !important;
+    border-radius: 6px !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+    -webkit-hyphens: auto !important;
+    cursor: pointer !important;
+    line-height: 1.25 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    transition: transform 0.15s ease, filter 0.15s ease !important;
+  }
+  .cal-evento:hover {
+    filter: brightness(1.2);
+    transform: translateY(-1px);
+  }
+  .cal-evento.oficina  { background: rgba(59,130,246,0.25) !important; color: #93c5fd !important; border: 1px solid rgba(59,130,246,0.4) !important; }
+  .cal-evento.aula     { background: rgba(34,197,94,0.25) !important;  color: #86efac !important; border: 1px solid rgba(34,197,94,0.4) !important; }
+  .cal-evento.evento   { background: rgba(6,182,212,0.25) !important;  color: #67e8f9 !important; border: 1px solid rgba(6,182,212,0.4) !important; }
+  .cal-evento.reuniao  { background: rgba(234,179,8,0.25) !important;  color: #fde047 !important; border: 1px solid rgba(234,179,8,0.4) !important; }
+  .cal-evento.outro    { background: rgba(148,163,184,0.25) !important; color: #cbd5e1 !important; border: 1px solid rgba(148,163,184,0.4) !important; }
+
+  /* ── LISTA LATERAL (PRÓXIMOS EVENTOS) ── */
+  .reserva-card-lateral {
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--blue);
+    word-break: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+  .reserva-card-titulo {
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-top: 6px;
+    line-height: 1.35;
+    word-break: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #f1f5f9;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <div>
@@ -92,7 +225,7 @@ function copiarLinkPublico() {
       </div>
 
       <!-- Grid do calendário (Segunda a Sexta) -->
-      <div class="calendario-grid" id="calendario" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="calendario-grid" id="calendario" style="display:grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px;">
         <div class="cal-header">Seg</div>
         <div class="cal-header">Ter</div>
         <div class="cal-header">Qua</div>
@@ -110,8 +243,8 @@ function copiarLinkPublico() {
         <i class="bi bi-list-ul me-2" style="color:var(--blue);"></i>Próximos Eventos
       </h6>
       {% for reserva in proximas %}
-      <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:12px; margin-bottom:8px; border-left:3px solid var(--blue);">
-        <div class="d-flex justify-content-between align-items-start">
+      <div class="reserva-card-lateral">
+        <div class="d-flex justify-content-between align-items-start gap-2">
           <span class="badge-gestao badge-{{ reserva.badge_color }}">{{ reserva.get_tipo_display }}</span>
           {% if is_diretor %}
           <div class="d-flex gap-1">
@@ -125,13 +258,13 @@ function copiarLinkPublico() {
           </div>
           {% endif %}
         </div>
-        <div style="font-weight:600; font-size:0.88rem; margin-top:6px;">{{ reserva.titulo }}</div>
-        <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:3px;">
+        <div class="reserva-card-titulo">{{ reserva.titulo }}</div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:4px;">
           <i class="bi bi-calendar3 me-1"></i>{{ reserva.data|date:"d/m/Y" }}
           &nbsp;•&nbsp;
           <i class="bi bi-clock me-1"></i>{{ reserva.hora_inicio|time:"H:i" }}–{{ reserva.hora_fim|time:"H:i" }}
         </div>
-        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px; word-break:break-word;">
           <i class="bi bi-person me-1"></i>{{ reserva.responsavel }}
         </div>
       </div>
@@ -200,11 +333,14 @@ function montarCalendario(reservas) {
     offsetInicio = diaSemana1 - 1;
   }
 
+  let totalCelulas = 0;
+
   // Dias vazios antes do mês para alinhar na coluna correta
   for (let i = 0; i < offsetInicio; i++) {
     const el = document.createElement('div');
     el.className = 'cal-day outro-mes';
     grid.appendChild(el);
+    totalCelulas++;
   }
 
   // Dias úteis do mês (Segunda a Sexta - exclui sábado e domingo)
@@ -222,19 +358,35 @@ function montarCalendario(reservas) {
     numEl.textContent = dia;
     el.appendChild(numEl);
 
+    // Container com scroll interno para eventos
+    const eventosContainer = document.createElement('div');
+    eventosContainer.className = 'cal-eventos-container';
+
     // Eventos deste dia
     const eventos = reservas.filter(r => r.data === dataStr);
     eventos.forEach(ev => {
       const evEl = document.createElement('div');
       evEl.className = `cal-evento ${ev.tipo}`;
       evEl.textContent = `${ev.hora_inicio} ${ev.titulo}`;
-      evEl.title = `${ev.titulo} — ${ev.responsavel}`;
-      evEl.style.cursor = 'pointer';
+      evEl.title = `${ev.titulo} — ${ev.responsavel} (${ev.hora_inicio}–${ev.hora_fim})`;
       evEl.addEventListener('click', () => abrirModal(ev));
-      el.appendChild(evEl);
+      eventosContainer.appendChild(evEl);
     });
 
+    el.appendChild(eventosContainer);
     grid.appendChild(el);
+    totalCelulas++;
+  }
+
+  // Completa a última semana para manter todos os boxes padronizados
+  const sobra = totalCelulas % 5;
+  if (sobra !== 0) {
+    const faltam = 5 - sobra;
+    for (let i = 0; i < faltam; i++) {
+      const el = document.createElement('div');
+      el.className = 'cal-day outro-mes';
+      grid.appendChild(el);
+    }
   }
 }
 

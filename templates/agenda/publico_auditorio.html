@@ -295,7 +295,7 @@
     /* ── GRID DO CALENDÁRIO (SEGUNDA A SEXTA - 5 COLUNAS) ── */
     .calendario-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 5px;
     }
 
@@ -310,6 +310,7 @@
 
     .cal-day-cell {
       min-height: 70px;
+      min-width: 0;
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: var(--radius-sm);
