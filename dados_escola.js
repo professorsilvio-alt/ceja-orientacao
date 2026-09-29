@@ -30,15 +30,6 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Prof. David",
-      foto: "",
-      disciplinas: ["Geografia"],
-      horarios: [
-        { dia: "Segunda-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências Humanas" },
-        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências Humanas" }
-      ]
-    },
-    {
       nome: "Prof. Elázaro",
       foto: "",
       disciplinas: ["Ciências/Biologia"],
@@ -151,8 +142,9 @@ const DADOS_ESCOLA = {
       foto: "",
       disciplinas: ["Geografia"],
       horarios: [
-        { dia: "Segunda-feira", inicio: "13:00", fim: "15:30", local: "Cabine de Ciências Humanas" },
+        { dia: "Segunda-feira", inicio: "13:00", fim: "20:30", local: "Cabine de Ciências Humanas" },
         { dia: "Terça-feira", inicio: "13:50", fim: "20:30", local: "Cabine de Ciências Humanas" },
+        { dia: "Quarta-feira", inicio: "15:30", fim: "20:30", local: "Cabine de Ciências Humanas" },
         { dia: "Quinta-feira", inicio: "13:00", fim: "20:30", local: "Cabine de Ciências Humanas" }
       ]
     },
