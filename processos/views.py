@@ -57,7 +57,9 @@ def view_listar_processos(request):
     total_aguardando = base_qs.filter(status='aguardando_resposta').count()
     total_sob_analise = base_qs.filter(status='sob_analise').count()
     total_concluidos = base_qs.filter(status='concluido').count()
-    total_urgentes = base_qs.filter(prioridade='urgente').exclude(status='concluido').count()
+    total_arquivados = base_qs.filter(status='arquivado').count()
+    total_indeferidos = base_qs.filter(status='indeferido').count()
+    total_urgentes = base_qs.filter(prioridade='urgente').exclude(status__in=['concluido', 'arquivado', 'indeferido']).count()
 
     queryset = base_qs
 
@@ -153,6 +155,8 @@ def view_listar_processos(request):
         'total_aguardando': total_aguardando,
         'total_sob_analise': total_sob_analise,
         'total_concluidos': total_concluidos,
+        'total_arquivados': total_arquivados,
+        'total_indeferidos': total_indeferidos,
         'total_urgentes': total_urgentes,
     }
     return render(request, 'processos/listar_processos.html', context)

@@ -20,11 +20,19 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    cursor: pointer;
   }
   .kpi-card-sei:hover {
     transform: translateY(-2px);
     border-color: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .kpi-card-sei.active-kpi {
+    border-color: #38bdf8;
+    background: linear-gradient(135deg, rgba(14, 116, 144, 0.25), rgba(30, 41, 59, 0.95));
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
   }
   .kpi-icon-sei {
     width: 44px;
@@ -248,17 +256,17 @@
 
 <!-- KPIs / Estatísticas no Topo -->
 <div class="kpi-grid-sei">
-  <div class="kpi-card-sei">
+  <a href="?status=todos{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'todos' or not status_filtro %}{% if prioridade_filtro != 'urgente' %}active-kpi{% endif %}{% endif %}" title="Ver todos os processos">
     <div class="kpi-icon-sei" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
-      <i class="bi bi-archive-fill"></i>
+      <i class="bi bi-folder2-open"></i>
     </div>
     <div>
       <div class="kpi-val-sei">{{ total_geral }}</div>
       <div class="kpi-lbl-sei">Total Processos</div>
     </div>
-  </div>
+  </a>
 
-  <div class="kpi-card-sei">
+  <a href="?status=em_andamento{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'em_andamento' %}active-kpi{% endif %}" title="Filtrar Em Andamento">
     <div class="kpi-icon-sei" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
       <i class="bi bi-arrow-repeat"></i>
     </div>
@@ -266,9 +274,9 @@
       <div class="kpi-val-sei">{{ total_em_andamento }}</div>
       <div class="kpi-lbl-sei">Em Andamento</div>
     </div>
-  </div>
+  </a>
 
-  <div class="kpi-card-sei">
+  <a href="?status=aguardando_resposta{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'aguardando_resposta' %}active-kpi{% endif %}" title="Filtrar Aguardando Resposta">
     <div class="kpi-icon-sei" style="background: rgba(234, 179, 8, 0.15); color: #fde047;">
       <i class="bi bi-hourglass-split"></i>
     </div>
@@ -276,9 +284,9 @@
       <div class="kpi-val-sei">{{ total_aguardando }}</div>
       <div class="kpi-lbl-sei">Aguardando Resposta</div>
     </div>
-  </div>
+  </a>
 
-  <div class="kpi-card-sei">
+  <a href="?status=sob_analise{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'sob_analise' %}active-kpi{% endif %}" title="Filtrar Sob Análise">
     <div class="kpi-icon-sei" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
       <i class="bi bi-search"></i>
     </div>
@@ -286,9 +294,9 @@
       <div class="kpi-val-sei">{{ total_sob_analise }}</div>
       <div class="kpi-lbl-sei">Sob Análise</div>
     </div>
-  </div>
+  </a>
 
-  <div class="kpi-card-sei">
+  <a href="?status=concluido{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'concluido' %}active-kpi{% endif %}" title="Filtrar Concluídos">
     <div class="kpi-icon-sei" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">
       <i class="bi bi-check-circle-fill"></i>
     </div>
@@ -296,10 +304,32 @@
       <div class="kpi-val-sei">{{ total_concluidos }}</div>
       <div class="kpi-lbl-sei">Concluídos</div>
     </div>
-  </div>
+  </a>
+
+  <a href="?status=arquivado{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'arquivado' %}active-kpi{% endif %}" title="Filtrar Arquivados">
+    <div class="kpi-icon-sei" style="background: rgba(100, 116, 139, 0.25); color: #cbd5e1;">
+      <i class="bi bi-box-seam-fill"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei">{{ total_arquivados }}</div>
+      <div class="kpi-lbl-sei">Arquivados</div>
+    </div>
+  </a>
+
+  {% if total_indeferidos > 0 %}
+  <a href="?status=indeferido{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if status_filtro == 'indeferido' %}active-kpi{% endif %}" title="Filtrar Indeferidos">
+    <div class="kpi-icon-sei" style="background: rgba(239, 68, 68, 0.18); color: #f87171;">
+      <i class="bi bi-x-circle-fill"></i>
+    </div>
+    <div>
+      <div class="kpi-val-sei text-danger">{{ total_indeferidos }}</div>
+      <div class="kpi-lbl-sei text-danger">Indeferidos</div>
+    </div>
+  </a>
+  {% endif %}
 
   {% if total_urgentes > 0 %}
-  <div class="kpi-card-sei" style="border-color: rgba(239, 68, 68, 0.4);">
+  <a href="?prioridade=urgente{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}" class="kpi-card-sei {% if prioridade_filtro == 'urgente' %}active-kpi{% endif %}" style="border-color: rgba(239, 68, 68, 0.4);" title="Filtrar Urgentes">
     <div class="kpi-icon-sei" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">
       <i class="bi bi-exclamation-triangle-fill"></i>
     </div>
@@ -307,7 +337,7 @@
       <div class="kpi-val-sei text-danger">{{ total_urgentes }}</div>
       <div class="kpi-lbl-sei text-danger">Urgentes Ativos</div>
     </div>
-  </div>
+  </a>
   {% endif %}
 </div>
 
@@ -511,21 +541,29 @@
 
   <!-- Abas de Filtro Rápido por Status -->
   <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--card-border, #334155); padding-bottom:12px; overflow-x:auto;">
-    <a href="?status=todos{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'todos' or not status_filtro %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+    <a href="?status=todos{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'todos' or not status_filtro %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
       <i class="bi bi-collection-fill"></i> Todos <span class="badge bg-dark ms-1">{{ total_geral }}</span>
     </a>
-    <a href="?status=em_andamento{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'em_andamento' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+    <a href="?status=em_andamento{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'em_andamento' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
       <i class="bi bi-arrow-repeat"></i> Em Andamento <span class="badge bg-dark ms-1">{{ total_em_andamento }}</span>
     </a>
-    <a href="?status=aguardando_resposta{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'aguardando_resposta' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+    <a href="?status=aguardando_resposta{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'aguardando_resposta' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
       <i class="bi bi-hourglass-split"></i> Aguardando Resposta <span class="badge bg-dark ms-1">{{ total_aguardando }}</span>
     </a>
-    <a href="?status=sob_analise{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'sob_analise' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+    <a href="?status=sob_analise{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'sob_analise' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
       <i class="bi bi-search"></i> Sob Análise <span class="badge bg-dark ms-1">{{ total_sob_analise }}</span>
     </a>
-    <a href="?status=concluido{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'concluido' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+    <a href="?status=concluido{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'concluido' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
       <i class="bi bi-check2-circle"></i> Concluídos <span class="badge bg-dark ms-1">{{ total_concluidos }}</span>
     </a>
+    <a href="?status=arquivado{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'arquivado' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-box-seam"></i> Arquivados <span class="badge bg-dark ms-1">{{ total_arquivados }}</span>
+    </a>
+    {% if total_indeferidos > 0 %}
+    <a href="?status=indeferido{% if q %}&q={{ q }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if tag_filtro %}&tag={{ tag_filtro }}{% endif %}{% if prioridade_filtro %}&prioridade={{ prioridade_filtro }}{% endif %}" class="btn-gestao {% if status_filtro == 'indeferido' %}btn-gestao-primary{% else %}btn-gestao-secondary{% endif %}" style="font-size:0.82rem; padding:6px 14px; white-space:nowrap;">
+      <i class="bi bi-x-circle"></i> Indeferidos <span class="badge bg-dark ms-1">{{ total_indeferidos }}</span>
+    </a>
+    {% endif %}
   </div>
 
   <!-- Lista de Processos -->
