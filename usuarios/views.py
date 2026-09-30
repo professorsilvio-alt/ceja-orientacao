@@ -143,36 +143,48 @@ def view_trocar_senha(request):
     })
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 def view_recuperar_senha(request):
     """Envia e-mail com link de redefinição de senha."""
     form = RecuperarSenhaForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        email = form.cleaned_data['email']
-        try:
-            user = User.objects.get(email=email, is_active=True)
+        email = form.cleaned_data['email'].strip().lower()
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user:
             token = str(uuid.uuid4()).replace('-', '')
             user.token_recuperacao = token
             user.token_expiracao = timezone.now() + timedelta(hours=2)
             user.save(update_fields=['token_recuperacao', 'token_expiracao'])
 
-            link = f"{settings.BASE_URL}/redefinir-senha/{token}/"
-            send_mail(
-                subject='CEJA — Redefinição de Senha',
-                message=(
-                    f'Olá, {user.primeiro_nome}!\n\n'
-                    f'Você solicitou a redefinição de senha do sistema CEJA.\n'
-                    f'Clique no link abaixo para criar uma nova senha:\n\n'
-                    f'{link}\n\n'
-                    f'Este link expira em 2 horas.\n\n'
-                    f'Se não foi você quem solicitou, ignore este e-mail.\n\n'
-                    f'CEJA Profa Rosa Soares — Mesquita/RJ'
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,
-            )
-        except User.DoesNotExist:
-            pass  # Não revela se o e-mail existe
+            base_url = getattr(settings, 'BASE_URL', '').rstrip('/')
+            if not base_url or '127.0.0.1' in base_url:
+                # Tenta usar o host da própria requisição se BASE_URL for padrão/local
+                base_url = request.build_absolute_uri('/').rstrip('/')
+
+            link = f"{base_url}/redefinir-senha/{token}/"
+            try:
+                send_mail(
+                    subject='CEJA — Redefinição de Senha',
+                    message=(
+                        f'Olá, {user.primeiro_nome}!\n\n'
+                        f'Você solicitou a redefinição de senha do sistema CEJA.\n'
+                        f'Clique no link abaixo para criar uma nova senha:\n\n'
+                        f'{link}\n\n'
+                        f'Este link expira em 2 horas.\n\n'
+                        f'Se não foi você quem solicitou, ignore este e-mail.\n\n'
+                        f'CEJA Profa Rosa Soares — Mesquita/RJ'
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                logger.info(f"E-mail de recuperação de senha enviado com sucesso para {user.email}")
+            except Exception as e:
+                logger.error(f"Falha ao enviar e-mail de recuperação para {user.email}: {e}")
+        else:
+            logger.warning(f"Tentativa de recuperação para e-mail não encontrado ou inativo: {email}")
 
         # Sempre exibe a mesma mensagem (segurança)
         messages.success(request, 'Se o e-mail estiver cadastrado, você receberá as instruções em breve.')
