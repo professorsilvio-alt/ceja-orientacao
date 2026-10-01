@@ -355,8 +355,8 @@ class Professor(models.Model):
 
     @property
     def tem_multiplos_vinculos_na_escola(self):
-        """Retorna True se o professor possui 2 vínculos/matrículas atuando nesta unidade escolar."""
-        return bool(self.matricula_acumulacao and self.acumulacao_nesta_escola)
+        """Retorna True se o professor possui 2 vínculos/matrículas cadastrados."""
+        return bool(self.matricula_acumulacao)
 
     @property
     def mat1_em_sala(self):

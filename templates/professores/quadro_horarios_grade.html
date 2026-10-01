@@ -566,13 +566,21 @@
             <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:var(--text-muted);">
               1º Professor (Principal) *
             </label>
-            <select class="form-select" name="professor_id" id="select_professor" onchange="atualizarRotuloAutomatico()" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
+            <select class="form-select" name="professor_id" id="select_professor" onchange="verificarVinculoExibicao(1); atualizarRotuloAutomatico();" style="height:44px; background:rgba(15,23,42,0.8); color:#fff;">
               <option value="">-- Limpar / Nenhum Professor --</option>
               
               {% if profs_da_disciplina %}
               <optgroup label="⭐ Professores da Disciplina ({{ turma.disciplina_nome }})">
                 {% for p in profs_da_disciplina %}
-                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                <option value="{{ p.val }}"
+                        data-profid="{{ p.prof_id }}"
+                        data-vinc="{{ p.vinculo }}"
+                        data-temmult="{% if p.tem_mult %}1{% else %}0{% endif %}"
+                        data-mat1="{{ p.mat1 }}"
+                        data-mat2="{{ p.mat2 }}"
+                        data-disc1="{{ p.disc1 }}"
+                        data-disc2="{{ p.disc2 }}"
+                        data-nomecurto="{{ p.nome_curto|upper }}">
                   ⭐ {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
@@ -581,7 +589,15 @@
 
               <optgroup label="👥 Demais Professores Cadastrados">
                 {% for p in outros_profs %}
-                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                <option value="{{ p.val }}"
+                        data-profid="{{ p.prof_id }}"
+                        data-vinc="{{ p.vinculo }}"
+                        data-temmult="{% if p.tem_mult %}1{% else %}0{% endif %}"
+                        data-mat1="{{ p.mat1 }}"
+                        data-mat2="{{ p.mat2 }}"
+                        data-disc1="{{ p.disc1 }}"
+                        data-disc2="{{ p.disc2 }}"
+                        data-nomecurto="{{ p.nome_curto|upper }}">
                   {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
@@ -589,18 +605,47 @@
             </select>
           </div>
 
+          <!-- Seletor de Matrícula do 1º Professor (Exibido se o professor tiver 2 matrículas) -->
+          <div id="wrap_vinculo_1" class="mb-3 p-3 rounded" style="display:none; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);">
+            <label class="form-label font-weight-bold uppercase text-info mb-2" style="font-size:0.75rem; letter-spacing:0.5px;">
+              <i class="bi bi-person-vcard me-1"></i>Qual matrícula você está alocando neste horário? (1º Professor) *
+            </label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="vinculo_matricula_1" id="vinc1_mat1" value="1" checked onchange="trocarVinculoRadio(1, 1)">
+                <label class="form-check-label fw-bold text-white" for="vinc1_mat1" id="lbl_vinc1_mat1" style="cursor:pointer; font-size:0.85rem;">
+                  1ª Matrícula
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="vinculo_matricula_1" id="vinc1_mat2" value="2" onchange="trocarVinculoRadio(1, 2)">
+                <label class="form-check-label fw-bold text-warning" for="vinc1_mat2" id="lbl_vinc1_mat2" style="cursor:pointer; font-size:0.85rem;">
+                  2ª Matrícula (Acumulação)
+                </label>
+              </div>
+            </div>
+          </div>
+
           <!-- 2º Professor (Co-regência / Apoio) -->
           <div class="mb-3">
             <label class="form-label font-weight-bold uppercase" style="font-size:0.75rem; color:#38bdf8;">
               <i class="bi bi-people me-1"></i>2º Professor (Co-regência / Apoio - Opcional)
             </label>
-            <select class="form-select" name="professor_2_id" id="select_professor_2" onchange="atualizarRotuloAutomatico()" style="height:44px; background:rgba(15,23,42,0.8); color:#fff; border-color:rgba(56,189,248,0.4);">
+            <select class="form-select" name="professor_2_id" id="select_professor_2" onchange="verificarVinculoExibicao(2); atualizarRotuloAutomatico();" style="height:44px; background:rgba(15,23,42,0.8); color:#fff; border-color:rgba(56,189,248,0.4);">
               <option value="">-- Nenhum (Apenas 1 Professor) --</option>
               
               {% if profs_da_disciplina %}
               <optgroup label="⭐ Professores da Disciplina ({{ turma.disciplina_nome }})">
                 {% for p in profs_da_disciplina %}
-                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                <option value="{{ p.val }}"
+                        data-profid="{{ p.prof_id }}"
+                        data-vinc="{{ p.vinculo }}"
+                        data-temmult="{% if p.tem_mult %}1{% else %}0{% endif %}"
+                        data-mat1="{{ p.mat1 }}"
+                        data-mat2="{{ p.mat2 }}"
+                        data-disc1="{{ p.disc1 }}"
+                        data-disc2="{{ p.disc2 }}"
+                        data-nomecurto="{{ p.nome_curto|upper }}">
                   ⭐ {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
@@ -609,12 +654,41 @@
 
               <optgroup label="👥 Demais Professores Cadastrados">
                 {% for p in outros_profs %}
-                <option value="{{ p.val }}" data-nomecurto="{{ p.nome_curto|upper }}">
+                <option value="{{ p.val }}"
+                        data-profid="{{ p.prof_id }}"
+                        data-vinc="{{ p.vinculo }}"
+                        data-temmult="{% if p.tem_mult %}1{% else %}0{% endif %}"
+                        data-mat1="{{ p.mat1 }}"
+                        data-mat2="{{ p.mat2 }}"
+                        data-disc1="{{ p.disc1 }}"
+                        data-disc2="{{ p.disc2 }}"
+                        data-nomecurto="{{ p.nome_curto|upper }}">
                   {{ p.nome_completo }} ({{ p.cargo_disc }})
                 </option>
                 {% endfor %}
               </optgroup>
             </select>
+          </div>
+
+          <!-- Seletor de Matrícula do 2º Professor (Exibido se o 2º professor tiver 2 matrículas) -->
+          <div id="wrap_vinculo_2" class="mb-3 p-3 rounded" style="display:none; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);">
+            <label class="form-label font-weight-bold uppercase text-info mb-2" style="font-size:0.75rem; letter-spacing:0.5px;">
+              <i class="bi bi-person-vcard me-1"></i>Qual matrícula você está alocando neste horário? (2º Professor) *
+            </label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="vinculo_matricula_2" id="vinc2_mat1" value="1" checked onchange="trocarVinculoRadio(2, 1)">
+                <label class="form-check-label fw-bold text-white" for="vinc2_mat1" id="lbl_vinc2_mat1" style="cursor:pointer; font-size:0.85rem;">
+                  1ª Matrícula
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="vinculo_matricula_2" id="vinc2_mat2" value="2" onchange="trocarVinculoRadio(2, 2)">
+                <label class="form-check-label fw-bold text-warning" for="vinc2_mat2" id="lbl_vinc2_mat2" style="cursor:pointer; font-size:0.85rem;">
+                  2ª Matrícula (Acumulação)
+                </label>
+              </div>
+            </div>
           </div>
 
           <div class="mb-3">
@@ -791,7 +865,11 @@
     }
   }
 
-  function salvarSlotAjax(diaCode, horaInicio, horaFim, profId, prof2Id, rotulo, callback) {
+  function salvarSlotAjax(diaCode, horaInicio, horaFim, profId, prof2Id, rotulo, extraVinc, callback) {
+    if (typeof extraVinc === 'function') {
+      callback = extraVinc;
+      extraVinc = null;
+    }
     const formData = new FormData();
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     formData.append('dia_semana', diaCode);
@@ -800,6 +878,10 @@
     formData.append('professor_id', profId);
     formData.append('professor_2_id', prof2Id || '');
     formData.append('rotulo_exibicao', rotulo);
+    if (extraVinc) {
+      if (extraVinc.vinculo1) formData.append('vinculo_matricula_1', extraVinc.vinculo1);
+      if (extraVinc.vinculo2) formData.append('vinculo_matricula_2', extraVinc.vinculo2);
+    }
     formData.append('format', 'json');
 
     fetch('{% url "salvar_alocacao_slot" turma.pk %}', {
@@ -818,6 +900,78 @@
     .catch(() => recarregarPaginaLimpa());
   }
 
+  /* ── SELETOR DINÂMICO DE MATRÍCULA (1ª OU 2ª) ── */
+  function verificarVinculoExibicao(qualProf, vinculoDesejado) {
+    const sel = document.getElementById(qualProf === 1 ? 'select_professor' : 'select_professor_2');
+    const wrap = document.getElementById(qualProf === 1 ? 'wrap_vinculo_1' : 'wrap_vinculo_2');
+    const lblMat1 = document.getElementById(qualProf === 1 ? 'lbl_vinc1_mat1' : 'lbl_vinc2_mat1');
+    const lblMat2 = document.getElementById(qualProf === 1 ? 'lbl_vinc1_mat2' : 'lbl_vinc2_mat2');
+    const r1 = document.getElementById(qualProf === 1 ? 'vinc1_mat1' : 'vinc2_mat1');
+    const r2 = document.getElementById(qualProf === 1 ? 'vinc1_mat2' : 'vinc2_mat2');
+
+    if (!sel || !wrap) return;
+
+    const opt = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
+    if (!opt || !opt.value) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    const temMult = opt.dataset.temmult === '1';
+    if (!temMult) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    // Professor tem 2 matrículas! Exibe opções de vínculo
+    wrap.style.display = 'block';
+
+    const mat1 = opt.dataset.mat1 || '';
+    const mat2 = opt.dataset.mat2 || '';
+    const disc1 = opt.dataset.disc1 || '';
+    const disc2 = opt.dataset.disc2 || '';
+
+    if (lblMat1) {
+      lblMat1.innerHTML = `1ª Matrícula: <strong>${mat1}</strong> ${disc1 ? '<span class="opacity-75">(' + disc1 + ')</span>' : ''}`;
+    }
+    if (lblMat2) {
+      lblMat2.innerHTML = `2ª Matrícula (Acumulação): <strong>${mat2}</strong> ${disc2 ? '<span class="opacity-75">(' + disc2 + ')</span>' : ''}`;
+    }
+
+    let vinc = vinculoDesejado;
+    if (!vinc) {
+      if (opt.value.includes(':2') || opt.dataset.vinc === '2') {
+        vinc = 2;
+      } else {
+        vinc = 1;
+      }
+    }
+
+    if (vinc == 2) {
+      if (r2) r2.checked = true;
+    } else {
+      if (r1) r1.checked = true;
+    }
+  }
+
+  function trocarVinculoRadio(qualProf, vincNum) {
+    const sel = document.getElementById(qualProf === 1 ? 'select_professor' : 'select_professor_2');
+    if (!sel) return;
+    const opt = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
+    if (!opt || !opt.value) return;
+
+    const baseProfId = opt.dataset.profid || opt.value.split(':')[0];
+    const targetVal = baseProfId + ':' + vincNum;
+
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === targetVal) {
+        sel.selectedIndex = i;
+        break;
+      }
+    }
+    atualizarRotuloAutomatico();
+  }
+
   /* ── ABRIR MODAL COM RESET COMPLETO DE INSTÂNCIAS BOOTSTRAP ── */
   function setSelectValue(sel, targetVal) {
     if (!sel) return;
@@ -825,7 +979,7 @@
     if (sel.value !== targetVal && targetVal) {
       const baseId = targetVal.toString().split(':')[0];
       for (let opt of sel.options) {
-        if (opt.value === targetVal || opt.value === baseId || opt.value.startsWith(baseId + ':')) {
+        if (opt.value === targetVal || opt.dataset.profid === baseId || opt.value === baseId || opt.value.startsWith(baseId + ':')) {
           sel.value = opt.value;
           break;
         }
@@ -847,6 +1001,8 @@
     const profId = cellElem.dataset.profid || '';
     const prof2Id = cellElem.dataset.prof2id || '';
     const rotulo = cellElem.dataset.rotulo || '';
+    const vinc1 = parseInt(cellElem.dataset.vinculo1 || '1');
+    const vinc2 = parseInt(cellElem.dataset.vinculo2 || '1');
 
     document.getElementById('input_dia_semana').value = diaCode;
     document.getElementById('input_hora_inicio').value = horaInicio;
@@ -855,8 +1011,18 @@
 
     const sel1 = document.getElementById('select_professor');
     const sel2 = document.getElementById('select_professor_2');
-    setSelectValue(sel1, profId);
-    setSelectValue(sel2, prof2Id);
+
+    const baseProf1 = profId.toString().split(':')[0];
+    const targetVal1 = (baseProf1 && vinc1 === 2) ? (baseProf1 + ':2') : (baseProf1 ? (baseProf1 + ':1') : '');
+    setSelectValue(sel1, targetVal1 || profId);
+
+    const baseProf2 = prof2Id.toString().split(':')[0];
+    const targetVal2 = (baseProf2 && vinc2 === 2) ? (baseProf2 + ':2') : (baseProf2 ? (baseProf2 + ':1') : '');
+    setSelectValue(sel2, targetVal2 || prof2Id);
+
+    verificarVinculoExibicao(1, vinc1);
+    verificarVinculoExibicao(2, vinc2);
+
     document.getElementById('input_rotulo_exibicao').value = rotulo;
 
     const modalEl = document.getElementById('modalAlocarSlot');
@@ -1014,7 +1180,10 @@
     cellElem.draggable = true;
 
     // Dispara salvamento em segundo plano e atualiza contadores
-    salvarSlotAjax(diaCode, horaInicio, horaFim, dados.profId, dados.prof2Id, dados.rotulo, function(res) {
+    salvarSlotAjax(diaCode, horaInicio, horaFim, dados.profId, dados.prof2Id, dados.rotulo, {
+      vinculo1: vinc1,
+      vinculo2: vinc2
+    }, function(res) {
       if (res) {
         atualizarContadoresHeader(res);
         if (res.tem_multiplos_1 !== undefined) {
@@ -1070,15 +1239,20 @@
     const opt1 = profSelect.selectedIndex >= 0 ? profSelect.options[profSelect.selectedIndex] : null;
     const opt2 = prof2Select.selectedIndex >= 0 ? prof2Select.options[prof2Select.selectedIndex] : null;
 
+    const r1 = document.querySelector('input[name="vinculo_matricula_1"]:checked');
+    const r2 = document.querySelector('input[name="vinculo_matricula_2"]:checked');
+    const v1 = r1 ? parseInt(r1.value) : (profId.endsWith(':2') ? 2 : 1);
+    const v2 = r2 ? parseInt(r2.value) : (prof2Id.endsWith(':2') ? 2 : 1);
+
     const extraData = {
       dispNome1: opt1 ? opt1.dataset.nomecurto : rotulo,
       dispNome2: opt2 ? opt2.dataset.nomecurto : '',
-      temMult1: profId.includes(':'),
-      temMult2: prof2Id.includes(':'),
-      vinculo1: profId.endsWith(':2') ? 2 : 1,
-      vinculo2: prof2Id.endsWith(':2') ? 2 : 1,
-      matNum1: '',
-      matNum2: ''
+      temMult1: opt1 ? opt1.dataset.temmult === '1' : false,
+      temMult2: opt2 ? opt2.dataset.temmult === '1' : false,
+      vinculo1: v1,
+      vinculo2: v2,
+      matNum1: (opt1 && v1 === 2) ? opt1.dataset.mat2 : (opt1 ? opt1.dataset.mat1 : ''),
+      matNum2: (opt2 && v2 === 2) ? opt2.dataset.mat2 : (opt2 ? opt2.dataset.mat1 : '')
     };
 
     if (profId || prof2Id || rotulo) {
@@ -1174,8 +1348,20 @@
     const val1 = opt1 ? opt1.value : '';
     const val2 = opt2 ? opt2.value : '';
     
-    const nome1 = (val1 && opt1.dataset.nomecurto) ? opt1.dataset.nomecurto : '';
-    const nome2 = (val2 && opt2.dataset.nomecurto) ? opt2.dataset.nomecurto : '';
+    let nome1 = (val1 && opt1.dataset.nomecurto) ? opt1.dataset.nomecurto : '';
+    let nome2 = (val2 && opt2.dataset.nomecurto) ? opt2.dataset.nomecurto : '';
+
+    if (nome1 && opt1 && opt1.dataset.temmult === '1') {
+      const r1 = document.querySelector('input[name="vinculo_matricula_1"]:checked');
+      const v1 = r1 ? r1.value : (opt1.dataset.vinc || '1');
+      nome1 = `${nome1} (Mat. ${v1})`;
+    }
+
+    if (nome2 && opt2 && opt2.dataset.temmult === '1') {
+      const r2 = document.querySelector('input[name="vinculo_matricula_2"]:checked');
+      const v2 = r2 ? r2.value : (opt2.dataset.vinc || '1');
+      nome2 = `${nome2} (Mat. ${v2})`;
+    }
     
     if (nome1 && nome2) {
       rotuloInput.value = nome1 + ' / ' + nome2;

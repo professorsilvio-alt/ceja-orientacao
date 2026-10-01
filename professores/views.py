@@ -1174,50 +1174,88 @@ def view_grade_turma(request, pk):
     all_active_profs = Professor.objects.filter(ativo=True).order_by('nome_completo')
     profs_administrativos = [p for p in all_active_profs if p.is_desviado_administrativo]
 
+    def _disciplina_corresponde_a_turma(turma_nome, disc_prof):
+        if not turma_nome or not disc_prof:
+            return False
+        t = turma_nome.lower()
+        p = disc_prof.lower()
+        if p in t or t in p:
+            return True
+        areas_map = {
+            'linguagens': ['portugu', 'ingl', 'espanh', 'art', 'físic', 'lingua', 'língua', 'letras', 'literat', 'redação'],
+            'natureza': ['biolog', 'físic', 'químic', 'ciênci'],
+            'ciências da natureza': ['biolog', 'físic', 'químic', 'ciênci'],
+            'matemática': ['matemát', 'álgebra', 'geometria'],
+            'humanas': ['histór', 'geograf', 'filosof', 'sociolog'],
+            'ciências humanas': ['histór', 'geograf', 'filosof', 'sociolog'],
+        }
+        for area_k, termos in areas_map.items():
+            if area_k in t and any(termo in p for termo in termos):
+                return True
+        return any(w in t for w in p.split() if len(w) > 3)
+
     disc_nome = (turma.disciplina_nome or '').lower()
 
     profs_da_disciplina = []
     outros_profs = []
     for p in all_active_profs:
         itens_prof = []
-        
+        tem_2_mat = bool(p.matricula_acumulacao)
+
         # 1ª Matrícula: só entra na grade se estiver em sala de aula
         if p.mat1_em_sala:
-            p_disc1 = (p.disciplina_ingresso or '').lower()
-            is_disc1 = bool(disc_nome and (disc_nome in p_disc1 or p_disc1 in disc_nome or any(w in disc_nome for w in p_disc1.split() if len(w) > 3)))
-            
-            if p.tem_multiplos_vinculos_na_escola:
+            p_disc1 = (p.disciplina_ingresso or p.cargo or 'Docente')
+            is_disc1 = _disciplina_corresponde_a_turma(disc_nome, p_disc1)
+
+            if tem_2_mat:
                 itens_prof.append(({
                     'val': f"{p.pk}:1",
+                    'prof_id': p.pk,
+                    'vinculo': 1,
+                    'tem_mult': True,
+                    'mat1': p.matricula,
+                    'mat2': p.matricula_acumulacao,
+                    'disc1': p_disc1,
+                    'disc2': p.disciplina_ingresso_acumulacao or p.cargo_acumulacao or p_disc1,
                     'nome_completo': f"{p.nome_completo} [1ª Matrícula: {p.matricula}]",
                     'nome_curto': f"{p.nome_curto} (Mat. 1)",
-                    'cargo_disc': f"{p.disciplina_ingresso or p.cargo or 'Docente'} — 1ª Matrícula",
+                    'cargo_disc': f"{p_disc1} — 1ª Matrícula",
                     'mat_label': '1ª Mat.',
-                    'vinculo': 1
                 }, is_disc1))
             else:
                 itens_prof.append(({
                     'val': f"{p.pk}:1",
+                    'prof_id': p.pk,
+                    'vinculo': 1,
+                    'tem_mult': False,
+                    'mat1': p.matricula,
+                    'mat2': '',
+                    'disc1': p_disc1,
+                    'disc2': '',
                     'nome_completo': f"{p.nome_completo} (Matrícula: {p.matricula})",
                     'nome_curto': p.nome_curto,
-                    'cargo_disc': p.disciplina_ingresso or p.cargo or 'Docente',
+                    'cargo_disc': p_disc1,
                     'mat_label': '',
-                    'vinculo': 1
                 }, is_disc1))
 
-        # 2ª Matrícula: só entra na grade se lecionar no CEJA e estiver em sala de aula
-        if p.mat2_em_sala:
-            mat2_disc_str = p.disciplina_ingresso_acumulacao or p.cargo_acumulacao or p.disciplina_ingresso or ''
-            p_disc2 = mat2_disc_str.lower()
-            is_disc2 = bool(disc_nome and (disc_nome in p_disc2 or p_disc2 in disc_nome or any(w in disc_nome for w in p_disc2.split() if len(w) > 3)))
-            
+        # 2ª Matrícula: se tiver 2ª matrícula e não estiver em desvio
+        if tem_2_mat and (not p.mat2_em_desvio):
+            mat2_disc_str = p.disciplina_ingresso_acumulacao or p.cargo_acumulacao or p.disciplina_ingresso or 'Docente'
+            is_disc2 = _disciplina_corresponde_a_turma(disc_nome, mat2_disc_str)
+
             itens_prof.append(({
                 'val': f"{p.pk}:2",
-                'nome_completo': f"{p.nome_completo} [2ª Matrícula: {p.matricula_acumulacao or 'Acum'}]",
+                'prof_id': p.pk,
+                'vinculo': 2,
+                'tem_mult': True,
+                'mat1': p.matricula,
+                'mat2': p.matricula_acumulacao,
+                'disc1': p.disciplina_ingresso or p.cargo or 'Docente',
+                'disc2': mat2_disc_str,
+                'nome_completo': f"{p.nome_completo} [2ª Matrícula: {p.matricula_acumulacao}]",
                 'nome_curto': f"{p.nome_curto} (Mat. 2)",
-                'cargo_disc': f"{mat2_disc_str or 'Docente'} — 2ª Matrícula",
+                'cargo_disc': f"{mat2_disc_str} — 2ª Matrícula",
                 'mat_label': '2ª Mat.',
-                'vinculo': 2
             }, is_disc2))
 
         for item, is_disc in itens_prof:
@@ -1324,8 +1362,14 @@ def view_salvar_alocacao_slot(request, pk):
                     vinculo1 = 2 if vinc_str == '2' else 1
                 else:
                     prof1 = Professor.objects.filter(pk=raw_p1).first()
-                    v1_req = request.POST.get('vinculo_matricula_1')
-                    vinculo1 = 2 if v1_req == '2' else 1
+                
+                v1_req = request.POST.get('vinculo_matricula_1')
+                if v1_req in ['1', '2']:
+                    vinculo1 = int(v1_req)
+
+                if prof1 and vinculo1 == 2 and prof1.matricula_acumulacao and not prof1.acumulacao_nesta_escola:
+                    prof1.acumulacao_nesta_escola = True
+                    prof1.save(update_fields=['acumulacao_nesta_escola'])
 
             prof2 = None
             vinculo2 = 1
@@ -1337,16 +1381,22 @@ def view_salvar_alocacao_slot(request, pk):
                     vinculo2 = 2 if vinc_str == '2' else 1
                 else:
                     prof2 = Professor.objects.filter(pk=raw_p2).first()
-                    v2_req = request.POST.get('vinculo_matricula_2')
-                    vinculo2 = 2 if v2_req == '2' else 1
+                
+                v2_req = request.POST.get('vinculo_matricula_2')
+                if v2_req in ['1', '2']:
+                    vinculo2 = int(v2_req)
+
+                if prof2 and vinculo2 == 2 and prof2.matricula_acumulacao and not prof2.acumulacao_nesta_escola:
+                    prof2.acumulacao_nesta_escola = True
+                    prof2.save(update_fields=['acumulacao_nesta_escola'])
 
             if not rotulo_exibicao:
                 parts = []
                 if prof1:
-                    suffix1 = f' (Mat. {vinculo1})' if prof1.tem_multiplos_vinculos_na_escola else ''
+                    suffix1 = f' (Mat. {vinculo1})' if bool(prof1.matricula_acumulacao) else ''
                     parts.append(f'{prof1.nome_curto.upper()}{suffix1}')
                 if prof2:
-                    suffix2 = f' (Mat. {vinculo2})' if prof2.tem_multiplos_vinculos_na_escola else ''
+                    suffix2 = f' (Mat. {vinculo2})' if bool(prof2.matricula_acumulacao) else ''
                     parts.append(f'{prof2.nome_curto.upper()}{suffix2}')
                 rotulo = ' / '.join(parts)
             else:
@@ -1369,6 +1419,10 @@ def view_salvar_alocacao_slot(request, pk):
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('format') == 'json':
             aloc_obj = locals().get('aloc')
+            tem_mult1 = bool(aloc_obj.professor and aloc_obj.professor.matricula_acumulacao) if aloc_obj else False
+            tem_mult2 = bool(aloc_obj.professor_2 and aloc_obj.professor_2.matricula_acumulacao) if aloc_obj else False
+            mat1_num = aloc_obj.professor.matricula_acumulacao if (aloc_obj and aloc_obj.professor and aloc_obj.vinculo_matricula_1 == 2 and aloc_obj.professor.matricula_acumulacao) else (aloc_obj.professor.matricula if (aloc_obj and aloc_obj.professor) else '')
+            mat2_num = aloc_obj.professor_2.matricula_acumulacao if (aloc_obj and aloc_obj.professor_2 and aloc_obj.vinculo_matricula_2 == 2 and aloc_obj.professor_2.matricula_acumulacao) else (aloc_obj.professor_2.matricula if (aloc_obj and aloc_obj.professor_2) else '')
             return JsonResponse({
                 'success': True,
                 'message': msg,
@@ -1380,10 +1434,10 @@ def view_salvar_alocacao_slot(request, pk):
                 'aloc_id': aloc_obj.id if aloc_obj else None,
                 'vinculo1': aloc_obj.vinculo_matricula_1 if aloc_obj else 1,
                 'vinculo2': aloc_obj.vinculo_matricula_2 if aloc_obj else 1,
-                'tem_multiplos_1': aloc_obj.tem_multiplos_1 if aloc_obj else False,
-                'tem_multiplos_2': aloc_obj.tem_multiplos_2 if aloc_obj else False,
-                'matricula_num_1': aloc_obj.matricula_num_1 if aloc_obj else '',
-                'matricula_num_2': aloc_obj.matricula_num_2 if aloc_obj else '',
+                'tem_multiplos_1': tem_mult1,
+                'tem_multiplos_2': tem_mult2,
+                'matricula_num_1': mat1_num,
+                'matricula_num_2': mat2_num,
                 'display_name_1': aloc_obj.professor.nome_curto if (aloc_obj and aloc_obj.professor) else '',
                 'display_name_2': aloc_obj.professor_2.nome_curto if (aloc_obj and aloc_obj.professor_2) else '',
                 'rotulo': aloc_obj.rotulo_exibicao if aloc_obj else '',
