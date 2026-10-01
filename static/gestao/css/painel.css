@@ -63,12 +63,80 @@
   color: #94a3b8 !important;
 }
 
+/* Input group e ícones */
+.input-group-text,
+.input-group-text.bg-dark,
+.input-group-text.bg-secondary {
+  background-color: rgba(30, 41, 59, 0.95) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.input-group-text i,
+.input-group-text.bg-dark i {
+  color: #38bdf8 !important;
+}
+
 .input-group-text.text-muted {
   color: #94a3b8 !important;
 }
 
 .badge.text-muted {
   color: #cbd5e1 !important;
+}
+
+/* Placeholders com contraste ideal */
+::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.85 !important;
+}
+::-webkit-input-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.85 !important;
+}
+::-moz-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.85 !important;
+}
+:-ms-input-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.85 !important;
+}
+
+.form-control::placeholder,
+.form-select::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.85 !important;
+}
+
+/* Tags Populares */
+.tag-popular-item {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.tag-popular-item i {
+  color: #38bdf8 !important;
+}
+
+.tag-popular-item:hover,
+.tag-popular-item.active {
+  background: rgba(56, 189, 248, 0.22) !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  transform: translateY(-1px);
 }
 
 /* ── RESET BASE ─────────────────────────────────────────────── */
