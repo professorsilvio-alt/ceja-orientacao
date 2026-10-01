@@ -102,6 +102,28 @@ def view_detalhe_professor(request, pk):
     folgas = OcorrenciaFolgaServidor.objects.filter(content_type=ct, object_id=professor.pk)
     anotacoes = AnotacaoServidor.objects.filter(content_type=ct, object_id=professor.pk)
 
+    # Cálculo em minutos e tempos de aula (50 min cada) para professores
+    def _obter_minutos(f):
+        if f.minutos > 0:
+            return f.minutos
+        if f.tempos_aula > 0:
+            return int(float(f.tempos_aula) * 50)
+        return int(float(f.dias) * 200)
+
+    total_creditos_min = sum(_obter_minutos(f) for f in folgas if f.tipo == 'credito')
+    total_usufruidos_min = sum(_obter_minutos(f) for f in folgas if f.tipo == 'usufruido')
+    saldo_min = total_creditos_min - total_usufruidos_min
+
+    def _fmt_t(m):
+        t = round(m / 50.0, 1)
+        return int(t) if t == int(t) else t
+
+    total_creditos_tempos = _fmt_t(total_creditos_min)
+    total_usufruidos_tempos = _fmt_t(total_usufruidos_min)
+    saldo_tempos = _fmt_t(abs(saldo_min))
+    if saldo_min < 0:
+        saldo_tempos = -saldo_tempos
+
     total_creditos = sum(f.dias for f in folgas if f.tipo == 'credito')
     total_usufruidos = sum(f.dias for f in folgas if f.tipo == 'usufruido')
     saldo_folgas = total_creditos - total_usufruidos
@@ -115,6 +137,13 @@ def view_detalhe_professor(request, pk):
         'saldo_folgas': saldo_folgas,
         'total_creditos': total_creditos,
         'total_usufruidos': total_usufruidos,
+        'total_creditos_min': total_creditos_min,
+        'total_usufruidos_min': total_usufruidos_min,
+        'saldo_min': saldo_min,
+        'total_creditos_tempos': total_creditos_tempos,
+        'total_usufruidos_tempos': total_usufruidos_tempos,
+        'saldo_tempos': saldo_tempos,
+        'is_professor': True,
         'tipo_servidor': 'professor',
     })
 
@@ -148,21 +177,79 @@ def view_adicionar_documento_servidor(request, tipo_servidor, pk):
             return redirect('dashboard')
 
         from django.contrib.contenttypes.models import ContentType
-        from .models import DocumentoServidor
+        from .models import DocumentoServidor, OcorrenciaFolgaServidor
         servidor = get_object_or_404(model_cls, pk=pk)
         ct = ContentType.objects.get_for_model(model_cls)
+
+        abrangencia_tipo = request.POST.get('abrangencia_tipo', 'dia_inteiro')
+        try:
+            quantidade_tempo = float(request.POST.get('quantidade_tempo', '1.0'))
+        except (ValueError, TypeError):
+            quantidade_tempo = 1.0
+
+        is_prof = (tipo_servidor == 'professor')
+        if is_prof:
+            if abrangencia_tipo == 'tempos':
+                minutos_calc = int(quantidade_tempo * 50)
+            elif abrangencia_tipo == 'minutos':
+                minutos_calc = int(quantidade_tempo)
+            elif abrangencia_tipo == 'horas':
+                minutos_calc = int(quantidade_tempo * 60)
+            else:
+                minutos_calc = int(quantidade_tempo * 200) # 1 dia ~ 4 tempos
+        else:
+            if abrangencia_tipo == 'horas':
+                minutos_calc = int(quantidade_tempo * 60)
+            elif abrangencia_tipo == 'minutos':
+                minutos_calc = int(quantidade_tempo)
+            else:
+                minutos_calc = int(quantidade_tempo * 480)
+
+        lancar_banco = request.POST.get('lancar_banco_horas') == '1' or request.POST.get('lancar_banco_horas') == 'on'
+        folga_criada = None
+
+        if lancar_banco and categoria in ('atestado', 'ausencia', 'folga'):
+            if is_prof:
+                tempos_f = round(minutos_calc / 50.0, 1)
+                dias_f = round(tempos_f / 4.0, 1)
+            else:
+                tempos_f = 0
+                dias_f = round(minutos_calc / 480.0, 1)
+
+            t_desc = f"{int(tempos_f)} tempo(s)" if tempos_f == int(tempos_f) else f"{tempos_f} tempos"
+            desc_tempo = f"{t_desc} ({minutos_calc} min)" if is_prof else f"{dias_f} dia(s)"
+
+            folga_criada = OcorrenciaFolgaServidor.objects.create(
+                content_type=ct,
+                object_id=servidor.pk,
+                tipo='usufruido' if categoria in ('atestado', 'ausencia') else 'credito',
+                unidade=abrangencia_tipo,
+                dias=dias_f,
+                tempos_aula=tempos_f if is_prof else 0,
+                minutos=minutos_calc,
+                motivo=f"{dict(DocumentoServidor.CATEGORIA_CHOICES).get(categoria, 'Documento')} — {titulo} ({desc_tempo})",
+                data_ocorrencia=data_documento,
+                observacoes=observacoes,
+                criado_por=request.user
+            )
 
         DocumentoServidor.objects.create(
             content_type=ct,
             object_id=servidor.pk,
             titulo=titulo,
             categoria=categoria,
+            abrangencia_tipo=abrangencia_tipo,
+            quantidade_tempo=quantidade_tempo,
+            minutos_total=minutos_calc,
+            lancar_banco_horas=lancar_banco,
+            ocorrencia_folga=folga_criada,
             arquivo=arquivo,
             data_documento=data_documento,
             observacoes=observacoes,
             criado_por=request.user
         )
-        messages.success(request, f'Documento "{titulo}" anexado à pasta com sucesso!')
+        msg_extra = " e registrado no Banco de Horas" if folga_criada else ""
+        messages.success(request, f'Documento "{titulo}" anexado com sucesso{msg_extra}!')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
@@ -171,6 +258,11 @@ def view_excluir_documento_servidor(request, pk):
     from .models import DocumentoServidor
     doc = get_object_or_404(DocumentoServidor, pk=pk)
     titulo = doc.titulo
+    if doc.ocorrencia_folga:
+        try:
+            doc.ocorrencia_folga.delete()
+        except Exception:
+            pass
     doc.delete()
     messages.success(request, f'Documento "{titulo}" removido.')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
@@ -181,10 +273,15 @@ def view_adicionar_folga_servidor(request, tipo_servidor, pk):
     """Lança crédito ou uso de folga/banco de horas na pasta do servidor."""
     if request.method == 'POST':
         tipo = request.POST.get('tipo', 'credito')
-        dias = request.POST.get('dias', '1.0')
+        unidade = request.POST.get('unidade', 'tempos' if tipo_servidor == 'professor' else 'dias')
         motivo = request.POST.get('motivo', '').strip()
         data_ocorrencia = request.POST.get('data_ocorrencia') or timezone.now().date()
         observacoes = request.POST.get('observacoes', '').strip()
+
+        try:
+            qtd = float(request.POST.get('quantidade') or request.POST.get('dias') or '1.0')
+        except (ValueError, TypeError):
+            qtd = 1.0
 
         if not motivo:
             messages.error(request, 'Por favor, informe o motivo/origem do lançamento de folga.')
@@ -207,17 +304,50 @@ def view_adicionar_folga_servidor(request, tipo_servidor, pk):
         servidor = get_object_or_404(model_cls, pk=pk)
         ct = ContentType.objects.get_for_model(model_cls)
 
+        is_prof = (tipo_servidor == 'professor')
+        if is_prof:
+            if unidade == 'tempos':
+                tempos_val = qtd
+                minutos_val = int(qtd * 50)
+                dias_val = round(qtd / 4.0, 1)
+            elif unidade == 'minutos':
+                minutos_val = int(qtd)
+                tempos_val = round(minutos_val / 50.0, 1)
+                dias_val = round(minutos_val / 200.0, 1)
+            elif unidade == 'horas':
+                minutos_val = int(qtd * 60)
+                tempos_val = round(minutos_val / 50.0, 1)
+                dias_val = round(minutos_val / 200.0, 1)
+            else: # dias
+                dias_val = qtd
+                tempos_val = round(qtd * 4.0, 1)
+                minutos_val = int(tempos_val * 50)
+        else:
+            tempos_val = 0
+            if unidade == 'horas':
+                minutos_val = int(qtd * 60)
+                dias_val = round(qtd / 8.0, 1)
+            elif unidade == 'minutos':
+                minutos_val = int(qtd)
+                dias_val = round(minutos_val / 480.0, 1)
+            else: # dias
+                dias_val = qtd
+                minutos_val = int(dias_val * 480)
+
         OcorrenciaFolgaServidor.objects.create(
             content_type=ct,
             object_id=servidor.pk,
             tipo=tipo,
-            dias=dias,
+            unidade=unidade,
+            dias=dias_val,
+            tempos_aula=tempos_val,
+            minutos=minutos_val,
             motivo=motivo,
             data_ocorrencia=data_ocorrencia,
             observacoes=observacoes,
             criado_por=request.user
         )
-        messages.success(request, 'Lançamento de folga registrado com sucesso!')
+        messages.success(request, 'Lançamento de folga/banco de horas registrado com sucesso!')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
@@ -289,13 +419,59 @@ def view_editar_documento_servidor(request, pk):
             messages.error(request, 'O título não pode ficar em branco.')
             return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
+        abrangencia_tipo = request.POST.get('abrangencia_tipo', doc.abrangencia_tipo)
+        try:
+            quantidade_tempo = float(request.POST.get('quantidade_tempo', doc.quantidade_tempo))
+        except (ValueError, TypeError):
+            quantidade_tempo = float(doc.quantidade_tempo)
+
+        is_prof = (doc.content_type.model == 'professor')
+        if is_prof:
+            if abrangencia_tipo == 'tempos':
+                minutos_calc = int(quantidade_tempo * 50)
+            elif abrangencia_tipo == 'minutos':
+                minutos_calc = int(quantidade_tempo)
+            elif abrangencia_tipo == 'horas':
+                minutos_calc = int(quantidade_tempo * 60)
+            else:
+                minutos_calc = int(quantidade_tempo * 200)
+        else:
+            if abrangencia_tipo == 'horas':
+                minutos_calc = int(quantidade_tempo * 60)
+            elif abrangencia_tipo == 'minutos':
+                minutos_calc = int(quantidade_tempo)
+            else:
+                minutos_calc = int(quantidade_tempo * 480)
+
         doc.titulo = titulo
         doc.categoria = categoria
+        doc.abrangencia_tipo = abrangencia_tipo
+        doc.quantidade_tempo = quantidade_tempo
+        doc.minutos_total = minutos_calc
         doc.data_documento = data_documento
         doc.observacoes = observacoes
         if arquivo:
             doc.arquivo = arquivo
         doc.save()
+
+        if doc.ocorrencia_folga:
+            folga = doc.ocorrencia_folga
+            folga.unidade = abrangencia_tipo
+            folga.data_ocorrencia = data_documento
+            if is_prof:
+                tempos_f = round(minutos_calc / 50.0, 1)
+                folga.tempos_aula = tempos_f
+                folga.dias = round(tempos_f / 4.0, 1)
+            else:
+                folga.tempos_aula = 0
+                folga.dias = round(minutos_calc / 480.0, 1)
+            folga.minutos = minutos_calc
+            t_desc = f"{int(folga.tempos_aula)} tempo(s)" if folga.tempos_aula == int(folga.tempos_aula) else f"{folga.tempos_aula} tempos"
+            desc_tempo = f"{t_desc} ({minutos_calc} min)" if is_prof else f"{folga.dias} dia(s)"
+            folga.motivo = f"{dict(DocumentoServidor.CATEGORIA_CHOICES).get(categoria, 'Documento')} — {titulo} ({desc_tempo})"
+            folga.observacoes = observacoes
+            folga.save()
+
         messages.success(request, f'Documento "{titulo}" atualizado com sucesso!')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
@@ -307,18 +483,56 @@ def view_editar_folga_servidor(request, pk):
     folga = get_object_or_404(OcorrenciaFolgaServidor, pk=pk)
     if request.method == 'POST':
         tipo = request.POST.get('tipo', folga.tipo)
-        dias = request.POST.get('dias', folga.dias)
+        unidade = request.POST.get('unidade', folga.unidade)
         motivo = request.POST.get('motivo', '').strip() or folga.motivo
         data_ocorrencia = request.POST.get('data_ocorrencia') or folga.data_ocorrencia
         observacoes = request.POST.get('observacoes', '').strip()
 
+        try:
+            qtd = float(request.POST.get('quantidade') or request.POST.get('dias') or folga.dias)
+        except (ValueError, TypeError):
+            qtd = float(folga.dias)
+
+        is_prof = folga.is_professor
+        if is_prof:
+            if unidade == 'tempos':
+                tempos_val = qtd
+                minutos_val = int(qtd * 50)
+                dias_val = round(qtd / 4.0, 1)
+            elif unidade == 'minutos':
+                minutos_val = int(qtd)
+                tempos_val = round(minutos_val / 50.0, 1)
+                dias_val = round(minutos_val / 200.0, 1)
+            elif unidade == 'horas':
+                minutos_val = int(qtd * 60)
+                tempos_val = round(minutos_val / 50.0, 1)
+                dias_val = round(minutos_val / 200.0, 1)
+            else: # dias
+                dias_val = qtd
+                tempos_val = round(qtd * 4.0, 1)
+                minutos_val = int(tempos_val * 50)
+        else:
+            tempos_val = 0
+            if unidade == 'horas':
+                minutos_val = int(qtd * 60)
+                dias_val = round(qtd / 8.0, 1)
+            elif unidade == 'minutos':
+                minutos_val = int(qtd)
+                dias_val = round(minutos_val / 480.0, 1)
+            else:
+                dias_val = qtd
+                minutos_val = int(dias_val * 480)
+
         folga.tipo = tipo
-        folga.dias = dias
+        folga.unidade = unidade
+        folga.dias = dias_val
+        folga.tempos_aula = tempos_val
+        folga.minutos = minutos_val
         folga.motivo = motivo
         folga.data_ocorrencia = data_ocorrencia
         folga.observacoes = observacoes
         folga.save()
-        messages.success(request, 'Lançamento de folga atualizado com sucesso!')
+        messages.success(request, 'Lançamento de folga/banco de horas atualizado com sucesso!')
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 

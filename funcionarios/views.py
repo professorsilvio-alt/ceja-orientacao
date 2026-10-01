@@ -668,6 +668,22 @@ def view_painel_banco_folgas(request):
         for p in profs:
             k = (ct_prof.id, p.pk)
             fs = mapa_folgas.get(k, [])
+
+            def _get_m(x):
+                if x.minutos > 0: return x.minutos
+                if x.tempos_aula > 0: return int(float(x.tempos_aula) * 50)
+                return int(float(x.dias) * 200)
+
+            cred_min = sum(_get_m(x) for x in fs if x.tipo == 'credito')
+            usuf_min = sum(_get_m(x) for x in fs if x.tipo == 'usufruido')
+            saldo_min = cred_min - usuf_min
+
+            t_cred = round(cred_min / 50.0, 1)
+            t_usuf = round(usuf_min / 50.0, 1)
+            t_saldo = round(abs(saldo_min) / 50.0, 1)
+            if saldo_min < 0:
+                t_saldo = -t_saldo
+
             cred = sum(float(x.dias) for x in fs if x.tipo == 'credito')
             usuf = sum(float(x.dias) for x in fs if x.tipo == 'usufruido')
             saldo = cred - usuf
@@ -687,6 +703,13 @@ def view_painel_banco_folgas(request):
                 'creditos': cred,
                 'usufruidos': usuf,
                 'saldo': saldo,
+                'cred_min': cred_min,
+                'usuf_min': usuf_min,
+                'saldo_min': saldo_min,
+                't_cred': int(t_cred) if t_cred == int(t_cred) else t_cred,
+                't_usuf': int(t_usuf) if t_usuf == int(t_usuf) else t_usuf,
+                't_saldo': int(t_saldo) if t_saldo == int(t_saldo) else t_saldo,
+                'is_professor': True,
                 'total_lancamentos': len(fs),
                 'ultima_data': ult_data,
                 'url_pasta': f"/professores/{p.pk}/",

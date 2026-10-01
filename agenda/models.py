@@ -89,6 +89,24 @@ class RegistroPresenca(models.Model):
         default=True,
         verbose_name='Lançar no Banco de Horas / Folgas'
     )
+    unidade_tempo = models.CharField(
+        max_length=20, default='tempos',
+        choices=[
+            ('tempos', 'Tempos de Aula (50 min cada)'),
+            ('minutos', 'Minutos Exatos'),
+            ('horas', 'Horas Cheias'),
+            ('dias', 'Dia(s) Inteiro(s)'),
+        ],
+        verbose_name='Unidade de Lançamento'
+    )
+    quantidade_tempo = models.DecimalField(
+        max_digits=5, decimal_places=1, default=1.0,
+        verbose_name='Quantidade de Tempo Informada'
+    )
+    minutos_total = models.IntegerField(
+        default=50,
+        verbose_name='Total de Minutos Computados'
+    )
     dias_banco_horas = models.DecimalField(
         max_digits=4, decimal_places=1, default=0.5,
         verbose_name='Equivalente em Dias no Banco',
@@ -153,10 +171,11 @@ class RegistroPresenca(models.Model):
     def sincronizar_banco_horas(self):
         """
         Sincroniza automaticamente a ocorrência com o Banco de Horas (OcorrenciaFolgaServidor).
-        - atraso e saida_antecipada -> tipo 'usufruido' (débito / saída de horas)
+        - atraso, falta e saida_antecipada -> tipo 'usufruido' (débito / saída de horas)
         - compensacao -> tipo 'credito' (saldo positivo)
+        Para professores: computa por minutos e tempos de aula (50 min cada).
         """
-        if not self.lancar_banco_horas or self.tipo not in ('atraso', 'saida_antecipada', 'compensacao'):
+        if not self.lancar_banco_horas or self.tipo not in ('atraso', 'saida_antecipada', 'compensacao', 'falta', 'ausencia'):
             if self.ocorrencia_folga_id:
                 folga = self.ocorrencia_folga
                 self.ocorrencia_folga = None
@@ -173,61 +192,101 @@ class RegistroPresenca(models.Model):
         from professores.models import OcorrenciaFolgaServidor
 
         ct = ContentType.objects.get_for_model(func.__class__)
+        is_prof = (self.tipo_funcionario == 'professor')
 
         if self.tipo == 'compensacao':
             tipo_folga = 'credito'
-            motivo_texto = f"Compensação de Horas em {self.data.strftime('%d/%m/%Y')}"
+            prefixo = "Compensação de Horas"
         elif self.tipo == 'atraso':
             tipo_folga = 'usufruido'
-            horario_str = f"Chegada: {self.hora_chegada.strftime('%H:%M')}" if self.hora_chegada else "Chegada com atraso"
-            motivo_texto = f"Atraso em {self.data.strftime('%d/%m/%Y')} ({horario_str})"
+            horario_str = f" (Chegada: {self.hora_chegada.strftime('%H:%M')})" if self.hora_chegada else ""
+            prefixo = f"Atraso{horario_str}"
         elif self.tipo == 'saida_antecipada':
             tipo_folga = 'usufruido'
-            horario_str = f"Saída: {self.hora_saida.strftime('%H:%M')}" if self.hora_saida else "Saída antecipada"
-            motivo_texto = f"Saída Antecipada em {self.data.strftime('%d/%m/%Y')} ({horario_str})"
+            horario_str = f" (Saída: {self.hora_saida.strftime('%H:%M')})" if self.hora_saida else ""
+            prefixo = f"Saída Antecipada{horario_str}"
+        elif self.tipo == 'falta':
+            tipo_folga = 'usufruido'
+            prefixo = "Falta"
+        else: # ausencia
+            tipo_folga = 'usufruido'
+            prefixo = "Ausência"
+
+        # Cálculo do tempo em minutos, tempos e dias
+        qtd = float(self.quantidade_tempo or 1.0)
+        unidade_reg = self.unidade_tempo or ('tempos' if is_prof else 'dias')
+
+        if is_prof:
+            if unidade_reg == 'tempos':
+                tempos_val = qtd
+                minutos_val = int(qtd * 50)
+                dias_val = round(qtd / 4.0, 1)
+            elif unidade_reg == 'minutos':
+                minutos_val = int(qtd)
+                tempos_val = round(minutos_val / 50.0, 1)
+                dias_val = round(minutos_val / 200.0, 1)
+            elif unidade_reg == 'horas':
+                minutos_val = int(qtd * 60)
+                tempos_val = round(minutos_val / 50.0, 1)
+                dias_val = round(minutos_val / 200.0, 1)
+            else: # dias
+                dias_val = qtd
+                tempos_val = round(qtd * 4.0, 1)
+                minutos_val = int(tempos_val * 50)
+
+            t_desc = f"{int(tempos_val)} tempo(s)" if tempos_val == int(tempos_val) else f"{tempos_val} tempos"
+            tempo_desc = f"{t_desc} ({minutos_val} min)"
         else:
-            return
+            tempos_val = 0
+            if unidade_reg == 'horas':
+                minutos_val = int(qtd * 60)
+                dias_val = round(qtd / 8.0, 1)
+                tempo_desc = f"{qtd} hora(s)"
+            elif unidade_reg == 'minutos':
+                minutos_val = int(qtd)
+                dias_val = round(minutos_val / 480.0, 1)
+                tempo_desc = f"{minutos_val} min"
+            else: # dias
+                dias_val = self.dias_banco_horas if (self.dias_banco_horas and self.dias_banco_horas > 0) else qtd
+                minutos_val = int(dias_val * 480)
+                tempo_desc = f"{dias_val} dia(s)"
 
+        motivo_texto = f"{prefixo} em {self.data.strftime('%d/%m/%Y')} — {tempo_desc}"
         if self.motivo:
-            motivo_texto += f" — {self.motivo}"
+            motivo_texto += f" ({self.motivo})"
 
-        dias_val = self.dias_banco_horas if (self.dias_banco_horas and self.dias_banco_horas > 0) else 0.5
+        # Salva o total calculado no próprio registro de presença
+        RegistroPresenca.objects.filter(pk=self.pk).update(
+            minutos_total=minutos_val,
+            dias_banco_horas=dias_val
+        )
+
+        dados_folga = {
+            'content_type': ct,
+            'object_id': func.pk,
+            'tipo': tipo_folga,
+            'unidade': unidade_reg,
+            'dias': dias_val,
+            'tempos_aula': tempos_val,
+            'minutos': minutos_val,
+            'motivo': motivo_texto,
+            'data_ocorrencia': self.data,
+            'observacoes': self.observacoes,
+            'criado_por': self.registrado_por,
+        }
 
         if self.ocorrencia_folga_id:
             try:
                 folga = self.ocorrencia_folga
-                folga.tipo = tipo_folga
-                folga.dias = dias_val
-                folga.motivo = motivo_texto
-                folga.data_ocorrencia = self.data
-                folga.observacoes = self.observacoes
-                folga.content_type = ct
-                folga.object_id = func.pk
+                for k, v in dados_folga.items():
+                    setattr(folga, k, v)
                 folga.save()
             except OcorrenciaFolgaServidor.DoesNotExist:
-                folga = OcorrenciaFolgaServidor.objects.create(
-                    content_type=ct,
-                    object_id=func.pk,
-                    tipo=tipo_folga,
-                    dias=dias_val,
-                    motivo=motivo_texto,
-                    data_ocorrencia=self.data,
-                    observacoes=self.observacoes,
-                    criado_por=self.registrado_por
-                )
+                folga = OcorrenciaFolgaServidor.objects.create(**dados_folga)
                 self.ocorrencia_folga = folga
                 RegistroPresenca.objects.filter(pk=self.pk).update(ocorrencia_folga=folga)
         else:
-            folga = OcorrenciaFolgaServidor.objects.create(
-                content_type=ct,
-                object_id=func.pk,
-                tipo=tipo_folga,
-                dias=dias_val,
-                motivo=motivo_texto,
-                data_ocorrencia=self.data,
-                observacoes=self.observacoes,
-                criado_por=self.registrado_por
-            )
+            folga = OcorrenciaFolgaServidor.objects.create(**dados_folga)
             self.ocorrencia_folga = folga
             RegistroPresenca.objects.filter(pk=self.pk).update(ocorrencia_folga=folga)
 

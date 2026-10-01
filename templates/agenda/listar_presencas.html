@@ -95,11 +95,11 @@
               <div class="mt-1">
                 {% if reg.ocorrencia_folga.tipo == 'credito' %}
                 <span class="badge bg-success font-monospace" style="font-size:0.68rem;" title="Crédito lançado no Banco de Horas">
-                  <i class="bi bi-hourglass-split me-1"></i>+{{ reg.ocorrencia_folga.dias }}d Banco
+                  <i class="bi bi-hourglass-split me-1"></i>+{{ reg.ocorrencia_folga.rotulo_tempo }} Banco
                 </span>
                 {% else %}
                 <span class="badge bg-danger font-monospace" style="font-size:0.68rem;" title="Débito lançado no Banco de Horas">
-                  <i class="bi bi-hourglass-split me-1"></i>-{{ reg.ocorrencia_folga.dias }}d Banco
+                  <i class="bi bi-hourglass-split me-1"></i>-{{ reg.ocorrencia_folga.rotulo_tempo }} Banco
                 </span>
                 {% endif %}
               </div>

@@ -986,6 +986,12 @@ class DocumentoServidor(models.Model):
         ('documento', 'Documento Pessoal / CI / Contrato'),
         ('outro', 'Outros Documentos'),
     ]
+    ABRANGENCIA_CHOICES = [
+        ('dia_inteiro', 'Dia Inteiro / Dias'),
+        ('tempos', 'Tempos de Aula (50 min cada)'),
+        ('horas', 'Horas Cheias'),
+        ('minutos', 'Minutos'),
+    ]
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -993,6 +999,12 @@ class DocumentoServidor(models.Model):
 
     titulo = models.CharField(max_length=200, verbose_name='Título / Descrição')
     categoria = models.CharField(max_length=30, choices=CATEGORIA_CHOICES, default='documento', verbose_name='Categoria')
+    abrangencia_tipo = models.CharField(max_length=20, choices=ABRANGENCIA_CHOICES, default='dia_inteiro', verbose_name='Abrangência do Atestado/Licença')
+    quantidade_tempo = models.DecimalField(max_digits=5, decimal_places=1, default=1.0, verbose_name='Quantidade de Tempo')
+    minutos_total = models.IntegerField(default=0, verbose_name='Minutos Totais')
+    lancar_banco_horas = models.BooleanField(default=False, verbose_name='Abater/Registrar no Banco de Horas')
+    ocorrencia_folga = models.ForeignKey('OcorrenciaFolgaServidor', on_delete=models.SET_NULL, null=True, blank=True, related_name='documentos_anexados', verbose_name='Lançamento no Banco de Horas')
+
     arquivo = models.FileField(upload_to='documentos_servidores/%Y/%m/', verbose_name='Arquivo')
     data_documento = models.DateField(default=timezone.now, verbose_name='Data do Documento / Ocorrência')
     observacoes = models.TextField(blank=True, verbose_name='Observações')
@@ -1004,6 +1016,30 @@ class DocumentoServidor(models.Model):
         verbose_name_plural = 'Documentos do Servidor'
         ordering = ['-data_documento', '-criado_em']
 
+    @property
+    def rotulo_abrangencia(self):
+        if self.categoria not in ('atestado', 'ausencia', 'folga'):
+            return ""
+        if self.abrangencia_tipo == 'tempos':
+            t = float(self.quantidade_tempo)
+            t_str = f"{int(t)} tempo(s)" if t == int(t) else f"{t} tempos"
+            m = self.minutos_total or int(t * 50)
+            return f"{t_str} ({m} min)"
+        elif self.abrangencia_tipo == 'minutos':
+            m = int(self.quantidade_tempo)
+            t = round(m / 50.0, 1)
+            t_str = f"{int(t)}" if t == int(t) else f"{t}"
+            return f"{m} min ({t_str} tempo(s))"
+        elif self.abrangencia_tipo == 'horas':
+            h = float(self.quantidade_tempo)
+            m = int(h * 60)
+            t = round(m / 50.0, 1)
+            t_str = f"{int(t)}" if t == int(t) else f"{t}"
+            return f"{h}h ({m} min • {t_str} tempos)"
+        else:
+            d = float(self.quantidade_tempo)
+            return f"{int(d)} dia(s)" if d == int(d) else f"{d} dia(s)"
+
     def __str__(self):
         return f"{self.titulo} ({self.get_categoria_display()})"
 
@@ -1014,13 +1050,22 @@ class OcorrenciaFolgaServidor(models.Model):
         ('credito', '➕ Crédito de Folga (Direito Adquirido)'),
         ('usufruido', '➖ Gozo de Folga (Folga Usufruída)'),
     ]
+    UNIDADE_CHOICES = [
+        ('tempos', 'Tempos de Aula (50 min cada)'),
+        ('minutos', 'Minutos'),
+        ('horas', 'Horas Cheias'),
+        ('dias', 'Dias'),
+    ]
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     servidor = GenericForeignKey('content_type', 'object_id')
 
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='credito', verbose_name='Tipo de Lançamento')
+    unidade = models.CharField(max_length=20, choices=UNIDADE_CHOICES, default='dias', verbose_name='Unidade de Lançamento')
     dias = models.DecimalField(max_digits=5, decimal_places=1, default=1.0, verbose_name='Quantidade em Dias')
+    tempos_aula = models.DecimalField(max_digits=5, decimal_places=1, default=0.0, verbose_name='Tempos de Aula (50 min)')
+    minutos = models.IntegerField(default=0, verbose_name='Quantidade em Minutos')
     motivo = models.CharField(max_length=250, verbose_name='Motivo / Origem', help_text='Ex: Trabalho na Eleição, Reunião Extra, Gozo de Folga')
     data_ocorrencia = models.DateField(default=timezone.now, verbose_name='Data da Ocorrência')
     observacoes = models.TextField(blank=True, verbose_name='Observações')
@@ -1032,8 +1077,34 @@ class OcorrenciaFolgaServidor(models.Model):
         verbose_name_plural = 'Ocorrências de Folgas dos Servidores'
         ordering = ['-data_ocorrencia', '-criado_em']
 
+    @property
+    def is_professor(self):
+        return self.content_type.model == 'professor'
+
+    @property
+    def rotulo_tempo(self):
+        """Retorna formato textual adaptado para professor (tempos e minutos) ou outros servidores (dias)."""
+        if self.is_professor or self.tempos_aula > 0 or self.minutos > 0:
+            m = self.minutos
+            if m <= 0 and self.tempos_aula > 0:
+                m = int(float(self.tempos_aula) * 50)
+            elif m <= 0 and self.dias > 0:
+                m = int(float(self.dias) * 200)
+
+            t = float(self.tempos_aula) if self.tempos_aula > 0 else round(m / 50.0, 1)
+            t_str = f"{int(t)} tempo(s)" if t == int(t) else f"{t} tempos"
+
+            if m >= 60:
+                horas = m // 60
+                mins = m % 60
+                hm = f"{horas}h{mins:02d}m" if mins else f"{horas}h"
+                return f"{t_str} ({m} min • {hm})"
+            else:
+                return f"{t_str} ({m} min)"
+        return f"{self.dias} dia(s)"
+
     def __str__(self):
-        return f"{self.get_tipo_display()} - {self.dias} dia(s) ({self.motivo})"
+        return f"{self.get_tipo_display()} - {self.rotulo_tempo} ({self.motivo})"
 
 
 class AnotacaoServidor(models.Model):

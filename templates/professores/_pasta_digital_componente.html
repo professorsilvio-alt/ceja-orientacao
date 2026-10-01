@@ -49,7 +49,7 @@
     </li>
     <li class="nav-item">
       <button class="nav-link btn-gestao btn-gestao-secondary py-2 px-3" id="tab-folgas" data-bs-toggle="tab" data-bs-target="#content-folgas" type="button" role="tab" style="font-size:0.85rem;">
-        <i class="bi bi-calendar-event me-1"></i>Banco de Folgas <span class="badge {% if saldo_folgas > 0 %}bg-success{% elif saldo_folgas < 0 %}bg-danger{% else %}bg-secondary{% endif %} ms-1">{{ saldo_folgas }} dia(s)</span>
+        <i class="bi bi-calendar-event me-1"></i>Banco de Folgas <span class="badge {% if saldo_min and saldo_min > 0 or saldo_folgas > 0 %}bg-success{% elif saldo_min and saldo_min < 0 or saldo_folgas < 0 %}bg-danger{% else %}bg-secondary{% endif %} ms-1">{% if tipo_servidor == 'professor' %}{{ saldo_tempos|default:0 }} tempo(s) ({{ saldo_min|default:0 }}m){% else %}{{ saldo_folgas }} dia(s){% endif %}</span>
       </button>
     </li>
     <li class="nav-item">
@@ -72,13 +72,13 @@
         <form method="post" action="{% url 'adicionar_documento_servidor' tipo_servidor=tipo_servidor pk=funcionario_pk %}" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="row g-3 align-items-start">
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
               <label class="form-label">Título / Descrição *</label>
-              <input type="text" name="titulo" class="form-control" placeholder="Ex: Atestado Médico (3 dias)" required>
+              <input type="text" name="titulo" class="form-control" placeholder="Ex: Atestado Médico Odontológico / Consulta" required>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
               <label class="form-label">Categoria *</label>
-              <select name="categoria" class="form-select">
+              <select name="categoria" id="select-cat-doc" class="form-select" onchange="toggleOpcoesAtestado(this.value)">
                 <option value="atestado">🏥 Atestado Médico / Licença</option>
                 <option value="ausencia">⚠️ Justificativa de Ausência</option>
                 <option value="folga">🏖️ Comprovante de Folga</option>
@@ -86,11 +86,81 @@
                 <option value="outro">📁 Outros Documentos</option>
               </select>
             </div>
-            <div class="col-lg-2 col-md-6">
+            <div class="col-lg-4 col-md-6">
               <label class="form-label">Data Ocorrência *</label>
               <input type="date" name="data_documento" class="form-control" value="{% now 'Y-m-d' %}">
             </div>
-            <div class="col-lg-4 col-md-6">
+
+            <!-- Seção de Abrangência de Atestados / Justificativas -->
+            <div class="col-12" id="wrap-abrangencia-atestado" style="display:none;">
+              <div class="p-3 rounded border" style="background:rgba(56,189,248,0.06); border-color:rgba(56,189,248,0.25) !important;">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                  <span class="text-info fw-bold small text-uppercase">
+                    <i class="bi bi-clock-history me-1"></i> Abrangência do Atestado / Justificativa
+                  </span>
+                  {% if tipo_servidor == 'professor' %}
+                  <span class="badge bg-primary" style="font-size:0.75rem;">1 tempo de aula = 50 minutos</span>
+                  {% endif %}
+                </div>
+
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-5">
+                    <label class="form-label small text-muted mb-1">Como calcular o período? *</label>
+                    <select name="abrangencia_tipo" id="atestado-abrangencia-tipo" class="form-select form-select-sm" onchange="atualizarCalcDoc()">
+                      {% if tipo_servidor == 'professor' %}
+                      <option value="tempos" selected>🎓 Por Tempos de Aula (50 min cada)</option>
+                      <option value="minutos">⏱️ Por Minutos Exatos</option>
+                      <option value="horas">⏳ Por Horas Cheias</option>
+                      <option value="dia_inteiro">📅 Dia(s) Inteiro(s)</option>
+                      {% else %}
+                      <option value="dia_inteiro" selected>📅 Dia(s) Inteiro(s)</option>
+                      <option value="horas">⏳ Por Horas Cheias</option>
+                      <option value="minutos">⏱️ Por Minutos Exatos</option>
+                      {% endif %}
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small text-muted mb-1" id="lbl-atestado-qtd">Quantidade informada *</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" step="0.5" min="0.1" name="quantidade_tempo" id="atestado-quantidade" class="form-control" value="{% if tipo_servidor == 'professor' %}2.0{% else %}1.0{% endif %}" oninput="atualizarCalcDoc()">
+                      <span class="input-group-text" id="atestado-unidade-txt" style="background:#1e293b; color:#38bdf8;">{% if tipo_servidor == 'professor' %}tempo(s){% else %}dia(s){% endif %}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="form-check form-switch mt-3">
+                      <input class="form-check-input" type="checkbox" name="lancar_banco_horas" id="chk-lancar-banco-doc" value="1" checked>
+                      <label class="form-check-label small fw-semibold" for="chk-lancar-banco-doc" style="color:#f8fafc; cursor:pointer;">
+                        Lançar no Banco de Horas
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="col-12 mt-2">
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                      <span class="small text-muted me-1">Atalhos rápidos:</span>
+                      {% if tipo_servidor == 'professor' %}
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('tempos', 1)">1 tempo (50m)</button>
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('tempos', 2)">2 tempos (100m)</button>
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('tempos', 3)">3 tempos (150m)</button>
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('tempos', 4)">4 tempos (200m)</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('dia_inteiro', 1)">1 Dia Completo</button>
+                      {% else %}
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('dia_inteiro', 1)">1 Dia Inteiro</button>
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('dia_inteiro', 2)">2 Dias</button>
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('horas', 2)">2 Horas</button>
+                      <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="setDocQtd('horas', 4)">4 Horas (Meio período)</button>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="col-12 mt-1">
+                    <small class="text-info fw-semibold" id="atestado-preview-txt"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
               <label class="form-label">Arquivo (PDF/Imagem) *</label>
               <input type="file" name="arquivo" class="form-control" required>
             </div>
@@ -116,6 +186,7 @@
             <tr>
               <th>Data</th>
               <th>Categoria</th>
+              <th>Abrangência / Duração</th>
               <th>Título / Descrição</th>
               <th>Enviado Por</th>
               <th>Arquivo</th>
@@ -128,6 +199,23 @@
               <td style="font-size:0.82rem;">{{ doc.data_documento|date:"d/m/Y" }}</td>
               <td>
                 <span class="badge-gestao {% if doc.categoria == 'atestado' %}badge-warning{% elif doc.categoria == 'ausencia' %}badge-danger{% else %}badge-info{% endif %}">
+                  {{ doc.get_categoria_display }}
+                </span>
+              </td>
+              <td>
+                {% if doc.rotulo_abrangencia %}
+                <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size:0.75rem;">
+                  <i class="bi bi-clock-history me-1"></i>{{ doc.rotulo_abrangencia }}
+                </span>
+                {% if doc.ocorrencia_folga %}
+                <div class="mt-1">
+                  <span class="badge bg-danger" style="font-size:0.68rem;" title="Lançado no Banco de Horas">Banco vinculado</span>
+                </div>
+                {% endif %}
+                {% else %}
+                <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
                   {{ doc.get_categoria_display }}
                 </span>
               </td>
@@ -193,6 +281,27 @@
                               <input type="file" name="arquivo" class="form-control">
                               <small style="color:var(--text-muted); font-size:0.75rem;">Atual: <a href="{{ doc.arquivo.url }}" target="_blank" style="color:var(--cyan);">Visualizar arquivo</a></small>
                             </div>
+                            {% if doc.categoria == 'atestado' or doc.categoria == 'ausencia' or doc.categoria == 'folga' %}
+                            <div class="col-md-6">
+                              <label class="form-label">Formato de Duração / Abrangência</label>
+                              <select name="abrangencia_tipo" class="form-select">
+                                {% if tipo_servidor == 'professor' %}
+                                <option value="tempos" {% if doc.abrangencia_tipo == 'tempos' %}selected{% endif %}>🎓 Tempos de Aula (50 min)</option>
+                                <option value="minutos" {% if doc.abrangencia_tipo == 'minutos' %}selected{% endif %}>⏱️ Minutos Exatos</option>
+                                <option value="horas" {% if doc.abrangencia_tipo == 'horas' %}selected{% endif %}>⏳ Horas Cheias</option>
+                                <option value="dia_inteiro" {% if doc.abrangencia_tipo == 'dia_inteiro' %}selected{% endif %}>📅 Dia(s) Inteiro(s)</option>
+                                {% else %}
+                                <option value="dia_inteiro" {% if doc.abrangencia_tipo == 'dia_inteiro' %}selected{% endif %}>📅 Dia(s) Inteiro(s)</option>
+                                <option value="horas" {% if doc.abrangencia_tipo == 'horas' %}selected{% endif %}>⏳ Horas Cheias</option>
+                                <option value="minutos" {% if doc.abrangencia_tipo == 'minutos' %}selected{% endif %}>⏱️ Minutos Exatos</option>
+                                {% endif %}
+                              </select>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Quantidade de Tempo / Dias</label>
+                              <input type="number" step="0.5" min="0.1" name="quantidade_tempo" class="form-control" value="{{ doc.quantidade_tempo }}">
+                            </div>
+                            {% endif %}
                             <div class="col-12">
                               <label class="form-label">Observações</label>
                               <textarea name="observacoes" class="form-control" rows="3">{{ doc.observacoes }}</textarea>
@@ -230,24 +339,49 @@
         <div class="col-md-4">
           <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:14px; text-align:center;">
             <span style="font-size:0.78rem; color:#86efac; text-transform:uppercase; font-weight:700;">Direitos Adquiridos (Créditos)</span>
+            {% if tipo_servidor == 'professor' %}
+            <div style="font-size:1.6rem; font-weight:800; color:#22c55e;">+{{ total_creditos_tempos|default:0 }} tempo(s)</div>
+            <small style="display:block; font-size:0.78rem; color:#86efac; font-weight:600;">+{{ total_creditos_min|default:0 }} minutos</small>
+            {% else %}
             <div style="font-size:1.6rem; font-weight:800; color:#22c55e;">+{{ total_creditos }} dia(s)</div>
+            {% endif %}
           </div>
         </div>
         <div class="col-md-4">
           <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:14px; text-align:center;">
-            <span style="font-size:0.78rem; color:#fca5a5; text-transform:uppercase; font-weight:700;">Folgas Usufruídas (Gozo)</span>
+            <span style="font-size:0.78rem; color:#fca5a5; text-transform:uppercase; font-weight:700;">Folgas Usufruídas / Débitos</span>
+            {% if tipo_servidor == 'professor' %}
+            <div style="font-size:1.6rem; font-weight:800; color:#ef4444;">-{{ total_usufruidos_tempos|default:0 }} tempo(s)</div>
+            <small style="display:block; font-size:0.78rem; color:#fca5a5; font-weight:600;">-{{ total_usufruidos_min|default:0 }} minutos</small>
+            {% else %}
             <div style="font-size:1.6rem; font-weight:800; color:#ef4444;">-{{ total_usufruidos }} dia(s)</div>
+            {% endif %}
           </div>
         </div>
         <div class="col-md-4">
           <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:10px; padding:14px; text-align:center;">
             <span style="font-size:0.78rem; color:#93c5fd; text-transform:uppercase; font-weight:700;">Saldo Atual Disponível</span>
+            {% if tipo_servidor == 'professor' %}
+            <div style="font-size:1.6rem; font-weight:800; color:{% if saldo_min and saldo_min > 0 %}#38bdf8{% elif saldo_min and saldo_min < 0 %}#ef4444{% else %}#94a3b8{% endif %};">
+              {{ saldo_tempos|default:0 }} tempo(s)
+            </div>
+            <small style="display:block; font-size:0.78rem; font-weight:600; color:{% if saldo_min and saldo_min > 0 %}#7dd3fc{% elif saldo_min and saldo_min < 0 %}#fca5a5{% else %}#94a3b8{% endif %};">{{ saldo_min|default:0 }} minutos</small>
+            {% else %}
             <div style="font-size:1.6rem; font-weight:800; color:{% if saldo_folgas > 0 %}#38bdf8{% elif saldo_folgas < 0 %}#ef4444{% else %}#94a3b8{% endif %};">
               {{ saldo_folgas }} dia(s)
             </div>
+            {% endif %}
           </div>
         </div>
       </div>
+
+      {% if tipo_servidor == 'professor' %}
+      <div class="d-flex align-items-center justify-content-between p-2 mb-3 rounded" style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2);">
+        <span class="small text-info fw-semibold">
+          <i class="bi bi-info-circle-fill me-1"></i>Regra Docente: cada tempo de aula equivale a <strong>50 minutos</strong>. O banco computa minutos e tempos com exatidão.
+        </span>
+      </div>
+      {% endif %}
 
       {% if request.user.perfil == 'diretor' or request.user.is_superuser %}
       <!-- Form Lançamento de Folga -->
@@ -262,21 +396,63 @@
               <label class="form-label">Tipo de Lançamento *</label>
               <select name="tipo" class="form-select">
                 <option value="credito">➕ Crédito de Folga (Direito Adquirido)</option>
-                <option value="usufruido">➖ Gozo de Folga (Folga Usufruída)</option>
+                <option value="usufruido">➖ Gozo de Folga / Débito (Usufruída)</option>
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label">Unidade de Medida *</label>
+              <select name="unidade" id="folga-unidade-sel" class="form-select" onchange="atualizarCalcFolga()">
+                {% if tipo_servidor == 'professor' %}
+                <option value="tempos" selected>🎓 Tempos de Aula (50 min cada)</option>
+                <option value="minutos">⏱️ Minutos Exatos</option>
+                <option value="horas">⏳ Horas Cheias</option>
+                <option value="dias">📅 Dia(s) Inteiro(s)</option>
+                {% else %}
+                <option value="dias" selected>📅 Dia(s) Inteiro(s)</option>
+                <option value="horas">⏳ Horas Cheias</option>
+                <option value="minutos">⏱️ Minutos Exatos</option>
+                {% endif %}
               </select>
             </div>
             <div class="col-lg-2 col-md-6">
-              <label class="form-label">Quantidade (Dias) *</label>
-              <input type="number" step="0.5" min="0.5" name="dias" class="form-control" value="1.0" required>
+              <label class="form-label">Quantidade *</label>
+              <input type="number" step="0.5" min="0.1" name="quantidade" id="folga-quantidade" class="form-control" value="{% if tipo_servidor == 'professor' %}1.0{% else %}1.0{% endif %}" required oninput="atualizarCalcFolga()">
             </div>
             <div class="col-lg-4 col-md-6">
               <label class="form-label">Motivo / Origem *</label>
-              <input type="text" name="motivo" class="form-control" placeholder="Ex: Trabalho na Eleição / Reunião de Sábado" required>
+              <input type="text" name="motivo" class="form-control" placeholder="Ex: Trabalho na Eleição / Reunião de Sábado / Folga" required>
             </div>
             <div class="col-lg-3 col-md-6">
               <label class="form-label">Data Ocorrência *</label>
               <input type="date" name="data_ocorrencia" class="form-control" value="{% now 'Y-m-d' %}">
             </div>
+
+            <div class="col-lg-9 col-md-6">
+              <label class="form-label">Atalhos rápidos para quantidade:</label>
+              <div class="d-flex flex-wrap gap-1 align-items-center">
+                {% if tipo_servidor == 'professor' %}
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('tempos', 1)">1 tempo (50m)</button>
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('tempos', 2)">2 tempos (100m)</button>
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('tempos', 3)">3 tempos (150m)</button>
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('tempos', 4)">4 tempos (200m)</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('minutos', 15)">15 min</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('minutos', 30)">30 min</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('dias', 1)">1 Dia Completo</button>
+                {% else %}
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('dias', 0.5)">Meio Dia (0.5d)</button>
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('dias', 1.0)">1 Dia Inteiro</button>
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('horas', 2)">2 Horas</button>
+                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" onclick="setFolgaQtd('horas', 4)">4 Horas</button>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-12 mt-1">
+              <div class="p-2 rounded" style="background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.06);">
+                <small class="text-info fw-semibold" id="folga-preview-txt"></small>
+              </div>
+            </div>
+
             <div class="col-12 mt-1">
               <label class="form-label">Observações Adicionais</label>
               <textarea name="observacoes" class="form-control" rows="2" placeholder="Observações/detalhes sobre a folga (opcional)..."></textarea>
@@ -299,7 +475,7 @@
             <tr>
               <th>Data</th>
               <th>Tipo</th>
-              <th>Quantidade</th>
+              <th>Duração / Quantidade</th>
               <th>Motivo / Origem</th>
               <th>Registrado Por</th>
               <th style="text-align:right;">Ações</th>
@@ -314,7 +490,9 @@
                   {{ f.get_tipo_display }}
                 </span>
               </td>
-              <td style="font-weight:700;">{{ f.dias }} dia(s)</td>
+              <td style="font-weight:700; color:#38bdf8; font-family:monospace; font-size:0.92rem;">
+                {{ f.rotulo_tempo }}
+              </td>
               <td>
                 <div style="font-weight:600;">{{ f.motivo }}</div>
                 {% if f.observacoes %}
@@ -349,16 +527,31 @@
                         {% csrf_token %}
                         <div class="modal-body">
                           <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                               <label class="form-label">Tipo de Lançamento *</label>
                               <select name="tipo" class="form-select">
                                 <option value="credito" {% if f.tipo == 'credito' %}selected{% endif %}>➕ Crédito de Folga (Direito Adquirido)</option>
                                 <option value="usufruido" {% if f.tipo == 'usufruido' %}selected{% endif %}>➖ Gozo de Folga (Folga Usufruída)</option>
                               </select>
                             </div>
-                            <div class="col-md-6">
-                              <label class="form-label">Quantidade (Dias) *</label>
-                              <input type="number" step="0.5" min="0.5" name="dias" class="form-control" value="{{ f.dias }}" required>
+                            <div class="col-md-4">
+                              <label class="form-label">Unidade de Medida *</label>
+                              <select name="unidade" class="form-select">
+                                {% if tipo_servidor == 'professor' %}
+                                <option value="tempos" {% if f.unidade == 'tempos' or not f.unidade %}selected{% endif %}>🎓 Tempos de Aula (50m)</option>
+                                <option value="minutos" {% if f.unidade == 'minutos' %}selected{% endif %}>⏱️ Minutos Exatos</option>
+                                <option value="horas" {% if f.unidade == 'horas' %}selected{% endif %}>⏳ Horas Cheias</option>
+                                <option value="dias" {% if f.unidade == 'dias' %}selected{% endif %}>📅 Dia(s) Inteiro(s)</option>
+                                {% else %}
+                                <option value="dias" {% if f.unidade == 'dias' or not f.unidade %}selected{% endif %}>📅 Dia(s) Inteiro(s)</option>
+                                <option value="horas" {% if f.unidade == 'horas' %}selected{% endif %}>⏳ Horas Cheias</option>
+                                <option value="minutos" {% if f.unidade == 'minutos' %}selected{% endif %}>⏱️ Minutos</option>
+                                {% endif %}
+                              </select>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label">Quantidade *</label>
+                              <input type="number" step="0.5" min="0.1" name="quantidade" class="form-control" value="{% if tipo_servidor == 'professor' and f.tempos_aula > 0 %}{{ f.tempos_aula }}{% elif tipo_servidor == 'professor' and f.minutos > 0 %}{{ f.minutos }}{% else %}{{ f.dias }}{% endif %}" required>
                             </div>
                             <div class="col-md-6">
                               <label class="form-label">Motivo / Origem *</label>
@@ -526,3 +719,118 @@
 
   </div>
 </div>
+
+<script>
+// Alternância e cálculo para Atestados
+function toggleOpcoesAtestado(cat) {
+  const wrap = document.getElementById('wrap-abrangencia-atestado');
+  if (wrap) {
+    if (cat === 'atestado' || cat === 'ausencia') {
+      wrap.style.display = 'block';
+      atualizarCalcDoc();
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+}
+
+function setDocQtd(unidade, qtd) {
+  const sel = document.getElementById('atestado-abrangencia-tipo');
+  const input = document.getElementById('atestado-quantidade');
+  if (sel && input) {
+    sel.value = unidade;
+    input.value = qtd;
+    atualizarCalcDoc();
+  }
+}
+
+function atualizarCalcDoc() {
+  const sel = document.getElementById('atestado-abrangencia-tipo');
+  const input = document.getElementById('atestado-quantidade');
+  const unitTxt = document.getElementById('atestado-unidade-txt');
+  const preview = document.getElementById('atestado-preview-txt');
+  if (!sel || !input) return;
+
+  const u = sel.value;
+  const qtd = parseFloat(input.value) || 0;
+  const isProf = "{{ tipo_servidor }}" === "professor";
+
+  if (u === 'tempos') {
+    if (unitTxt) unitTxt.textContent = 'tempo(s)';
+    const mins = Math.round(qtd * 50);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const hm = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${mins}m`;
+    if (preview) preview.innerHTML = `👉 <strong>${qtd} tempo(s) de aula</strong> equivalem a <strong>${mins} minutos</strong> (${hm}).`;
+  } else if (u === 'minutos') {
+    if (unitTxt) unitTxt.textContent = 'minuto(s)';
+    const tempos = (qtd / 50).toFixed(1).replace('.0', '');
+    if (preview) preview.innerHTML = `👉 <strong>${qtd} minutos</strong> equivalem a <strong>${tempos} tempo(s) de aula</strong> de 50 min.`;
+  } else if (u === 'horas') {
+    if (unitTxt) unitTxt.textContent = 'hora(s)';
+    const mins = Math.round(qtd * 60);
+    const tempos = (mins / 50).toFixed(1).replace('.0', '');
+    if (preview) preview.innerHTML = `👉 <strong>${qtd} hora(s)</strong> equivalem a <strong>${mins} minutos</strong> (${tempos} tempos de 50m).`;
+  } else {
+    if (unitTxt) unitTxt.textContent = 'dia(s)';
+    if (isProf) {
+      const tempos = qtd * 4;
+      const mins = tempos * 50;
+      if (preview) preview.innerHTML = `👉 <strong>${qtd} dia(s)</strong> equivale a jornada padrão de ~<strong>${tempos} tempos</strong> (${mins} minutos).`;
+    } else {
+      if (preview) preview.innerHTML = `👉 Ausência/Atestado de <strong>${qtd} dia(s) integral</strong>.`;
+    }
+  }
+}
+
+// Alternância e cálculo para Banco de Folgas
+function setFolgaQtd(unidade, qtd) {
+  const sel = document.getElementById('folga-unidade-sel');
+  const input = document.getElementById('folga-quantidade');
+  if (sel && input) {
+    sel.value = unidade;
+    input.value = qtd;
+    atualizarCalcFolga();
+  }
+}
+
+function atualizarCalcFolga() {
+  const sel = document.getElementById('folga-unidade-sel');
+  const input = document.getElementById('folga-quantidade');
+  const preview = document.getElementById('folga-preview-txt');
+  if (!sel || !input) return;
+
+  const u = sel.value;
+  const qtd = parseFloat(input.value) || 0;
+  const isProf = "{{ tipo_servidor }}" === "professor";
+
+  if (u === 'tempos') {
+    const mins = Math.round(qtd * 50);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const hm = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${mins}m`;
+    if (preview) preview.innerHTML = `👉 Lançamento: <strong>${qtd} tempo(s) de aula</strong> = <strong>${mins} minutos</strong> computados (${hm}).`;
+  } else if (u === 'minutos') {
+    const tempos = (qtd / 50).toFixed(1).replace('.0', '');
+    if (preview) preview.innerHTML = `👉 Lançamento: <strong>${qtd} minutos</strong> = <strong>${tempos} tempo(s) de aula</strong> de 50 min.`;
+  } else if (u === 'horas') {
+    const mins = Math.round(qtd * 60);
+    const tempos = (mins / 50).toFixed(1).replace('.0', '');
+    if (preview) preview.innerHTML = `👉 Lançamento: <strong>${qtd} hora(s) cheia(s)</strong> = <strong>${mins} minutos</strong> (${tempos} tempos de 50m).`;
+  } else {
+    if (isProf) {
+      const tempos = qtd * 4;
+      const mins = tempos * 50;
+      if (preview) preview.innerHTML = `👉 Lançamento: <strong>${qtd} dia(s)</strong> = <strong>${tempos} tempos</strong> (~${mins} min de regência).`;
+    } else {
+      if (preview) preview.innerHTML = `👉 Lançamento: <strong>${qtd} dia(s)</strong> de expediente administrativo.`;
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  atualizarCalcFolga();
+  const selectCat = document.getElementById('select-cat-doc');
+  if (selectCat) toggleOpcoesAtestado(selectCat.value);
+});
+</script>

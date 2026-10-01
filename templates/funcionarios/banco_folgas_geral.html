@@ -470,36 +470,70 @@
 
           <!-- Créditos (+) -->
           <td class="text-center">
-            {% if s.creditos > 0 %}
-              <span class="fw-bold text-success font-monospace" style="font-size:0.95rem;">+{{ s.creditos|floatformat:1 }} d</span>
+            {% if s.tipo_categoria == 'professor' %}
+              {% if s.cred_min > 0 %}
+                <span class="fw-bold text-success font-monospace" style="font-size:0.95rem;">+{{ s.t_cred }} tempos</span>
+                <small class="text-muted d-block font-monospace" style="font-size:0.75rem;">+{{ s.cred_min }} min</small>
+              {% else %}
+                <span class="text-muted font-monospace" style="font-size:0.85rem;">0 tempos</span>
+              {% endif %}
             {% else %}
-              <span class="text-muted font-monospace" style="font-size:0.85rem;">0 d</span>
+              {% if s.creditos > 0 %}
+                <span class="fw-bold text-success font-monospace" style="font-size:0.95rem;">+{{ s.creditos|floatformat:1 }} d</span>
+              {% else %}
+                <span class="text-muted font-monospace" style="font-size:0.85rem;">0 d</span>
+              {% endif %}
             {% endif %}
           </td>
 
           <!-- Usufruídas (-) -->
           <td class="text-center">
-            {% if s.usufruidos > 0 %}
-              <span class="fw-bold text-danger font-monospace" style="font-size:0.95rem;">-{{ s.usufruidos|floatformat:1 }} d</span>
+            {% if s.tipo_categoria == 'professor' %}
+              {% if s.usuf_min > 0 %}
+                <span class="fw-bold text-danger font-monospace" style="font-size:0.95rem;">-{{ s.t_usuf }} tempos</span>
+                <small class="text-muted d-block font-monospace" style="font-size:0.75rem;">-{{ s.usuf_min }} min</small>
+              {% else %}
+                <span class="text-muted font-monospace" style="font-size:0.85rem;">0 tempos</span>
+              {% endif %}
             {% else %}
-              <span class="text-muted font-monospace" style="font-size:0.85rem;">0 d</span>
+              {% if s.usufruidos > 0 %}
+                <span class="fw-bold text-danger font-monospace" style="font-size:0.95rem;">-{{ s.usufruidos|floatformat:1 }} d</span>
+              {% else %}
+                <span class="text-muted font-monospace" style="font-size:0.85rem;">0 d</span>
+              {% endif %}
             {% endif %}
           </td>
 
           <!-- Saldo Atual (Badge de Alto Impacto) -->
           <td class="text-center">
-            {% if s.saldo < 0 %}
-              <span class="badge-saldo-devedor" title="Este servidor está com saldo negativo (deve horas/dias à escola)">
-                <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ s.saldo|floatformat:1 }} dia(s) • DEVE
-              </span>
-            {% elif s.saldo > 0 %}
-              <span class="badge-saldo-positivo" title="Este servidor possui crédito positivo acumulado para folga">
-                <i class="bi bi-check-circle-fill me-1"></i>+{{ s.saldo|floatformat:1 }} dia(s) • CRÉDITO
-              </span>
+            {% if s.tipo_categoria == 'professor' %}
+              {% if s.saldo_min < 0 %}
+                <span class="badge-saldo-devedor" title="Este professor deve horas/tempos à escola">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ s.t_saldo }} tempo(s) ({{ s.saldo_min }} min) • DEVE
+                </span>
+              {% elif s.saldo_min > 0 %}
+                <span class="badge-saldo-positivo" title="Este professor possui crédito de tempos/horas acumulado">
+                  <i class="bi bi-check-circle-fill me-1"></i>+{{ s.t_saldo }} tempo(s) (+{{ s.saldo_min }} min) • CRÉDITO
+                </span>
+              {% else %}
+                <span class="badge-saldo-zerado" title="Saldo quitado / sem pendências">
+                  <i class="bi bi-dash-circle me-1"></i>0 tempos (0m) • QUITADO
+                </span>
+              {% endif %}
             {% else %}
-              <span class="badge-saldo-zerado" title="Saldo quitado / sem pendências">
-                <i class="bi bi-dash-circle me-1"></i>0 dia(s) • QUITADO
-              </span>
+              {% if s.saldo < 0 %}
+                <span class="badge-saldo-devedor" title="Este servidor está com saldo negativo (deve horas/dias à escola)">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ s.saldo|floatformat:1 }} dia(s) • DEVE
+                </span>
+              {% elif s.saldo > 0 %}
+                <span class="badge-saldo-positivo" title="Este servidor possui crédito positivo acumulado para folga">
+                  <i class="bi bi-check-circle-fill me-1"></i>+{{ s.saldo|floatformat:1 }} dia(s) • CRÉDITO
+                </span>
+              {% else %}
+                <span class="badge-saldo-zerado" title="Saldo quitado / sem pendências">
+                  <i class="bi bi-dash-circle me-1"></i>0 dia(s) • QUITADO
+                </span>
+              {% endif %}
             {% endif %}
           </td>
 
@@ -577,11 +611,46 @@
           </div>
 
           <div class="row g-2 mb-3">
-            <div class="col-6">
-              <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Quantidade (Dias) *</label>
-              <input type="number" step="0.5" min="0.5" name="dias" value="1.0" class="form-control" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required>
+            <div class="col-md-6">
+              <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Unidade de Medida *</label>
+              <select name="unidade" id="modalUnidade" class="form-select" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" onchange="atualizarCalcModal()">
+                <!-- Opções populadas dinamicamente via JS -->
+              </select>
             </div>
-            <div class="col-6">
+            <div class="col-md-6">
+              <label class="form-label text-muted fw-bold text-uppercase" id="modalLblQtd" style="font-size:0.75rem;">Quantidade *</label>
+              <div class="input-group">
+                <input type="number" step="0.5" min="0.1" name="quantidade" id="modalQtd" value="1.0" class="form-control" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required oninput="atualizarCalcModal()">
+                <span class="input-group-text font-monospace" id="modalSpanUnidade" style="background:#0f172a; color:#38bdf8;">tempo(s)</span>
+              </div>
+            </div>
+
+            <!-- Atalhos Rápidos -->
+            <div class="col-12 mt-1">
+              <div id="modalAtalhosProf" class="d-flex flex-wrap gap-1 align-items-center">
+                <span class="text-muted small me-1" style="font-size:0.72rem;">Atalhos:</span>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('tempos', 1)">1 tempo (50m)</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('tempos', 2)">2 tempos (100m)</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('tempos', 3)">3 tempos (150m)</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('tempos', 4)">4 tempos (200m)</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('minutos', 15)">15m</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('minutos', 30)">30m</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('dias', 1)">1 Dia</button>
+              </div>
+              <div id="modalAtalhosAdm" class="d-flex flex-wrap gap-1 align-items-center" style="display:none;">
+                <span class="text-muted small me-1" style="font-size:0.72rem;">Atalhos:</span>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('dias', 0.5)">Meio Dia (0.5d)</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('dias', 1.0)">1 Dia Inteiro</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('horas', 2)">2 Horas</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.72rem;" onclick="setModalQtd('horas', 4)">4 Horas</button>
+              </div>
+            </div>
+
+            <div class="col-12 mt-1">
+              <small class="text-info fw-semibold font-monospace" id="modalPreviewTxt"></small>
+            </div>
+            
+            <div class="col-12 mt-2">
               <label class="form-label text-muted fw-bold text-uppercase" style="font-size:0.75rem;">Data da Ocorrência *</label>
               <input type="date" name="data_ocorrencia" id="modalDataOcorrencia" class="form-control" style="background:#1e293b; color:#fff; border-color:rgba(255,255,255,0.15);" required>
             </div>
@@ -613,16 +682,93 @@
 
 {% block extra_js %}
 <script>
+  let servidorTipoAtual = 'professor';
+
+  function setModalQtd(unidade, qtd) {
+    const sel = document.getElementById('modalUnidade');
+    const inp = document.getElementById('modalQtd');
+    if (sel) sel.value = unidade;
+    if (inp) inp.value = qtd;
+    atualizarCalcModal();
+  }
+
+  function atualizarCalcModal() {
+    const sel = document.getElementById('modalUnidade');
+    const inp = document.getElementById('modalQtd');
+    const span = document.getElementById('modalSpanUnidade');
+    const preview = document.getElementById('modalPreviewTxt');
+    if (!sel || !inp) return;
+
+    const u = sel.value;
+    const qtd = parseFloat(inp.value) || 0;
+    const isProf = (servidorTipoAtual === 'professor');
+
+    if (u === 'tempos') {
+      if (span) span.textContent = 'tempo(s)';
+      const mins = Math.round(qtd * 50);
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      const hm = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${mins}m`;
+      if (preview) preview.innerHTML = `👉 <strong>${qtd} tempo(s)</strong> = <strong>${mins} minutos</strong> computados (${hm}).`;
+    } else if (u === 'minutos') {
+      if (span) span.textContent = 'minuto(s)';
+      const tempos = (qtd / 50).toFixed(1).replace('.0', '');
+      if (preview) preview.innerHTML = `👉 <strong>${qtd} minutos</strong> = <strong>${tempos} tempo(s) de aula</strong> de 50 min.`;
+    } else if (u === 'horas') {
+      if (span) span.textContent = 'hora(s)';
+      const mins = Math.round(qtd * 60);
+      const tempos = (mins / 50).toFixed(1).replace('.0', '');
+      if (preview) preview.innerHTML = `👉 <strong>${qtd} hora(s)</strong> = <strong>${mins} minutos</strong> (${tempos} tempos).`;
+    } else {
+      if (span) span.textContent = 'dia(s)';
+      if (isProf) {
+        const tempos = qtd * 4;
+        const mins = tempos * 50;
+        if (preview) preview.innerHTML = `👉 <strong>${qtd} dia(s)</strong> = ~<strong>${tempos} tempos</strong> (${mins} min).`;
+      } else {
+        if (preview) preview.innerHTML = `👉 Lançamento de <strong>${qtd} dia(s) integral</strong>.`;
+      }
+    }
+  }
+
   function abrirModalLancamentoRapido(tipoServidor, pk, nomeServidor) {
+    servidorTipoAtual = tipoServidor;
     document.getElementById('modalServidorNome').textContent = nomeServidor;
     const form = document.getElementById('formLancamentoRapido');
     form.action = `/professores/pasta/${tipoServidor}/${pk}/folgas/adicionar/`;
+
+    const sel = document.getElementById('modalUnidade');
+    const atalhosProf = document.getElementById('modalAtalhosProf');
+    const atalhosAdm = document.getElementById('modalAtalhosAdm');
+
+    if (tipoServidor === 'professor') {
+      sel.innerHTML = `
+        <option value="tempos" selected>🎓 Tempos de Aula (50 min cada)</option>
+        <option value="minutos">⏱️ Minutos Exatos</option>
+        <option value="horas">⏳ Horas Cheias</option>
+        <option value="dias">📅 Dia(s) Inteiro(s)</option>
+      `;
+      if (atalhosProf) atalhosProf.style.display = 'flex';
+      if (atalhosAdm) atalhosAdm.style.display = 'none';
+      document.getElementById('modalQtd').value = "1.0";
+    } else {
+      sel.innerHTML = `
+        <option value="dias" selected>📅 Dia(s) Inteiro(s)</option>
+        <option value="horas">⏳ Horas Cheias</option>
+        <option value="minutos">⏱️ Minutos Exatos</option>
+      `;
+      if (atalhosProf) atalhosProf.style.display = 'none';
+      if (atalhosAdm) atalhosAdm.style.display = 'flex';
+      document.getElementById('modalQtd').value = "1.0";
+    }
 
     const hoje = new Date().toISOString().split('T')[0];
     const dataInput = document.getElementById('modalDataOcorrencia');
     if (dataInput && !dataInput.value) {
       dataInput.value = hoje;
     }
+
+    atualizarCalcModal();
 
     const modalEl = document.getElementById('modalLancamentoRapido');
     if (window.bootstrap && bootstrap.Modal) {
