@@ -245,9 +245,9 @@
         <div class="col-sm-6">
           <div class="info-group-sei">
             <div class="label">Cadastrado no Sistema por</div>
-            <div class="value text-muted" style="font-size:0.9rem;">
+            <div class="value" style="font-size:0.9rem; color:#e2e8f0;">
               {% if processo.criado_por %}{{ processo.criado_por.nome_completo|default:processo.criado_por.primeiro_nome }}{% else %}Sistema{% endif %}
-              <br><small>{{ processo.criado_em|date:"d/m/Y \à\s H:i" }}</small>
+              <br><small style="color:#94a3b8;">{{ processo.criado_em|date:"d/m/Y \à\s H:i" }}</small>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@
    ============================================================ */
 
 /* ── VARIÁVEIS ──────────────────────────────────────────────── */
-:root {
+:root, [data-bs-theme="dark"] {
   --sidebar-w: 260px;
   --sidebar-bg: #0f172a;
   --sidebar-border: rgba(255,255,255,0.06);
@@ -24,7 +24,7 @@
 
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --text-muted: #475569;
+  --text-muted: #94a3b8;
 
   --blue:    #3b82f6;
   --green:   #22c55e;
@@ -37,6 +37,38 @@
   --radius-sm: 8px;
   --shadow: 0 4px 24px rgba(0,0,0,0.4);
   --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Variáveis de apoio ao Bootstrap 5 em Dark Mode */
+  --bs-body-color: #f1f5f9;
+  --bs-body-bg: #0f172a;
+  --bs-secondary-color: #94a3b8;
+  --bs-tertiary-color: #64748b;
+  --bs-emphasis-color: #ffffff;
+  --bs-border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ── COMPATIBILIDADE E LEGIBILIDADE DARK MODE ───────────────── */
+.text-muted,
+.text-body-secondary {
+  color: #94a3b8 !important;
+}
+
+.text-muted strong,
+.text-body-secondary strong {
+  color: #f8fafc !important;
+}
+
+.form-text,
+.form-text.text-muted {
+  color: #94a3b8 !important;
+}
+
+.input-group-text.text-muted {
+  color: #94a3b8 !important;
+}
+
+.badge.text-muted {
+  color: #cbd5e1 !important;
 }
 
 /* ── RESET BASE ─────────────────────────────────────────────── */
