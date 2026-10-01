@@ -30,8 +30,8 @@ class RegistroPresencaForm(forms.ModelForm):
             'hora_chegada': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_chegada'}),
             'hora_saida': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_saida'}),
             'unidade_tempo': forms.Select(attrs={'id': 'id_unidade_tempo'}),
-            'quantidade_tempo': forms.NumberInput(attrs={'step': '0.5', 'min': '0.1', 'id': 'id_quantidade_tempo'}),
-            'dias_banco_horas': forms.NumberInput(attrs={'step': '0.1', 'min': '0.1', 'id': 'id_dias_banco_horas'}),
+            'quantidade_tempo': forms.NumberInput(attrs={'step': 'any', 'min': '0.1', 'id': 'id_quantidade_tempo'}),
+            'dias_banco_horas': forms.NumberInput(attrs={'step': 'any', 'min': '0.01', 'id': 'id_dias_banco_horas'}),
             'motivo': forms.TextInput(attrs={'id': 'id_motivo_presenca', 'placeholder': 'Motivo da ocorrência'}),
             'observacoes': forms.Textarea(attrs={'rows': 2, 'id': 'id_obs_presenca'}),
         }
