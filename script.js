@@ -1316,8 +1316,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!headersEl) return;
 
     if (totemAuditorioModoSemana === 'completa') {
-      headersEl.style.gridTemplateColumns = 'repeat(7, minmax(0, 1fr))';
-      if (gridEl) gridEl.style.gridTemplateColumns = 'repeat(7, minmax(0, 1fr))';
+      headersEl.style.setProperty('grid-template-columns', 'repeat(7, minmax(0, 1fr))', 'important');
+      if (gridEl) gridEl.style.setProperty('grid-template-columns', 'repeat(7, minmax(0, 1fr))', 'important');
       headersEl.innerHTML = `
         <div>Segunda-feira</div>
         <div>Terça-feira</div>
@@ -1328,8 +1328,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="cal-col-domingo">Domingo</div>
       `;
     } else {
-      headersEl.style.gridTemplateColumns = 'repeat(5, minmax(0, 1fr))';
-      if (gridEl) gridEl.style.gridTemplateColumns = 'repeat(5, minmax(0, 1fr))';
+      headersEl.style.setProperty('grid-template-columns', 'repeat(5, minmax(0, 1fr))', 'important');
+      if (gridEl) gridEl.style.setProperty('grid-template-columns', 'repeat(5, minmax(0, 1fr))', 'important');
       headersEl.innerHTML = `
         <div>Segunda-feira</div>
         <div>Terça-feira</div>
