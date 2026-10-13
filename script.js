@@ -16,8 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const s = String(now.getSeconds()).padStart(2, '0');
     kioskTime.textContent = `${h}:${m}:${s}`;
 
-    const opts = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
-    kioskDate.textContent = now.toLocaleDateString('pt-BR', opts);
+    // Formatação em português com hifenização e maiúscula correta (ex: Terça-feira, 13 de outubro de 2026)
+    const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    kioskDate.textContent = `${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
   }
 
   updateClock();
@@ -1195,24 +1197,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // ==========================================================================
-  // 12. AGENDA DO AUDITÓRIO NO TOTEM
+  // ==========================================================================
+  // 12. AGENDA DO AUDITÓRIO NO TOTEM (LAYOUT MODERNO & EFICAZ)
   // ==========================================================================
   let totemAuditorioMes = (new Date()).getMonth() + 1;
   let totemAuditorioAno = (new Date()).getFullYear();
   let totemAuditorioReservas = [];
+  let totemAuditorioProximas = [];
   let totemAuditorioEventsInitialized = false;
   let totemDataSelecionada = null;
+  let totemAuditorioFiltroTipo = 'todos';
+  let totemAuditorioModoSemana = 'completa'; // 'completa' (7 dias) ou 'letivos' (5 dias)
 
   const MESES_NOMES = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ];
 
+  const DIAS_SEMANA_COMPLETA = [
+    'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'
+  ];
+
+  const DIAS_SEMANA_LETIVOS = [
+    'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira'
+  ];
+
+  function formatarDataPorExtenso(dObj) {
+    const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    return `${dias[dObj.getDay()]}, ${dObj.getDate()} de ${meses[dObj.getMonth()]} de ${dObj.getFullYear()}`;
+  }
+
   function renderAuditorioTotem() {
     if (!totemAuditorioEventsInitialized) {
       totemAuditorioEventsInitialized = true;
+
+      // Navegação de mês
       const btnAnt = document.getElementById('btn-totem-auditorio-ant');
       const btnProx = document.getElementById('btn-totem-auditorio-prox');
+      const btnHoje = document.getElementById('btn-totem-auditorio-hoje');
+
       if (btnAnt) {
         btnAnt.addEventListener('click', () => {
           if (totemAuditorioMes === 1) {
@@ -1224,6 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
           carregarDadosAuditorioTotem();
         });
       }
+
       if (btnProx) {
         btnProx.addEventListener('click', () => {
           if (totemAuditorioMes === 12) {
@@ -1235,18 +1260,93 @@ document.addEventListener('DOMContentLoaded', () => {
           carregarDadosAuditorioTotem();
         });
       }
+
+      if (btnHoje) {
+        btnHoje.addEventListener('click', () => {
+          const agora = new Date();
+          totemAuditorioMes = agora.getMonth() + 1;
+          totemAuditorioAno = agora.getFullYear();
+          const hojeIso = `${totemAuditorioAno}-${String(totemAuditorioMes).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+          carregarDadosAuditorioTotem(hojeIso);
+        });
+      }
+
+      // Filtros de Categoria (Todos, Oficina, Aula, Evento, Reunião)
+      const filtroContainer = document.getElementById('auditorio-filtros-container');
+      if (filtroContainer) {
+        filtroContainer.querySelectorAll('.filter-pill').forEach(btn => {
+          btn.addEventListener('click', () => {
+            filtroContainer.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            totemAuditorioFiltroTipo = btn.getAttribute('data-tipo') || 'todos';
+            montarGridAuditorioTotem(totemAuditorioReservas);
+            if (totemDataSelecionada) {
+              selecionarDiaTotem(totemDataSelecionada);
+            }
+          });
+        });
+      }
+
+      // Alternar visualização (Semana Completa 7 dias / Dias Letivos 5 dias)
+      const btnModoToggle = document.getElementById('btn-toggle-semana-completa');
+      if (btnModoToggle) {
+        btnModoToggle.addEventListener('click', () => {
+          if (totemAuditorioModoSemana === 'completa') {
+            totemAuditorioModoSemana = 'letivos';
+            btnModoToggle.textContent = '📅 Dias Letivos (Seg-Sex)';
+            btnModoToggle.classList.remove('active');
+          } else {
+            totemAuditorioModoSemana = 'completa';
+            btnModoToggle.textContent = '📅 Semana Completa (7 Dias)';
+            btnModoToggle.classList.add('active');
+          }
+          atualizarHeadersAuditorioTotem();
+          montarGridAuditorioTotem(totemAuditorioReservas);
+        });
+      }
     }
 
+    atualizarHeadersAuditorioTotem();
     carregarDadosAuditorioTotem();
   }
 
-  function carregarDadosAuditorioTotem() {
+  function atualizarHeadersAuditorioTotem() {
+    const headersEl = document.getElementById('totem-auditorio-headers');
+    const gridEl = document.getElementById('totem-auditorio-grid');
+    if (!headersEl) return;
+
+    if (totemAuditorioModoSemana === 'completa') {
+      headersEl.style.gridTemplateColumns = 'repeat(7, minmax(0, 1fr))';
+      if (gridEl) gridEl.style.gridTemplateColumns = 'repeat(7, minmax(0, 1fr))';
+      headersEl.innerHTML = `
+        <div>Segunda-feira</div>
+        <div>Terça-feira</div>
+        <div>Quarta-feira</div>
+        <div>Quinta-feira</div>
+        <div>Sexta-feira</div>
+        <div class="cal-col-sabado">Sábado</div>
+        <div class="cal-col-domingo">Domingo</div>
+      `;
+    } else {
+      headersEl.style.gridTemplateColumns = 'repeat(5, minmax(0, 1fr))';
+      if (gridEl) gridEl.style.gridTemplateColumns = 'repeat(5, minmax(0, 1fr))';
+      headersEl.innerHTML = `
+        <div>Segunda-feira</div>
+        <div>Terça-feira</div>
+        <div>Quarta-feira</div>
+        <div>Quinta-feira</div>
+        <div>Sexta-feira</div>
+      `;
+    }
+  }
+
+  function carregarDadosAuditorioTotem(forcarDiaSelecionado = null) {
     const lblMesAno = document.getElementById('totem-auditorio-mes-ano');
     if (lblMesAno) {
-      lblMesAno.textContent = `${MESES_NOMES[totemAuditorioMes - 1]} ${totemAuditorioAno}`;
+      lblMesAno.textContent = `${MESES_NOMES[totemAuditorioMes - 1]} de ${totemAuditorioAno}`;
     }
 
-    // Renderiza a grade imediatamente mesmo antes do retorno da rede
+    // Renderiza a grade imediatamente enquanto carrega a API
     montarGridAuditorioTotem(totemAuditorioReservas);
 
     fetch(`/api/totem/auditorio/?mes=${totemAuditorioMes}&ano=${totemAuditorioAno}`)
@@ -1256,20 +1356,27 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then(data => {
         totemAuditorioReservas = data.reservas || [];
+        totemAuditorioProximas = data.proximas || [];
         montarGridAuditorioTotem(totemAuditorioReservas);
+        renderizarProximasAtividadesTotem();
 
         const hojeIso = data.hoje || (new Date()).toISOString().split('T')[0];
         const partesHoje = hojeIso.split('-');
-        if (parseInt(partesHoje[1]) === totemAuditorioMes && parseInt(partesHoje[0]) === totemAuditorioAno) {
+        const isMesAtual = (parseInt(partesHoje[1]) === totemAuditorioMes && parseInt(partesHoje[0]) === totemAuditorioAno);
+
+        if (forcarDiaSelecionado) {
+          selecionarDiaTotem(forcarDiaSelecionado);
+        } else if (isMesAtual) {
           selecionarDiaTotem(hojeIso);
         } else if (totemAuditorioReservas.length > 0) {
           selecionarDiaTotem(totemAuditorioReservas[0].data);
         } else {
-          selecionarDiaTotem(null);
+          const primeiroDiaIso = `${totemAuditorioAno}-${String(totemAuditorioMes).padStart(2, '0')}-01`;
+          selecionarDiaTotem(primeiroDiaIso);
         }
       })
       .catch(err => {
-        console.warn('Erro ao carregar /api/totem/auditorio/, tentando fallback /agenda/auditorio/json/:', err);
+        console.warn('Fallback para /agenda/auditorio/json/:', err);
         fetch(`/agenda/auditorio/json/?mes=${totemAuditorioMes}&ano=${totemAuditorioAno}`)
           .then(r => r.json())
           .then(data => {
@@ -1294,53 +1401,150 @@ document.addEventListener('DOMContentLoaded', () => {
     const primeiroDia = new Date(totemAuditorioAno, totemAuditorioMes - 1, 1);
     const ultimoDia = new Date(totemAuditorioAno, totemAuditorioMes, 0);
 
-    const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
-    let offsetInicio = 0;
-    if (diaSemana1 >= 1 && diaSemana1 <= 5) {
-      offsetInicio = diaSemana1 - 1;
-    }
+    const isCompleta = (totemAuditorioModoSemana === 'completa');
 
-    for (let i = 0; i < offsetInicio; i++) {
-      const cell = document.createElement('div');
-      cell.className = 'totem-cal-cell outro-mes';
-      grid.appendChild(cell);
-    }
+    if (isCompleta) {
+      // Semana completa (7 colunas: Seg=0 a Dom=6)
+      const startDay = (primeiroDia.getDay() + 6) % 7;
+      const ultimoDiaMesAnterior = new Date(totemAuditorioAno, totemAuditorioMes - 1, 0).getDate();
 
-    for (let d = 1; d <= ultimoDia.getDate(); d++) {
-      const dObj = new Date(totemAuditorioAno, totemAuditorioMes - 1, d);
-      const dow = dObj.getDay();
-      if (dow === 0 || dow === 6) continue; // Pula sábado e domingo
-
-      const dataStr = `${totemAuditorioAno}-${String(totemAuditorioMes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const cell = document.createElement('div');
-      cell.className = 'totem-cal-cell' + (dataStr === hojeStr ? ' hoje' : '');
-      cell.setAttribute('data-date', dataStr);
-
-      const numEl = document.createElement('div');
-      numEl.className = 'totem-cal-day-num';
-      numEl.textContent = d;
-      cell.appendChild(numEl);
-
-      const eventos = reservas.filter(r => r.data === dataStr);
-      eventos.slice(0, 2).forEach(ev => {
-        const chip = document.createElement('div');
-        chip.className = `totem-event-chip badge-tipo-${ev.tipo}`;
-        chip.textContent = `${ev.hora_inicio} ${ev.titulo}`;
-        chip.title = `${ev.titulo} (${ev.responsavel})`;
-        cell.appendChild(chip);
-      });
-
-      if (eventos.length > 2) {
-        const mais = document.createElement('div');
-        mais.style.fontSize = '10px';
-        mais.style.fontWeight = 'bold';
-        mais.style.color = '#0284c7';
-        mais.textContent = `+${eventos.length - 2} mais`;
-        cell.appendChild(mais);
+      // Células do mês anterior para preencher a primeira semana
+      for (let i = startDay - 1; i >= 0; i--) {
+        const diaNum = ultimoDiaMesAnterior - i;
+        const cell = document.createElement('div');
+        cell.className = 'totem-cal-cell outro-mes';
+        cell.innerHTML = `
+          <div class="totem-cal-day-header">
+            <span class="totem-cal-day-num" style="opacity:0.5;">${diaNum}</span>
+          </div>
+        `;
+        grid.appendChild(cell);
       }
 
-      cell.addEventListener('click', () => selecionarDiaTotem(dataStr));
-      grid.appendChild(cell);
+      // Dias do mês atual (1 ao último dia)
+      for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const dObj = new Date(totemAuditorioAno, totemAuditorioMes - 1, d);
+        const dow = dObj.getDay(); // 0=Dom, 6=Sáb
+        const isFimDeSemana = (dow === 0 || dow === 6);
+        const dataStr = `${totemAuditorioAno}-${String(totemAuditorioMes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+        const cell = document.createElement('div');
+        let classes = 'totem-cal-cell';
+        if (dataStr === hojeStr) classes += ' hoje';
+        if (isFimDeSemana) classes += ' weekend';
+        if (dataStr === totemDataSelecionada) classes += ' selecionado';
+        cell.className = classes;
+        cell.setAttribute('data-date', dataStr);
+
+        // Header com número e tag HOJE
+        const header = document.createElement('div');
+        header.className = 'totem-cal-day-header';
+        header.innerHTML = `
+          <span class="totem-cal-day-num">${d}</span>
+          ${dataStr === hojeStr ? '<span class="badge-hoje-tag">HOJE</span>' : ''}
+        `;
+        cell.appendChild(header);
+
+        // Eventos do dia
+        let eventos = reservas.filter(r => r.data === dataStr);
+        if (totemAuditorioFiltroTipo !== 'todos') {
+          eventos = eventos.filter(r => r.tipo === totemAuditorioFiltroTipo);
+        }
+
+        eventos.slice(0, 2).forEach(ev => {
+          const chip = document.createElement('div');
+          chip.className = `totem-event-chip badge-tipo-${ev.tipo}`;
+          chip.innerHTML = `<strong>${ev.hora_inicio}</strong> ${ev.titulo}`;
+          chip.title = `${ev.hora_inicio} às ${ev.hora_fim}: ${ev.titulo}${ev.responsavel ? ' (' + ev.responsavel + ')' : ''}`;
+          cell.appendChild(chip);
+        });
+
+        if (eventos.length > 2) {
+          const mais = document.createElement('div');
+          mais.className = 'totem-more-badge';
+          mais.textContent = `+${eventos.length - 2} mais`;
+          cell.appendChild(mais);
+        }
+
+        cell.addEventListener('click', () => selecionarDiaTotem(dataStr));
+        grid.appendChild(cell);
+      }
+
+      // Células do próximo mês para completar a última linha
+      const totalCells = startDay + ultimoDia.getDate();
+      const resto = totalCells % 7;
+      if (resto !== 0) {
+        const slotsExtras = 7 - resto;
+        for (let nextD = 1; nextD <= slotsExtras; nextD++) {
+          const cell = document.createElement('div');
+          cell.className = 'totem-cal-cell outro-mes';
+          cell.innerHTML = `
+            <div class="totem-cal-day-header">
+              <span class="totem-cal-day-num" style="opacity:0.5;">${nextD}</span>
+            </div>
+          `;
+          grid.appendChild(cell);
+        }
+      }
+
+    } else {
+      // Modo Dias Letivos (5 colunas Seg-Sex)
+      const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg..6=Sáb
+      let offsetInicio = 0;
+      if (diaSemana1 >= 1 && diaSemana1 <= 5) {
+        offsetInicio = diaSemana1 - 1;
+      }
+
+      for (let i = 0; i < offsetInicio; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'totem-cal-cell outro-mes';
+        grid.appendChild(cell);
+      }
+
+      for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const dObj = new Date(totemAuditorioAno, totemAuditorioMes - 1, d);
+        const dow = dObj.getDay();
+        if (dow === 0 || dow === 6) continue; // Pula finais de semana
+
+        const dataStr = `${totemAuditorioAno}-${String(totemAuditorioMes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const cell = document.createElement('div');
+        let classes = 'totem-cal-cell';
+        if (dataStr === hojeStr) classes += ' hoje';
+        if (dataStr === totemDataSelecionada) classes += ' selecionado';
+        cell.className = classes;
+        cell.setAttribute('data-date', dataStr);
+
+        const header = document.createElement('div');
+        header.className = 'totem-cal-day-header';
+        header.innerHTML = `
+          <span class="totem-cal-day-num">${d}</span>
+          ${dataStr === hojeStr ? '<span class="badge-hoje-tag">HOJE</span>' : ''}
+        `;
+        cell.appendChild(header);
+
+        let eventos = reservas.filter(r => r.data === dataStr);
+        if (totemAuditorioFiltroTipo !== 'todos') {
+          eventos = eventos.filter(r => r.tipo === totemAuditorioFiltroTipo);
+        }
+
+        eventos.slice(0, 2).forEach(ev => {
+          const chip = document.createElement('div');
+          chip.className = `totem-event-chip badge-tipo-${ev.tipo}`;
+          chip.innerHTML = `<strong>${ev.hora_inicio}</strong> ${ev.titulo}`;
+          chip.title = `${ev.hora_inicio} às ${ev.hora_fim}: ${ev.titulo}${ev.responsavel ? ' (' + ev.responsavel + ')' : ''}`;
+          cell.appendChild(chip);
+        });
+
+        if (eventos.length > 2) {
+          const mais = document.createElement('div');
+          mais.className = 'totem-more-badge';
+          mais.textContent = `+${eventos.length - 2} mais`;
+          cell.appendChild(mais);
+        }
+
+        cell.addEventListener('click', () => selecionarDiaTotem(dataStr));
+        grid.appendChild(cell);
+      }
     }
   }
 
@@ -1358,53 +1562,109 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const titleEl = document.getElementById('totem-detalhe-data-titulo');
+    const statusEl = document.getElementById('totem-detalhe-status-dia');
     const listEl = document.getElementById('totem-detalhes-eventos-lista');
     if (!listEl) return;
 
     if (!dataStr) {
-      if (titleEl) titleEl.textContent = '📋 Próximas Atividades no Auditório';
+      if (titleEl) titleEl.textContent = '📋 Próximas Atividades';
+      if (statusEl) statusEl.textContent = '';
       listEl.innerHTML = `
-        <div style="text-align:center; padding: 24px; color: var(--text-muted); font-size: 15px;">
-          Nenhum evento agendado para este mês no momento.
+        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 13.5px;">
+          Nenhum dia selecionado. Toque em uma data no calendário.
         </div>
       `;
       return;
     }
 
     const partes = dataStr.split('-');
-    const dObj = new Date(partes[0], partes[1] - 1, partes[2]);
-    const dataFormatada = dObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const dObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+    const dataExtenso = formatarDataPorExtenso(dObj);
 
     if (titleEl) {
-      titleEl.innerHTML = `📅 Programação de <strong>${dataFormatada}</strong>`;
+      titleEl.textContent = dataExtenso;
     }
 
-    const eventos = totemAuditorioReservas.filter(r => r.data === dataStr);
+    let eventos = totemAuditorioReservas.filter(r => r.data === dataStr);
+    if (totemAuditorioFiltroTipo !== 'todos') {
+      eventos = eventos.filter(r => r.tipo === totemAuditorioFiltroTipo);
+    }
+
+    if (statusEl) {
+      if (eventos.length === 0) {
+        statusEl.innerHTML = '<span style="color:#16a34a; font-weight:800;">● Auditório Livre</span>';
+      } else {
+        statusEl.innerHTML = `<span style="color:#0284c7; font-weight:800;">● ${eventos.length} ${eventos.length === 1 ? 'atividade' : 'atividades'}</span>`;
+      }
+    }
+
     if (eventos.length === 0) {
       listEl.innerHTML = `
-        <div style="text-align:center; padding: 20px; color: #16a34a; font-size: 15px; font-weight: 700;">
-          ✨ Auditório 100% livre em todos os horários deste dia!
+        <div style="text-align:center; padding: 24px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-top:4px;">
+          <div style="font-size: 28px; margin-bottom: 6px;">✨</div>
+          <div style="color: #15803d; font-size: 14px; font-weight: 800;">Auditório 100% Livre</div>
+          <div style="color: #4b5563; font-size: 12px; margin-top: 3px;">Nenhuma atividade ou reserva agendada para este dia.</div>
         </div>
       `;
     } else {
       let html = '';
       eventos.forEach(ev => {
         html += `
-          <div class="totem-event-card">
-            <div class="totem-event-time">⏰ ${ev.hora_inicio} às ${ev.hora_fim}</div>
-            <div class="totem-event-body">
-              <div class="totem-event-title">${ev.titulo}</div>
-              <div class="totem-event-sub">
-                <span class="badge-tipo badge-tipo-${ev.tipo}">${ev.tipo_display || ev.tipo}</span>
-                &nbsp;Responsável: <strong>${ev.responsavel}</strong>
-                ${ev.turma_publico ? `&nbsp;•&nbsp;${ev.turma_publico}` : ''}
-              </div>
+          <div class="totem-event-card tipo-${ev.tipo}">
+            <div class="totem-event-card-top">
+              <span class="totem-event-time-badge">⏰ ${ev.hora_inicio} às ${ev.hora_fim}</span>
+              <span class="badge-tipo badge-tipo-${ev.tipo}">${ev.tipo_display || ev.tipo}</span>
             </div>
+            <h5 class="totem-event-title">${ev.titulo}</h5>
+            <div class="totem-event-sub">
+              👤 Responsável: <strong>${ev.responsavel || 'CEJA'}</strong>
+              ${ev.turma_publico ? ` • 👥 <strong>${ev.turma_publico}</strong>` : ''}
+            </div>
+            ${ev.descricao ? `<div class="totem-event-desc">📝 ${ev.descricao}</div>` : ''}
           </div>
         `;
       });
       listEl.innerHTML = html;
     }
+  }
+
+  function renderizarProximasAtividadesTotem() {
+    const listEl = document.getElementById('totem-proximas-atividades-lista');
+    if (!listEl) return;
+
+    const hoje = new Date();
+    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+
+    // Usa proximas da API ou filtra da lista atual
+    let lista = totemAuditorioProximas.length > 0
+      ? totemAuditorioProximas
+      : totemAuditorioReservas.filter(r => r.data >= hojeStr);
+
+    if (lista.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 10px; color: var(--text-muted); font-size: 12px;">
+          Nenhum agendamento futuro no momento.
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    lista.slice(0, 4).forEach(ev => {
+      const p = ev.data.split('-');
+      const dataFmt = `${p[2]}/${p[1]}`;
+      html += `
+        <div class="upcoming-item" onclick="selecionarDiaTotem('${ev.data}')" title="Toque para ver os detalhes deste dia">
+          <div class="upcoming-item-left">
+            <span class="badge-tipo badge-tipo-${ev.tipo}" style="font-size:10px; padding:2px 6px;">${ev.tipo_display || ev.tipo}</span>
+            <span class="upcoming-item-date">${dataFmt} • ${ev.hora_inicio}</span>
+            <span class="upcoming-item-title">${ev.titulo}</span>
+          </div>
+          <span style="font-size:12px; color:var(--primary); font-weight:800;">›</span>
+        </div>
+      `;
+    });
+    listEl.innerHTML = html;
   }
 
 

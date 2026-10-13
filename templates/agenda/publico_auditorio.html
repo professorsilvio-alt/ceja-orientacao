@@ -292,10 +292,10 @@
       text-align: center;
     }
 
-    /* ── GRID DO CALENDÁRIO (SEGUNDA A SEXTA - 5 COLUNAS) ── */
+    /* ── GRID DO CALENDÁRIO (SEMANA COMPLETA - 7 COLUNAS) ── */
     .calendario-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 5px;
     }
 
@@ -438,12 +438,19 @@
       font-size: 0.88rem;
       font-weight: 600;
       color: #fff;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      overflow-wrap: break-word;
+      word-break: normal;
     }
 
     .timeline-sub {
       font-size: 0.76rem;
       color: var(--text-muted);
       margin-top: 2px;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      overflow-wrap: break-word;
     }
 
     /* ── FORMULÁRIO DE AGENDAMENTO ───────────────── */
@@ -714,13 +721,15 @@
             <span class="cal-chip-evento chip-outro"><i class="bi bi-circle-fill" style="font-size:6px; color:#8b5cf6;"></i> Outro</span>
           </div>
 
-          <!-- Grid do Calendário (Segunda a Sexta) -->
+          <!-- Grid do Calendário (Semana Completa - 7 Colunas) -->
           <div class="calendario-grid" id="calendario-grid">
             <div class="cal-header-day">Seg</div>
             <div class="cal-header-day">Ter</div>
             <div class="cal-header-day">Qua</div>
             <div class="cal-header-day">Qui</div>
             <div class="cal-header-day">Sex</div>
+            <div class="cal-header-day" style="opacity:0.65;">Sáb</div>
+            <div class="cal-header-day" style="opacity:0.65;">Dom</div>
           </div>
 
           <!-- Detalhes do Dia Selecionado -->
@@ -962,29 +971,31 @@
       const primeiroDia = new Date(ANO, MES - 1, 1);
       const ultimoDia = new Date(ANO, MES, 0);
 
-      // Calcula offset inicial nos dias úteis (Segunda=0 ... Sexta=4)
-      const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
-      let offsetInicio = 0;
-      if (diaSemana1 >= 1 && diaSemana1 <= 5) {
-        offsetInicio = diaSemana1 - 1;
-      }
+      // Calcula offset inicial na semana (Segunda=0 ... Domingo=6)
+      const startDay = (primeiroDia.getDay() + 6) % 7;
+      const ultimoDiaMesAnterior = new Date(ANO, MES - 1, 0).getDate();
 
-      // Células vazias para alinhar o primeiro dia útil na coluna correta
-      for (let i = 0; i < offsetInicio; i++) {
+      // Células do mês anterior
+      for (let i = startDay - 1; i >= 0; i--) {
+        const diaNum = ultimoDiaMesAnterior - i;
         const cell = document.createElement('div');
         cell.className = 'cal-day-cell outro-mes';
+        cell.innerHTML = `<div class="cal-day-num" style="opacity:0.35;">${diaNum}</div>`;
         grid.appendChild(cell);
       }
 
-      // Dias úteis do mês (Segunda a Sexta - exclui sábado e domingo)
+      // Todos os dias do mês (1 ao último dia)
       for (let d = 1; d <= ultimoDia.getDate(); d++) {
         const dObj = new Date(ANO, MES - 1, d);
         const dow = dObj.getDay();
-        if (dow === 0 || dow === 6) continue; // Pula sábado e domingo!
+        const isFimDeSemana = (dow === 0 || dow === 6);
 
         const dataStr = `${ANO}-${String(MES).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const cell = document.createElement('div');
-        cell.className = 'cal-day-cell' + (dataStr === HOJE_STR ? ' hoje' : '');
+        let classes = 'cal-day-cell';
+        if (dataStr === HOJE_STR) classes += ' hoje';
+        if (isFimDeSemana) classes += ' weekend';
+        cell.className = classes;
         cell.setAttribute('data-date', dataStr);
 
         const numEl = document.createElement('div');
@@ -1026,6 +1037,19 @@
 
         cell.addEventListener('click', () => selecionarDia(dataStr));
         grid.appendChild(cell);
+      }
+
+      // Células do próximo mês para completar a grade
+      const totalCells = startDay + ultimoDia.getDate();
+      const resto = totalCells % 7;
+      if (resto !== 0) {
+        const slotsExtras = 7 - resto;
+        for (let nextD = 1; nextD <= slotsExtras; nextD++) {
+          const cell = document.createElement('div');
+          cell.className = 'cal-day-cell outro-mes';
+          cell.innerHTML = `<div class="cal-day-num" style="opacity:0.35;">${nextD}</div>`;
+          grid.appendChild(cell);
+        }
       }
     }
 

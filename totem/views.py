@@ -135,6 +135,7 @@ def view_auditorio_totem(request):
             'titulo': r.titulo,
             'tipo': r.tipo,
             'tipo_display': r.get_tipo_display(),
+            'descricao': r.descricao or '',
             'data': r.data.isoformat(),
             'hora_inicio': r.hora_inicio.strftime('%H:%M'),
             'hora_fim': r.hora_fim.strftime('%H:%M'),
