@@ -167,7 +167,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Alessandra",
+      nome: "Prof.ª Alessandra",
       foto: "",
       disciplinas: ["Ciências/Biologia", "Química"],
       horarios: [
@@ -178,7 +178,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Daniela",
+      nome: "Prof.ª Daniela",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -188,7 +188,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Delma",
+      nome: "Prof.ª Delma",
       foto: "",
       disciplinas: ["Ciências/Biologia"],
       horarios: [
@@ -198,7 +198,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Elaine",
+      nome: "Prof.ª Elaine",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -206,7 +206,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Eliane",
+      nome: "Prof.ª Eliane",
       foto: "",
       disciplinas: ["Educação Física"],
       horarios: [
@@ -215,7 +215,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Luciana",
+      nome: "Prof.ª Luciana",
       foto: "",
       disciplinas: ["Inglês", "Português"],
       horarios: [
@@ -225,7 +225,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Luciana Cavalcante",
+      nome: "Prof.ª Luciana Cavalcante",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -233,7 +233,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Marcela",
+      nome: "Prof.ª Marcela",
       foto: "",
       disciplinas: ["Química"],
       horarios: [
@@ -241,7 +241,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Sandra",
+      nome: "Prof.ª Sandra",
       foto: "",
       disciplinas: ["Português"],
       horarios: [
@@ -252,7 +252,7 @@ const DADOS_ESCOLA = {
       ]
     },
     {
-      nome: "Profª Viviane",
+      nome: "Prof.ª Viviane",
       foto: "",
       disciplinas: ["Química"],
       horarios: [
