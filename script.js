@@ -716,16 +716,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryName = typeLabelMap[type] || type;
     const emailSubject = `[CEJA Feedback] Novo envio: ${categoryName} (${topic})`;
 
-    fetch('https://formsubmit.co/ajax/admcejamesquita@gmail.com', {
+    // Base da API (direciona para o PythonAnywhere se acessado via GitHub Pages ou file://)
+    const API_FEEDBACK_BASE = (window.location.hostname.includes('github.io') || window.location.protocol === 'file:')
+      ? 'https://cejarosasoares.pythonanywhere.com'
+      : '';
+
+    // Envia diretamente para a API do CEJA (que dispara o e-mail via SMTP Gmail oficial e salva no banco de dados)
+    fetch(`${API_FEEDBACK_BASE}/api/totem/feedback/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        _subject: emailSubject, _captcha: 'false', _template: 'box',
-        'Tipo de Mensagem': categoryName, 'Assunto': topic, 'Mensagem': message,
-        'Data/Hora de Envio': newFeedback.timestamp
+        type: type,
+        topic: topic,
+        message: message,
+        timestamp: newFeedback.timestamp
       })
     })
-    .catch(() => {}) // localStorage fallback is enough
+    .then(res => res.json())
+    .then(data => {
+      console.log('Feedback enviado com sucesso para o CEJA:', data);
+    })
+    .catch(err => {
+      console.warn('Registro mantido localmente. Detalhes do envio:', err);
+    })
     .finally(() => {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnText;
