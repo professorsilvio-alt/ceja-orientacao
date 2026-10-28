@@ -137,6 +137,25 @@
   </div>
 </div>
 
+{% if is_diretor_usuario and diario_pendentes_count > 0 %}
+<div class="alert alert-warning border-0 shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 p-3" style="background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(15, 23, 42, 0.95)); border-left: 5px solid #eab308 !important; border-radius: 14px;">
+  <div class="d-flex align-items-center gap-3">
+    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(234, 179, 8, 0.25); color: #fde047; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0;">
+      <i class="bi bi-bell-fill"></i>
+    </div>
+    <div>
+      <h6 class="text-white fw-bold mb-1">Diário de Bordo: {{ diario_pendentes_count }} recado{{ diario_pendentes_count|pluralize }} pendente{{ diario_pendentes_count|pluralize }} de sua confirmação</h6>
+      <div class="text-secondary small">Novas ocorrências escolares registradas pela equipe da Direção aguardam sua ciência.</div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-shrink-0">
+    <a href="{% url 'listar_diario' %}" class="btn btn-warning btn-sm px-3 py-2 fw-bold text-dark shadow-sm">
+      <i class="bi bi-journal-check me-1"></i> Abrir Diário de Bordo
+    </a>
+  </div>
+</div>
+{% endif %}
+
 <!-- ── CARDS DE ESTATÍSTICAS (GRID UNIFORME DE 5 COLUNAS) ── -->
 <div class="stat-cards-grid mb-4">
   <div>
@@ -223,6 +242,13 @@
           <a href="{% url 'criar_usuario' %}" class="quick-action-btn btn-secondary-action">
             <div class="quick-action-icon"><i class="bi bi-person-gear"></i></div>
             <span>Novo Usuário</span>
+          </a>
+        </div>
+        <div class="col-6">
+          <a href="{% url 'listar_diario' %}" class="quick-action-btn position-relative" style="background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.35);">
+            <div class="quick-action-icon"><i class="bi bi-journal-bookmark-fill text-warning"></i></div>
+            <span>Diário de Bordo</span>
+            <span class="badge bg-danger rounded-pill ms-auto badge-diario-pendentes {% if not diario_pendentes_count %}d-none{% endif %}">{{ diario_pendentes_count }}</span>
           </a>
         </div>
         {% elif usuario.perfil == 'coordenador_pedagogico' %}

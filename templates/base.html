@@ -52,6 +52,14 @@
           <i class="bi bi-house-fill"></i> Dashboard
         </a>
       </li>
+      {% if user.perfil == 'diretor' or user.is_superuser %}
+      <li>
+        <a href="{% url 'listar_diario' %}" class="sidebar-link {% block nav_diario_bordo %}{% endblock %} d-flex justify-content-between align-items-center" style="font-weight:600;">
+          <span><i class="bi bi-journal-bookmark-fill text-warning"></i> Diário de Bordo</span>
+          <span class="badge bg-danger rounded-pill badge-diario-pendentes {% if not diario_pendentes_count %}d-none{% endif %}">{{ diario_pendentes_count }}</span>
+        </a>
+      </li>
+      {% endif %}
 
       {% if user.perfil == 'diretor' or user.is_superuser %}
       <li class="sidebar-section">Pessoas</li>
@@ -183,6 +191,12 @@
       </div>
       <div class="topbar-right">
         {% if user.perfil == 'diretor' or user.is_superuser %}
+        <a href="{% url 'listar_diario' %}" class="btn btn-sm d-none d-sm-inline-flex align-items-center me-1" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); font-weight: 700; padding: 4px 10px; border-radius: 8px; text-decoration: none;" title="Diário de Bordo da Direção">
+          <i class="bi bi-journal-bookmark-fill me-1 text-warning"></i> Diário de Bordo
+          <span class="badge rounded-pill bg-danger ms-1 badge-diario-pendentes {% if not diario_pendentes_count %}d-none{% endif %}">
+            {{ diario_pendentes_count }}
+          </span>
+        </a>
         <a href="{% url 'painel_banco_folgas' %}" class="btn btn-sm d-none d-sm-inline-flex align-items-center" style="background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.35); font-weight: 700; padding: 4px 10px; border-radius: 8px; text-decoration: none;" title="Consultar Banco de Horas & Folgas de Todos os Servidores">
           <i class="bi bi-hourglass-split me-1 text-warning"></i> Banco de Folgas
         </a>
@@ -279,5 +293,8 @@
     });
   </script>
   {% block extra_js %}{% endblock %}
+  {% if is_diretor_usuario %}
+  {% include "diario_bordo/modal_pendentes.html" %}
+  {% endif %}
 </body>
 </html>

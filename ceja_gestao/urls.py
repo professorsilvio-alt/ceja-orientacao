@@ -18,6 +18,7 @@ urlpatterns = [
     path('agenda/', include('agenda.urls')),
     path('cerebro/', include('orientador_ia.urls')),
     path('processos/', include('processos.urls')),
+    path('diario-de-bordo/', include('diario_bordo.urls')),
 
     # Servir arquivos do totem (CSS, JS, imagens)
     re_path(r'^totem/(?P<path>.*\.(png|jpg|jpeg|gif|css|js|ico|svg|txt))$', serve, {'document_root': settings.BASE_DIR}),

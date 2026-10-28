@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'totem',
     'orientador_ia',
     'processos',
+    'diario_bordo',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'diario_bordo.context_processors.diario_bordo_context',
             ],
         },
     },
