@@ -262,15 +262,20 @@ def api_enviar_feedback(request):
     subject = f'[CEJA Fale Conosco] {tipo_nome}: {assunto}'
     destinatario = getattr(settings, 'EMAIL_HOST_USER', 'admcejamesquita@gmail.com')
 
+    remetente_str = nome.strip() if (nome and nome.strip()) else 'Anônimo'
+    data_formatada = msg_obj.criado_em.strftime('%d/%m/%Y às %H:%M:%S')
+    contato_txt = f"📞 Contato: {contato.strip()}\n" if (contato and contato.strip()) else ""
+    contato_html = f'<tr><td style="padding: 6px 0; font-weight: bold;">Contato:</td><td style="padding: 6px 0; color: #0f172a;">{contato.strip()}</td></tr>' if (contato and contato.strip()) else ""
+
     body_txt = (
         f"============================================================\n"
         f"💬 CEJA - MENSAGEM DO FALE CONOSCO (TOTEM / SITE PÚBLICO)\n"
         f"============================================================\n\n"
         f"📌 Tipo: {tipo_nome}\n"
         f"🏷️ Assunto: {assunto}\n"
-        f"📅 Data/Hora: {msg_obj.criado_em.strftime('%d/%m/%Y às %H:%M:%S')}\n"
-        f"👤 Remetente: {nome or 'Anônimo'}\n"
-        f"{f'📞 Contato: {contato}\n' if contato else ''}"
+        f"📅 Data/Hora: {data_formatada}\n"
+        f"👤 Remetente: {remetente_str}\n"
+        f"{contato_txt}"
         f"\n📝 Mensagem:\n"
         f"------------------------------------------------------------\n"
         f"{mensagem}\n"
@@ -296,13 +301,13 @@ def api_enviar_feedback(request):
         <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #64748b;">
           <tr>
             <td style="padding: 6px 0; font-weight: bold; width: 110px;">Data/Hora:</td>
-            <td style="padding: 6px 0; color: #0f172a;">{msg_obj.criado_em.strftime('%d/%m/%Y às %H:%M:%S')}</td>
+            <td style="padding: 6px 0; color: #0f172a;">{data_formatada}</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; font-weight: bold;">Remetente:</td>
-            <td style="padding: 6px 0; color: #0f172a;">{nome or 'Anônimo'}</td>
+            <td style="padding: 6px 0; color: #0f172a;">{remetente_str}</td>
           </tr>
-          {f'<tr><td style="padding: 6px 0; font-weight: bold;">Contato:</td><td style="padding: 6px 0; color: #0f172a;">{contato}</td></tr>' if contato else ''}
+          {contato_html}
         </table>
       </div>
       <div style="background: #f8fafc; padding: 12px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
