@@ -58,8 +58,23 @@ class ConfiguracaoCarteira(models.Model):
 
     @classmethod
     def get_config(cls):
-        obj, _ = cls.objects.get_or_create(id=1)
-        return obj
+        try:
+            obj, _ = cls.objects.get_or_create(id=1)
+            return obj
+        except Exception:
+            try:
+                from django.core.management import call_command
+                call_command('migrate', interactive=False)
+                obj, _ = cls.objects.get_or_create(id=1)
+                return obj
+            except Exception:
+                return cls(
+                    emissao_publica_ativa=True,
+                    nome_diretor="Silvio da Silva Rosa Soares",
+                    cargo_diretor="Direção",
+                    unidade_escolar="CEJA PROFESSORA ROSA SOARES",
+                    codigo_ua="U.A.: 11802310502 - Ensino Médio",
+                )
 
 
 def gerar_codigo_autenticidade():
