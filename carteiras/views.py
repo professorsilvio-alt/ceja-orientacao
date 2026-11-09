@@ -58,7 +58,7 @@ def emitir_carteira_api(request):
             data = request.POST.dict()
 
         matricula = data.get('matricula', '').strip()
-        nome_aluno = data.get('nome_aluno', '').strip().upper()
+        nome_aluno = re.sub(r'\s+', ' ', data.get('nome_aluno', '').strip().upper())
         nome_operador = data.get('nome_operador', '').strip()
 
         if not matricula or not nome_aluno:
@@ -226,12 +226,19 @@ def bookmarklet_js(request):
         return m ? m[1].trim() : '';
     }}
     
+    // Captura campos multilinhas (como nome completo e filiação com quebras de linha)
+    function extrairMultilinha(regex) {{
+        var m = bodyText.match(regex);
+        if (!m) return '';
+        return m[1].replace(/[\\r\\n\\t]+/g, ' ').replace(/\\s{2,}/g, ' ').trim();
+    }}
+    
     var matricula = extrair(/Matr[íi]cula[:\\s]+([0-9]+)/i);
-    var nome = extrair(/Nome[:\\s]+([^\\n\\r]+)/i);
-    var email = extrair(/E-mail do Aluno[:\\s]+([^\\n\\r]+)/i);
-    var nascimento = extrair(/Nascimento[:\\s]+([0-9\\/]+)/i);
-    var validade = extrair(/Validade[:\\s]+([0-9\\/]+)/i);
-    var filiacao = extrair(/Filia[çc][ãa]o[:\\s]+([^\\n\\r]+)/i);
+    var nome = extrairMultilinha(/Nome[:\\s]+([\\s\\S]+?)(?=\\s*(?:E-mail|Nascimento|Validade|Filia|Matr[íi]cula|$))/i);
+    var email = extrair(/E-mail(?: do Aluno)?[:\\s]+([^\\s\\n\\r]+@[^\\s\\n\\r]+)/i);
+    var nascimento = extrair(/Nascimento[:\\s]+([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/i);
+    var validade = extrair(/Validade[:\\s]+([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/i);
+    var filiacao = extrairMultilinha(/Filia[çc][ãa]o[:\\s]+([\\s\\S]+?)(?=\\s*(?:Aluno|Dire[çc][ãa]o|O aluno dever|Validade|$))/i);
     var curso = extrair(/U\\.A\\.:[^\\n\\r]+-\\s*([^\\n\\r]+)/i) || 'Ensino Médio';
     
     // Captura foto do aluno
