@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'orientador_ia',
     'processos',
     'diario_bordo',
+    'carteiras',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chancela Digital de Carteira de Estudante — CEJA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <style>
+    body {
+      background: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-bar {
+      background: linear-gradient(135deg, #004b87, #0284c7);
+      color: white;
+      padding: 24px 0;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+    }
+
+    .main-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .card-header-custom {
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 24px;
+    }
+
+    .badge-status-on {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .badge-status-off {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .bookmarklet-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: white !important;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+      cursor: grab;
+      border: 2px dashed rgba(255, 255, 255, 0.5);
+      transition: all 0.2s;
+    }
+
+    .bookmarklet-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+      background: linear-gradient(135deg, #0369a1, #075985);
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 800;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      margin-right: 8px;
+    }
+
+    .footer-bar {
+      margin-top: auto;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      padding: 16px 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CABEÇALHO -->
+  <div class="header-bar">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div style="background: rgba(255,255,255,0.15); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px;">
+            <i class="bi bi-person-vcard-fill"></i>
+          </div>
+          <div>
+            <h1 class="h4 mb-0 fw-bold">Chancela Digital de Carteira de Estudante</h1>
+            <p class="mb-0 opacity-75 small">CEJA Professora Rosa Soares — Sistema Oficial de Autenticação da Direção</p>
+          </div>
+        </div>
+
+        <div>
+          {% if config.emissao_publica_ativa %}
+            <span class="badge-status-on"><i class="bi bi-check-circle-fill me-1"></i> Emissão Ativa & Autorizada</span>
+          {% else %}
+            <span class="badge-status-off"><i class="bi bi-pause-circle-fill me-1"></i> Emissão Suspensa pela Direção</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="container my-4">
+
+    {% if not config.emissao_publica_ativa %}
+      <div class="alert alert-warning border-warning d-flex align-items-center gap-3 p-4 mb-4 rounded-3 shadow-sm">
+        <i class="bi bi-exclamation-triangle-fill fs-2 text-warning"></i>
+        <div>
+          <h5 class="alert-heading fw-bold mb-1">Emissão Temporariamente Suspensa</h5>
+          <p class="mb-0">{{ config.aviso_manutencao|default:"A Direção do CEJA pausou temporariamente as emissões públicas de carteirinhas." }}</p>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="row g-4">
+      
+      <!-- COLUNA 1: MÉTODO 1 (BOTÃO MÁGICO DE 1 CLIQUE NO SCA) -->
+      <div class="col-lg-6">
+        <div class="main-card h-100">
+          <div class="card-header-custom d-flex align-items-center justify-content-between">
+            <h2 class="h6 mb-0 fw-bold text-primary">
+              <i class="bi bi-lightning-charge-fill me-1 text-warning"></i> Opção 1: Botão de 1 Clique (Recomendado)
+            </h2>
+            <span class="badge bg-primary">Mais Rápido</span>
+          </div>
+
+          <div class="p-4">
+            <p class="text-muted small">
+              Para você não precisar copiar e colar dados nem links, adicione este botão à barra de favoritos do seu navegador. Ele lê a carteirinha na tela do SCA e já abre pronta para imprimir!
+            </p>
+
+            <div class="text-center my-4 p-3 bg-light rounded-3 border border-dashed">
+              <p class="small text-muted mb-2 fw-semibold">👇 Arraste o botão abaixo para a sua barra de favoritos do navegador:</p>
+              
+              <!-- LINK DO BOOKMARKLET -->
+              <a href="javascript:(function(){var s=document.createElement('script');s.src='{{ host }}/carteira/bookmarklet.js?t='+Date.now();document.body.appendChild(s);})();" 
+                 class="bookmarklet-pill" 
+                 title="Arraste para a barra de favoritos do Chrome/Edge"
+                 onclick="alert('💡 Para instalar:\n1. Clique e arraste este botão para a sua Barra de Favoritos (Ctrl + Shift + B se ela estiver oculta);\n2. No site do CECIERJ, clique nele com a carteirinha aberta na tela!'); return false;">
+                <i class="bi bi-pen-fill"></i> 🖊️ Assinar Carteira CEJA
+              </a>
+              
+              <div class="mt-2 text-muted" style="font-size: 0.75rem;">
+                <i class="bi bi-info-circle me-1"></i> Se a barra de favoritos não estiver visível, pressione <strong>Ctrl + Shift + B</strong>.
+              </div>
+            </div>
+
+            <h3 class="h6 fw-bold mb-3">Como usar no dia a dia:</h3>
+            <ul class="list-unstyled small space-y-3 mb-0">
+              <li class="mb-2">
+                <span class="step-number">1</span>
+                Abra a carteirinha do aluno normalmente no sistema <strong>SCA do CECIERJ</strong>.
+              </li>
+              <li class="mb-2">
+                <span class="step-number">2</span>
+                Clique no botão <strong>"🖊️ Assinar Carteira CEJA"</strong> nos seus favoritos.
+              </li>
+              <li class="mb-2">
+                <span class="step-number">3</span>
+                A carteirinha abre instantaneamente com a <strong>assinatura oficial da Direção</strong> e o carimbo de segurança!
+              </li>
+              <li>
+                <span class="step-number">4</span>
+                A janela de impressão de <strong>17 cm x 7 cm</strong> abre automaticamente. É só imprimir, cortar e entregar!
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA 2: MÉTODO 2 (EMISSÃO MANUAL OU POR LINK) -->
+      <div class="col-lg-6">
+        <div class="main-card h-100">
+          <div class="card-header-custom">
+            <h2 class="h6 mb-0 fw-bold text-dark">
+              <i class="bi bi-pencil-square me-1 text-primary"></i> Opção 2: Emissão Manual / Digitação
+            </h2>
+          </div>
+
+          <div class="p-4">
+            <p class="text-muted small mb-3">
+              Caso prefira gerar digitando os dados ou corrigindo alguma informação do aluno:
+            </p>
+
+            <form id="formEmissaoManual" onsubmit="enviarManual(event)">
+              
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Seu Nome (Operador da Secretaria / Terceirizado) *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="bi bi-person-fill text-muted"></i></span>
+                  <input type="text" id="operadorNome" name="nome_operador" class="form-control" required placeholder="Ex: Patrícia - Secretaria">
+                </div>
+                <div class="form-text" style="font-size: 0.72rem;">Ficará registrado no carimbo de auditoria e no QR Code.</div>
+              </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-sm-5">
+                  <label class="form-label small fw-bold">Matrícula *</label>
+                  <input type="text" id="alunoMatricula" name="matricula" class="form-control" required placeholder="Ex: 262011000081">
+                </div>
+                <div class="col-sm-7">
+                  <label class="form-label small fw-bold">Nome do Aluno *</label>
+                  <input type="text" id="alunoNome" name="nome_aluno" class="form-control" required placeholder="Nome completo em maiúsculas">
+                </div>
+              </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-sm-6">
+                  <label class="form-label small fw-bold">Nascimento</label>
+                  <input type="text" id="alunoNascimento" name="data_nascimento" class="form-control" placeholder="DD/MM/AAAA">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label small fw-bold">Validade</label>
+                  <input type="text" id="alunoValidade" name="data_validade" class="form-control" placeholder="DD/MM/AAAA">
+                </div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label small fw-bold">Filiação</label>
+                <input type="text" id="alunoFiliacao" name="filiacao" class="form-control" placeholder="Nome da mãe e do pai">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-sm-6">
+                  <label class="form-label small fw-bold">E-mail do Aluno (Opcional)</label>
+                  <input type="email" id="alunoEmail" name="email_aluno" class="form-control" placeholder="aluno@email.com">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label small fw-bold">Link da Foto (Opcional)</label>
+                  <input type="url" id="alunoFoto" name="foto_base64_ou_url" class="form-control" placeholder="https://...">
+                </div>
+              </div>
+
+              <button type="submit" id="btnEmitirManual" class="btn btn-primary w-100 py-2 fw-bold" {% if not config.emissao_publica_ativa %}disabled{% endif %}>
+                <i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)
+              </button>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEÇÃO EXPLICATIVA: PADRÃO E SEGURANÇA -->
+    <div class="card border-0 bg-white shadow-sm p-4 rounded-3 mt-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h4 class="h6 fw-bold text-dark mb-2"><i class="bi bi-shield-lock-fill text-success me-1"></i> Padrão Oficial e Segurança Jurídica</h4>
+          <p class="small text-muted mb-0">
+            A carteira gerada possui as medidas regulamentares de <strong>17 cm x 7 cm</strong> (Frente e Verso de 8,5 cm cada). 
+            A assinatura oficial da Direção é aplicada de forma digital e protegida. Na parte de trás (aba interna), é gerado um 
+            <strong>QR Code exclusivo de autenticidade</strong> que comprova a legitimidade do documento perante autoridades de trânsito, eventos e órgãos públicos.
+          </p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+          <a href="{% url 'carteiras_auditoria' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-gear-fill me-1"></i> Área da Direção (Auditoria)
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ -->
+  <footer class="footer-bar text-center">
+    <div class="container">
+      CEJA Professora Rosa Soares &bull; U.A.: 11802310502 &bull; Mesquita / RJ<br>
+      <span style="font-size: 0.78rem;">Sistema Integrado de Chancela Digital e Controle Acadêmico</span>
+    </div>
+  </footer>
+
+  <script>
+    // Recupera o nome do operador salvo no navegador
+    document.addEventListener('DOMContentLoaded', () => {
+      const salvo = localStorage.getItem('ceja_operador_carteira');
+      if (salvo) {
+        document.getElementById('operadorNome').value = salvo;
+      }
+    });
+
+    async function enviarManual(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnEmitirManual');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando carteira assinada...';
+
+      const op = document.getElementById('operadorNome').value.trim();
+      if (op) {
+        localStorage.setItem('ceja_operador_carteira', op);
+      }
+
+      const payload = {
+        nome_operador: op,
+        matricula: document.getElementById('alunoMatricula').value.trim(),
+        nome_aluno: document.getElementById('alunoNome').value.trim().toUpperCase(),
+        data_nascimento: document.getElementById('alunoNascimento').value.trim(),
+        data_validade: document.getElementById('alunoValidade').value.trim(),
+        filiacao: document.getElementById('alunoFiliacao').value.trim(),
+        email_aluno: document.getElementById('alunoEmail').value.trim(),
+        foto_base64_ou_url: document.getElementById('alunoFoto').value.trim(),
+      };
+
+      try {
+        const resp = await fetch("{% url 'carteiras_emitir' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const res = await resp.json();
+        if (res.sucesso) {
+          window.open(res.redirect_url, '_blank');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)';
+        } else {
+          alert('❌ Erro: ' + (res.erro || 'Falha ao emitir carteira.'));
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)';
+        }
+      } catch (err) {
+        alert('❌ Falha na conexão com o servidor do CEJA.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)';
+      }
+    }
+  </script>
+
+</body>
+</html>

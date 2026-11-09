@@ -59,6 +59,11 @@
           <span class="badge bg-danger rounded-pill badge-diario-pendentes {% if not diario_pendentes_count %}d-none{% endif %}">{{ diario_pendentes_count }}</span>
         </a>
       </li>
+      <li>
+        <a href="{% url 'carteiras_auditoria' %}" class="sidebar-link {% block nav_carteiras %}{% endblock %}" style="font-weight:600;">
+          <span><i class="bi bi-person-vcard text-info"></i> Carteiras de Estudante</span>
+        </a>
+      </li>
       {% endif %}
 
       {% if user.perfil == 'diretor' or user.is_superuser %}
