@@ -332,6 +332,8 @@ def sincronizar_servidor(request):
         out = io.StringIO()
         call_command('migrate', interactive=False, stdout=out, stderr=out)
         logs.append(f"migrate: {out.getvalue()}")
+        recentes = list(CarteiraEstudanteEmitida.objects.values('id', 'codigo_autenticidade', 'matricula', 'nome_aluno')[:5])
+        logs.append(f"recentes: {recentes}")
     except Exception as e:
         logs.append(f"migrate error: {e}")
 
