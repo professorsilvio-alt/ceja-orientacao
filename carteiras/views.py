@@ -101,11 +101,23 @@ def emitir_carteira_api(request):
             ativo=True
         )
 
-        return JsonResponse({
-            'sucesso': True,
-            'codigo': carteira.codigo_autenticidade,
-            'redirect_url': f"/carteira/imprimir/{carteira.codigo_autenticidade}/?auto_print=1"
-        })
+        redirect_destino = f"/carteira/imprimir/{carteira.codigo_autenticidade}/?auto_print=1"
+
+        # Se for requisição AJAX/fetch ou JSON, responde com JSON
+        is_ajax = (
+            request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+            (request.content_type and 'application/json' in request.content_type) or
+            request.GET.get('format') == 'json'
+        )
+        if is_ajax:
+            return JsonResponse({
+                'sucesso': True,
+                'codigo': carteira.codigo_autenticidade,
+                'redirect_url': redirect_destino
+            })
+
+        # Para submit direto de formulário (ex: Bookmarklet), redireciona o navegador imediatamente para a impressão!
+        return redirect(redirect_destino)
 
     except Exception as e:
         return JsonResponse({'sucesso': False, 'erro': str(e)}, status=500)
@@ -207,84 +219,135 @@ def painel_auditoria_diretor(request):
     return render(request, 'carteiras/auditoria_diretor.html', context)
 
 
-def bookmarklet_js(request):
-    """
-    Entrega o script JavaScript do Bookmarklet dinâmico para a secretaria.
-    Puxa os dados direto do SCA CECIERJ e envia para a chancela do CEJA.
-    """
-    host = request.build_absolute_uri('/')[:-1]
-    js_code = f"""(function(){{
-    var host = "{host}";
-    
-    // Verifica se está na página de carteirinha do CECIERJ ou similar
+BOOKMARKLET_TEMPLATE = r"""(function() {
+    var host = "__HOST__";
     var doc = document;
     var bodyText = doc.body.innerText || '';
-    
-    // Captura dados do aluno na tela do SCA
-    function extrair(regex) {{
+
+    // Extrai texto com regex simples
+    function extrair(regex) {
         var m = bodyText.match(regex);
         return m ? m[1].trim() : '';
-    }}
-    
-    // Captura campos multilinhas (como nome completo e filiação com quebras de linha)
-    function extrairMultilinha(regex) {{
+    }
+
+    // Extrai campos multilinhas (como nome completo e filiação)
+    function extrairMultilinha(regex) {
         var m = bodyText.match(regex);
         if (!m) return '';
-        return m[1].replace(/[\\r\\n\\t]+/g, ' ').replace(/\\s{2,}/g, ' ').trim();
-    }}
-    
-    var matricula = extrair(/Matr[íi]cula[:\\s]+([0-9]+)/i);
-    var nome = extrairMultilinha(/Nome[:\\s]+([\\s\\S]+?)(?=\\s*(?:E-mail|Nascimento|Validade|Filia|Matr[íi]cula|$))/i);
-    var email = extrair(/E-mail(?: do Aluno)?[:\\s]+([^\\s\\n\\r]+@[^\\s\\n\\r]+)/i);
-    var nascimento = extrair(/Nascimento[:\\s]+([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/i);
-    var validade = extrair(/Validade[:\\s]+([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/i);
-    var filiacao = extrairMultilinha(/Filia[çc][ãa]o[:\\s]+([\\s\\S]+?)(?=\\s*(?:Aluno|Dire[çc][ãa]o|O aluno dever|Validade|$))/i);
-    var curso = extrair(/U\\.A\\.:[^\\n\\r]+-\\s*([^\\n\\r]+)/i) || 'Ensino Médio';
-    
-    // Captura foto do aluno
+        return m[1].replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    }
+
+    // Tenta encontrar campos no DOM diretamente
+    function extrairDoDOM(rotulo) {
+        try {
+            var elementos = doc.querySelectorAll('td, th, div, span, p, label, b, strong');
+            for (var i = 0; i < elementos.length; i++) {
+                var el = elementos[i];
+                var txt = (el.innerText || el.textContent || '').trim();
+                if (new RegExp('^' + rotulo + '[:\\s]*$', 'i').test(txt)) {
+                    if (el.nextElementSibling) {
+                        var v = (el.nextElementSibling.innerText || el.nextElementSibling.textContent || '').trim();
+                        if (v && v.length > 2) return v.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ');
+                    }
+                    if (el.parentElement && el.parentElement.cells) {
+                        var cells = el.parentElement.cells;
+                        for (var c = 0; c < cells.length; c++) {
+                            if (cells[c] === el && cells[c + 1]) {
+                                var vCell = (cells[c + 1].innerText || cells[c + 1].textContent || '').trim();
+                                if (vCell && vCell.length > 2) return vCell.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ');
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(e) {}
+        return '';
+    }
+
+    // Matrícula
+    var matricula = extrair(/Matr[íi]cula[:\s]+([0-9]{8,15})/i) || extrair(/([0-9]{12})/);
+    if (!matricula) matricula = extrairDoDOM('Matrícula');
+
+    // Nome do aluno
+    var nome = extrairDoDOM('Nome');
+    if (!nome) {
+        nome = extrairMultilinha(/Nome[:\s]+([\s\S]+?)(?=\s*(?:E-mail|Nascimento|Validade|Filia|Matr[íi]cula|$))/i);
+    }
+    if (nome) {
+        nome = nome.replace(/^(?:do\s+aluno|da\s+aluna)[:\s]*/i, '').trim();
+    }
+
+    // Se o nome tiver apenas uma palavra ou estiver suspeito, confirma com o operador
+    if (!nome || nome.split(' ').length < 2) {
+        var nomeManual = prompt('Por favor, confirme ou complete o Nome do Aluno:', nome || '');
+        if (nomeManual) {
+            nome = nomeManual.trim().toUpperCase();
+        }
+    }
+
+    // E-mail
+    var email = extrair(/E-mail(?: do Aluno)?[:\s]+([^\s\n\r]+@[^\s\n\r]+)/i);
+
+    // Nascimento e Validade
+    var nascimento = extrair(/Nascimento[:\s]+([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4})/i);
+    var validade = extrair(/Validade[:\s]+([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4})/i);
+
+    // Filiação
+    var filiacao = extrairDoDOM('Filiação');
+    if (!filiacao) {
+        filiacao = extrairMultilinha(/Filia[çc][ãa]o[:\s]+([\s\S]+?)(?=\s*(?:Aluno|Dire[çc][ãa]o|O aluno dever|Validade|$))/i);
+    }
+
+    // Curso / Unidade
+    var curso = extrair(/U\.A\.:[^\n\r]+-\s*([^;\n\r\t]+)/i) || 'Ensino Médio';
+    if (curso.indexOf('O aluno dever') !== -1) {
+        curso = curso.split('O aluno dever')[0].trim();
+    }
+
+    // Foto do Aluno
     var fotoUrl = '';
     var imgs = doc.querySelectorAll('img');
-    for (var i = 0; i < imgs.length; i++) {{
+    for (var i = 0; i < imgs.length; i++) {
         var src = imgs[i].src || '';
-        if (src.indexOf('foto') !== -1 || src.indexOf('aluno') !== -1 || src.indexOf('declaracao') !== -1) {{
+        if (src.indexOf('foto') !== -1 || src.indexOf('aluno') !== -1 || src.indexOf('declaracao') !== -1 || src.indexOf('carteira') !== -1) {
             fotoUrl = src;
             break;
-        }}
-    }}
-    if (!fotoUrl && imgs.length > 2) {{
-        fotoUrl = imgs[2].src; // geralmente a foto do aluno
-    }}
+        }
+    }
+    if (!fotoUrl && imgs.length > 2) {
+        fotoUrl = imgs[2].src;
+    }
 
-    // Nome do operador (salvo no navegador para não precisar digitar sempre)
+    // Nome do operador
     var operador = localStorage.getItem('ceja_operador_carteira') || '';
-    if (!operador) {{
+    if (!operador) {
         operador = prompt('Informe seu Nome (Operador da Secretaria / Terceirizado):', '');
-        if (operador) {{
+        if (operador) {
             localStorage.setItem('ceja_operador_carteira', operador);
-        }}
-    }}
-    if (!operador) {{
+        }
+    }
+    if (!operador) {
         operador = 'Secretaria / Apoio';
-    }}
+    }
 
-    if (!matricula || !nome) {{
-        alert('⚠️ Não foi possível identificar os dados da carteirinha nesta página.\\nCertifique-se de estar com a carteira de estudante aberta no SCA do CECIERJ.');
+    if (!matricula || !nome) {
+        alert('⚠️ Não foi possível identificar os dados da carteirinha nesta página.\nCertifique-se de estar com a carteira de estudante aberta no SCA do CECIERJ.');
         return;
-    }}
+    }
 
-    // Cria formulário invisível para postar e abrir a impressão
+    // Formulário invisível para postar e abrir a impressão
     var form = doc.createElement('form');
     form.method = 'POST';
     form.action = host + '/carteira/emitir/';
     form.target = '_blank';
 
-    function addInput(nomeCampo, valor) {{
+    function addInput(nomeCampo, valor) {
         var inp = doc.createElement('input');
         inp.type = 'hidden';
         inp.name = nomeCampo;
         inp.value = valor || '';
         form.appendChild(inp);
-    }}
+    }
 
     addInput('matricula', matricula);
     addInput('nome_aluno', nome);
@@ -299,7 +362,16 @@ def bookmarklet_js(request):
     doc.body.appendChild(form);
     form.submit();
     doc.body.removeChild(form);
-}})();"""
+})();"""
+
+
+def bookmarklet_js(request):
+    """
+    Entrega o script JavaScript do Bookmarklet dinâmico para a secretaria.
+    Puxa os dados direto do SCA CECIERJ e envia para a chancela do CEJA.
+    """
+    host = request.build_absolute_uri('/')[:-1]
+    js_code = BOOKMARKLET_TEMPLATE.replace('__HOST__', host)
     return HttpResponse(js_code, content_type='application/javascript; charset=utf-8')
 
 
@@ -332,6 +404,15 @@ def sincronizar_servidor(request):
         out = io.StringIO()
         call_command('migrate', interactive=False, stdout=out, stderr=out)
         logs.append(f"migrate: {out.getvalue()}")
+
+        # Atualiza registros existentes que estavam com dados incompletos
+        atualizados = CarteiraEstudanteEmitida.objects.filter(matricula='262011000081').update(
+            nome_aluno='LORENA VITÓRIA AUGUSTA AMÉRICO GUEDES',
+            filiacao='Marcia Augusta Américo e Daniel Paes Guedes',
+            curso='Ensino Médio'
+        )
+        logs.append(f"corrigidos_262011000081: {atualizados}")
+
         recentes = list(CarteiraEstudanteEmitida.objects.values('id', 'codigo_autenticidade', 'matricula', 'nome_aluno')[:5])
         logs.append(f"recentes: {recentes}")
     except Exception as e:
