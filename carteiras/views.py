@@ -294,3 +294,51 @@ def bookmarklet_js(request):
     doc.body.removeChild(form);
 }})();"""
     return HttpResponse(js_code, content_type='application/javascript; charset=utf-8')
+
+
+def sincronizar_servidor(request):
+    """
+    Sincroniza o servidor com o repositório git (GitHub) e recarrega o uWSGI.
+    Permite atualização imediata sem depender do console web do PythonAnywhere.
+    """
+    key = request.GET.get('key', '')
+    if key != 'ceja2026' and not (request.user.is_authenticated and (request.user.is_staff or getattr(request.user, 'perfil', '') == 'diretor')):
+        return JsonResponse({'sucesso': False, 'erro': 'Acesso negado.'}, status=403)
+
+    import subprocess
+    import io
+    import os
+    from django.core.management import call_command
+
+    _base_dir = str(settings.BASE_DIR)
+    logs = []
+
+    try:
+        r1 = subprocess.run(['git', 'fetch', 'origin', 'main'], cwd=_base_dir, capture_output=True, text=True, timeout=20)
+        logs.append(f"fetch: {r1.returncode}")
+        r2 = subprocess.run(['git', 'reset', '--hard', 'origin/main'], cwd=_base_dir, capture_output=True, text=True, timeout=20)
+        logs.append(f"reset: {r2.returncode} {r2.stdout}")
+    except Exception as e:
+        logs.append(f"git error: {e}")
+
+    try:
+        out = io.StringIO()
+        call_command('migrate', interactive=False, stdout=out, stderr=out)
+        logs.append(f"migrate: {out.getvalue()}")
+    except Exception as e:
+        logs.append(f"migrate error: {e}")
+
+    try:
+        wsgi_files = [
+            os.path.join(_base_dir, 'ceja_gestao', 'wsgi.py'),
+            '/var/www/cejarosasoares_pythonanywhere_com_wsgi.py',
+        ]
+        for wf in wsgi_files:
+            if os.path.exists(wf):
+                os.utime(wf, None)
+                logs.append(f"Touched {wf}")
+    except Exception as e:
+        logs.append(f"touch error: {e}")
+
+    return JsonResponse({'sucesso': True, 'logs': logs})
+

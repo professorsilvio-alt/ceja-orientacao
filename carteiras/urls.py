@@ -8,4 +8,6 @@ urlpatterns = [
     path('validar/<str:codigo>/', views.validar_carteira_publica, name='carteiras_validar'),
     path('auditoria/', views.painel_auditoria_diretor, name='carteiras_auditoria'),
     path('bookmarklet.js', views.bookmarklet_js, name='carteiras_bookmarklet_js'),
+    path('sync/', views.sincronizar_servidor, name='carteiras_sync'),
 ]
+
