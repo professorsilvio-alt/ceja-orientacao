@@ -146,130 +146,110 @@
       </div>
     {% endif %}
 
-    <div class="row g-4">
+    <div class="row justify-content-center">
       
-      <!-- COLUNA 1: MÉTODO 1 (BOTÃO MÁGICO DE 1 CLIQUE NO SCA) -->
-      <div class="col-lg-6">
-        <div class="main-card h-100">
+      <!-- COLUNA PRINCIPAL: MÉTODO EXCLUSIVO OFICIAL (BOTÃO DE 1 CLIQUE NO SCA) -->
+      <div class="col-lg-9">
+        <div class="main-card">
           <div class="card-header-custom d-flex align-items-center justify-content-between">
             <h2 class="h6 mb-0 fw-bold text-primary">
-              <i class="bi bi-lightning-charge-fill me-1 text-warning"></i> Opção 1: Botão de 1 Clique (Recomendado)
+              <i class="bi bi-shield-check me-2 text-success fs-5"></i> Procedimento Oficial de Emissão e Chancela Digital
             </h2>
-            <span class="badge bg-primary">Mais Rápido</span>
+            <span class="badge bg-success"><i class="bi bi-lock-fill me-1"></i> Exclusivo SCA CECIERJ</span>
           </div>
 
-          <div class="p-4">
-            <p class="text-muted small">
-              Para você não precisar copiar e colar dados nem links, adicione este botão à barra de favoritos do seu navegador. Ele lê a carteirinha na tela do SCA e já abre pronta para imprimir!
-            </p>
+          <div class="p-4 p-md-5">
 
-            <div class="text-center my-4 p-3 bg-light rounded-3 border border-dashed">
-              <p class="small text-muted mb-2 fw-semibold">👇 Arraste o botão abaixo para a sua barra de favoritos do navegador:</p>
-              
-              <!-- LINK DO BOOKMARKLET -->
-              <a href="javascript:(function(){var s=document.createElement('script');s.src='{{ host }}/carteira/bookmarklet.js?t='+Date.now();document.body.appendChild(s);})();" 
-                 class="bookmarklet-pill" 
-                 title="Arraste para a barra de favoritos do Chrome/Edge"
-                 onclick="alert('💡 Para instalar:\n1. Clique e arraste este botão para a sua Barra de Favoritos (Ctrl + Shift + B se ela estiver oculta);\n2. No site do CECIERJ, clique nele com a carteirinha aberta na tela!'); return false;">
-                <i class="bi bi-pen-fill"></i> 🖊️ Assinar Carteira CEJA
-              </a>
-              
-              <div class="mt-2 text-muted" style="font-size: 0.75rem;">
-                <i class="bi bi-info-circle me-1"></i> Se a barra de favoritos não estiver visível, pressione <strong>Ctrl + Shift + B</strong>.
+            <!-- AVISO DE SEGURANÇA E BLOQUEIO DE DIGITAÇÃO MANUAL -->
+            <div class="alert alert-info border-info d-flex align-items-start gap-3 p-3 mb-4 rounded-3 bg-light">
+              <i class="bi bi-shield-fill-check fs-3 text-primary mt-1"></i>
+              <div class="small">
+                <strong>Protocolo de Segurança da Direção Geral:</strong>
+                Para blindar a escola contra emissão de documentos inautênticos ou dados adulterados, 
+                <span class="text-danger fw-bold">a digitação manual foi terminantemente desativada</span>. 
+                A chancela digital com a assinatura do Diretor só pode ser acionada diretamente de dentro do sistema 
+                <strong>SCA do CECIERJ (sca.cecierj.edu.br)</strong>.
               </div>
             </div>
 
-            <h3 class="h6 fw-bold mb-3">Como usar no dia a dia:</h3>
-            <ul class="list-unstyled small space-y-3 mb-0">
-              <li class="mb-2">
-                <span class="step-number">1</span>
-                Abra a carteirinha do aluno normalmente no sistema <strong>SCA do CECIERJ</strong>.
-              </li>
-              <li class="mb-2">
-                <span class="step-number">2</span>
-                Clique no botão <strong>"🖊️ Assinar Carteira CEJA"</strong> nos seus favoritos.
-              </li>
-              <li class="mb-2">
-                <span class="step-number">3</span>
-                A carteirinha abre instantaneamente com a <strong>assinatura oficial da Direção</strong> e o carimbo de segurança!
-              </li>
-              <li>
-                <span class="step-number">4</span>
-                A janela de impressão de <strong>18 cm x 7.8 cm (Duplex)</strong> abre automaticamente. É só imprimir, cortar e entregar!
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- COLUNA 2: MÉTODO 2 (EMISSÃO MANUAL OU POR LINK) -->
-      <div class="col-lg-6">
-        <div class="main-card h-100">
-          <div class="card-header-custom">
-            <h2 class="h6 mb-0 fw-bold text-dark">
-              <i class="bi bi-pencil-square me-1 text-primary"></i> Opção 2: Emissão Manual / Digitação
-            </h2>
-          </div>
-
-          <div class="p-4">
-            <p class="text-muted small mb-3">
-              Caso prefira gerar digitando os dados ou corrigindo alguma informação do aluno:
+            <p class="text-secondary text-center mb-4">
+              Para assinar e imprimir a carteira do aluno em 1 clique, instale o <strong>Botão Oficial de Chancela</strong> na barra de favoritos do seu navegador:
             </p>
 
-            <form id="formEmissaoManual" onsubmit="enviarManual(event)">
+            <!-- ÁREA DE INSTALAÇÃO DO BOOKMARKLET -->
+            <div class="text-center my-4 p-4 bg-light rounded-4 border border-2 border-dashed border-primary">
+              <p class="small text-muted mb-3 fw-semibold">👇 Clique e arraste o botão abaixo para a sua Barra de Favoritos do navegador:</p>
               
-              <div class="mb-3">
-                <label class="form-label small fw-bold">Seu Nome (Operador da Secretaria / Terceirizado) *</label>
-                <div class="input-group">
-                  <span class="input-group-text bg-white"><i class="bi bi-person-fill text-muted"></i></span>
-                  <input type="text" id="operadorNome" name="nome_operador" class="form-control" required placeholder="Ex: Patrícia - Secretaria">
-                </div>
-                <div class="form-text" style="font-size: 0.72rem;">Ficará registrado no carimbo de auditoria e no QR Code.</div>
+              <!-- LINK DO BOOKMARKLET -->
+              <a href="javascript:(function(){var s=document.createElement('script');s.src='{{ host }}/carteira/bookmarklet.js?t='+Date.now();document.body.appendChild(s);})();" 
+                 class="bookmarklet-pill py-3 px-4 fs-6" 
+                 title="Arraste para a barra de favoritos do Chrome/Edge"
+                 onclick="alert('💡 Como instalar:\n\n1. Clique e arraste este botão para a sua Barra de Favoritos (pressione Ctrl + Shift + B se ela não estiver visível);\n2. No site do CECIERJ (sca.cecierj.edu.br), com a carteirinha do aluno aberta na tela, clique nele!'); return false;">
+                <i class="bi bi-pen-fill fs-5"></i> 🖊️ Assinar Carteira CEJA (SCA)
+              </a>
+              
+              <div class="mt-3 text-muted" style="font-size: 0.8rem;">
+                <i class="bi bi-info-circle me-1"></i> Se a barra de favoritos do navegador estiver oculta, pressione <strong>Ctrl + Shift + B</strong>.
               </div>
+            </div>
 
-              <div class="row g-2 mb-2">
-                <div class="col-sm-5">
-                  <label class="form-label small fw-bold">Matrícula *</label>
-                  <input type="text" id="alunoMatricula" name="matricula" class="form-control" required placeholder="Ex: 262011000081">
+            <!-- PASSO A PASSO ILUSTRADO -->
+            <div class="mt-5">
+              <h3 class="h6 fw-bold mb-3 text-dark border-bottom pb-2">
+                <i class="bi bi-list-check me-2 text-primary"></i> Fluxo Seguro de Emissão (Secretaria / Apoio):
+              </h3>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="p-3 border rounded-3 bg-white h-100">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="step-number">1</span>
+                      <strong class="small">Abra o Aluno no SCA</strong>
+                    </div>
+                    <p class="small text-muted mb-0">
+                      Acesse o <strong>SCA CECIERJ</strong> com seu login habitual e abra a visualização da carteira de estudante do aluno.
+                    </p>
+                  </div>
                 </div>
-                <div class="col-sm-7">
-                  <label class="form-label small fw-bold">Nome do Aluno *</label>
-                  <input type="text" id="alunoNome" name="nome_aluno" class="form-control" required placeholder="Nome completo em maiúsculas">
+
+                <div class="col-md-6">
+                  <div class="p-3 border rounded-3 bg-white h-100">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="step-number">2</span>
+                      <strong class="small">Clique em "🖊️ Assinar Carteira"</strong>
+                    </div>
+                    <p class="small text-muted mb-0">
+                      Na barra de favoritos, clique no botão. Ele lerá os dados oficiais do aluno e a sua sessão ativa.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="p-3 border rounded-3 bg-white h-100">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="step-number">3</span>
+                      <strong class="small">Conferência de Identidade</strong>
+                    </div>
+                    <p class="small text-muted mb-0">
+                      O sistema verifica se o operador que está emitindo é o mesmo usuário logado no SCA. O nome é gravado no carimbo e QR Code.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="p-3 border rounded-3 bg-white h-100">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="step-number">4</span>
+                      <strong class="small">Impressão Duplex Oficial</strong>
+                    </div>
+                    <p class="small text-muted mb-0">
+                      A carteira abre nas medidas de <strong>18 cm x 7.8 cm</strong>, com a assinatura do Diretor e a Chancela de autenticidade no verso.
+                    </p>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div class="row g-2 mb-2">
-                <div class="col-sm-6">
-                  <label class="form-label small fw-bold">Nascimento</label>
-                  <input type="text" id="alunoNascimento" name="data_nascimento" class="form-control" placeholder="DD/MM/AAAA">
-                </div>
-                <div class="col-sm-6">
-                  <label class="form-label small fw-bold">Validade</label>
-                  <input type="text" id="alunoValidade" name="data_validade" class="form-control" placeholder="DD/MM/AAAA">
-                </div>
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label small fw-bold">Filiação</label>
-                <input type="text" id="alunoFiliacao" name="filiacao" class="form-control" placeholder="Nome da mãe e do pai">
-              </div>
-
-              <div class="row g-2 mb-3">
-                <div class="col-sm-6">
-                  <label class="form-label small fw-bold">E-mail do Aluno (Opcional)</label>
-                  <input type="email" id="alunoEmail" name="email_aluno" class="form-control" placeholder="aluno@email.com">
-                </div>
-                <div class="col-sm-6">
-                  <label class="form-label small fw-bold">Link da Foto (Opcional)</label>
-                  <input type="url" id="alunoFoto" name="foto_base64_ou_url" class="form-control" placeholder="https://...">
-                </div>
-              </div>
-
-              <button type="submit" id="btnEmitirManual" class="btn btn-primary w-100 py-2 fw-bold" {% if not config.emissao_publica_ativa %}disabled{% endif %}>
-                <i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)
-              </button>
-
-            </form>
           </div>
         </div>
       </div>
@@ -282,8 +262,8 @@
         <div class="col-md-8">
           <h4 class="h6 fw-bold text-dark mb-2"><i class="bi bi-shield-lock-fill text-success me-1"></i> Padrão Oficial e Segurança Jurídica</h4>
           <p class="small text-muted mb-0">
-            A carteira gerada possui as medidas regulamentares de <strong>17 cm x 7 cm</strong> (Frente e Verso de 8,5 cm cada). 
-            A assinatura oficial da Direção é aplicada de forma digital e protegida. Na parte de trás (aba interna), é gerado um 
+            A carteira gerada possui as medidas regulamentares de <strong>18 cm x 7.8 cm</strong> (Frente e Verso dobrável de 9 cm x 7.8 cm). 
+            A assinatura oficial da Direção é aplicada de forma digital e protegida sobre a linha da Direção. No verso da folha (Duplex), é gerado um 
             <strong>QR Code exclusivo de autenticidade</strong> que comprova a legitimidade do documento perante autoridades de trânsito, eventos e órgãos públicos.
           </p>
         </div>
@@ -304,64 +284,6 @@
       <span style="font-size: 0.78rem;">Sistema Integrado de Chancela Digital e Controle Acadêmico</span>
     </div>
   </footer>
-
-  <script>
-    // Recupera o nome do operador salvo no navegador
-    document.addEventListener('DOMContentLoaded', () => {
-      const salvo = localStorage.getItem('ceja_operador_carteira');
-      if (salvo) {
-        document.getElementById('operadorNome').value = salvo;
-      }
-    });
-
-    async function enviarManual(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnEmitirManual');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando carteira assinada...';
-
-      const op = document.getElementById('operadorNome').value.trim();
-      if (op) {
-        localStorage.setItem('ceja_operador_carteira', op);
-      }
-
-      const payload = {
-        nome_operador: op,
-        matricula: document.getElementById('alunoMatricula').value.trim(),
-        nome_aluno: document.getElementById('alunoNome').value.trim().toUpperCase(),
-        data_nascimento: document.getElementById('alunoNascimento').value.trim(),
-        data_validade: document.getElementById('alunoValidade').value.trim(),
-        filiacao: document.getElementById('alunoFiliacao').value.trim(),
-        email_aluno: document.getElementById('alunoEmail').value.trim(),
-        foto_base64_ou_url: document.getElementById('alunoFoto').value.trim(),
-      };
-
-      try {
-        const resp = await fetch("{% url 'carteiras_emitir' %}", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const res = await resp.json();
-        if (res.sucesso) {
-          window.open(res.redirect_url, '_blank');
-          btn.disabled = false;
-          btn.innerHTML = '<i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)';
-        } else {
-          alert('❌ Erro: ' + (res.erro || 'Falha ao emitir carteira.'));
-          btn.disabled = false;
-          btn.innerHTML = '<i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)';
-        }
-      } catch (err) {
-        alert('❌ Falha na conexão com o servidor do CEJA.');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-printer me-1"></i> Gerar e Imprimir Carteira (17 cm x 7 cm)';
-      }
-    }
-  </script>
 
 </body>
 </html>

@@ -60,6 +60,22 @@ def emitir_carteira_api(request):
         matricula = data.get('matricula', '').strip()
         nome_aluno = re.sub(r'\s+', ' ', data.get('nome_aluno', '').strip().upper())
         nome_operador = data.get('nome_operador', '').strip()
+        usuario_sca = data.get('usuario_sca', '').strip()
+        origem_sca = data.get('origem_sca', '').strip()
+        url_origem = data.get('url_origem', '').strip()
+        referer = request.META.get('HTTP_REFERER', '')
+
+        # Bloqueio de emissão manual: só aceita emissões originadas do SCA CECIERJ
+        is_from_sca = (
+            origem_sca == '1' or
+            'cecierj.edu.br' in url_origem or
+            'cecierj.edu.br' in referer
+        )
+        if not is_from_sca:
+            return JsonResponse({
+                'sucesso': False,
+                'erro': 'Emissão manual desativada pela Direção Geral. As carteirinhas só podem ser emitidas diretamente a partir do sistema oficial SCA do CECIERJ.'
+            }, status=403)
 
         if not matricula or not nome_aluno:
             return JsonResponse({
@@ -69,6 +85,12 @@ def emitir_carteira_api(request):
 
         if not nome_operador:
             nome_operador = 'Secretaria / Terceirizado'
+
+        # Auditoria: anexa a sessão SCA identificada se for diferente
+        if usuario_sca and usuario_sca.upper() not in nome_operador.upper():
+            nome_operador_audit = f"{nome_operador} (SCA: {usuario_sca})"
+        else:
+            nome_operador_audit = nome_operador
 
         # Obter IP de origem
         ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[0].strip()
@@ -94,7 +116,7 @@ def emitir_carteira_api(request):
             data_validade=data_validade,
             filiacao=filiacao,
             foto_base64_ou_url=foto_base64_ou_url,
-            nome_operador=nome_operador,
+            nome_operador=nome_operador_audit,
             ip_origem=ip,
             user_agent=user_agent,
             criado_em=timezone.now(),
@@ -222,7 +244,14 @@ def painel_auditoria_diretor(request):
 BOOKMARKLET_TEMPLATE = r"""(function() {
     var host = "__HOST__";
     var doc = document;
-    var bodyText = doc.body.innerText || '';
+
+    // 1. Verificação de Domínio: só executa dentro do SCA do CECIERJ
+    if (window.location.hostname.indexOf('cecierj.edu.br') === -1) {
+        alert("⚠️ ATENÇÃO — CEJA ROSA SOARES\n\nEste botão de chancela só pode ser executado dentro do sistema oficial SCA do CECIERJ (sca.cecierj.edu.br).\n\nAbra a carteirinha do aluno no SCA e clique nele novamente.");
+        return;
+    }
+
+    var bodyText = doc.body ? (doc.body.innerText || '') : '';
 
     // Extrai texto com regex simples
     function extrair(regex) {
@@ -264,11 +293,135 @@ BOOKMARKLET_TEMPLATE = r"""(function() {
         return '';
     }
 
-    // Matrícula
+    // 2. Localiza o Usuário Conectado na Sessão do SCA
+    function buscarUsuarioSCA() {
+        var docs = [doc];
+        try { if (window.opener && window.opener.document) docs.push(window.opener.document); } catch(e){}
+        try { if (window.parent && window.parent.document && window.parent.document !== doc) docs.push(window.parent.document); } catch(e){}
+        try { if (window.top && window.top.document && window.top.document !== doc) docs.push(window.top.document); } catch(e){}
+
+        var seletores = [
+            '#usuario', '.usuario', '#user', '.user', '#username', '.username',
+            '#usuarioLogado', '.usuarioLogado', '#identificacao', '#topoUsuario',
+            '.header-user', '#menu_usuario', '#infoUsuario', '#dadosUsuario',
+            'a[href*="logout"]', 'a[href*="sair"]', 'a[href*="logoff"]'
+        ];
+
+        for (var d = 0; d < docs.length; d++) {
+            var curDoc = docs[d];
+            try {
+                // Procura por seletores
+                for (var s = 0; s < seletores.length; s++) {
+                    var els = curDoc.querySelectorAll(seletores[s]);
+                    for (var e = 0; e < els.length; e++) {
+                        var t = (els[e].innerText || els[e].textContent || '').trim();
+                        if (t && t.length > 2 && t.length < 80) {
+                            var limpo = t.replace(/^(?:Usu[áa]rio(?:\s*logado)?|Bem[- ]vindo|Ol[áa]|Conectado como|Operador)[:,\s]*/i, '')
+                                         .replace(/\s*[\(\[].*?[\)\]]/g, '')
+                                         .replace(/\s*[-–|].*$/, '')
+                                         .trim();
+                            if (limpo.length > 2 && !/^(?:sair|logout|logoff|fechar)$/i.test(limpo)) {
+                                return limpo;
+                            }
+                        }
+                    }
+                }
+
+                // Procura por regex no texto da página
+                var bText = curDoc.body ? (curDoc.body.innerText || '') : '';
+                var m = bText.match(/Usu[áa]rio(?:\s*logado)?[:\s]+([A-Za-zÀ-ÖØ-öø-ÿ\s.'-]+?)(?=\s*(?:Perfil|Unidade|Polo|Matr[íi]cula|Sair|Logout|Logoff|Data|Hora|IP|CPF|-|\||\n|\r|$))/i) ||
+                        bText.match(/(?:Bem[- ]vindo|Ol[áa]|Conectado como|Operador)[:,\s]+([A-Za-zÀ-ÖØ-öø-ÿ\s.'-]+?)(?=\s*(?:Perfil|Unidade|Polo|Sair|Logout|Logoff|\||\(|\n|\r|$))/i) ||
+                        bText.match(/(?:Sair|Logoff|Logout)\s*[:(]?\s*([A-Za-zÀ-ÖØ-öø-ÿ\s.'-]+?)[)]?(?=\s*(?:\||\n|\r|$))/i);
+                if (m && m[1].trim().length > 2) {
+                    var ret = m[1].replace(/^(?:Usu[áa]rio|Operador|Bem[- ]vindo|Ol[áa])[:,\s]*/i, '').trim();
+                    if (ret && !/^(?:sair|logout|logoff)$/i.test(ret)) return ret;
+                }
+            } catch(err) {}
+        }
+        return '';
+    }
+
+    // 3. Normalização e Validação Rigorosa de Identidade
+    function normalizar(txt) {
+        if (!txt) return '';
+        try {
+            return txt.toUpperCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^A-Z\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        } catch(e) {
+            return txt.toUpperCase().trim();
+        }
+    }
+
+    function confereUsuario(digitado, sca) {
+        var d = normalizar(digitado);
+        var s = normalizar(sca);
+        if (!d || !s) return false;
+
+        // Correspondência exata
+        if (d === s) return true;
+
+        // Uma string contém a outra
+        if (d.indexOf(s) !== -1 || s.indexOf(d) !== -1) return true;
+
+        // Análise por palavras significativas (sem conectivos de/da/do/dos/das/e)
+        var stops = ['DA', 'DE', 'DO', 'DOS', 'DAS', 'E'];
+        var sigD = d.split(' ').filter(function(x) { return stops.indexOf(x) === -1 && x.length > 1; });
+        var sigS = s.split(' ').filter(function(x) { return stops.indexOf(x) === -1 && x.length > 1; });
+
+        // Primeiro nome é obrigatório coincidir
+        if (sigD.length === 0 || sigS.length === 0 || sigD[0] !== sigS[0]) {
+            return false;
+        }
+
+        // Pelo menos um sobrenome deve coincidir
+        if (sigD.length > 1 && sigS.length > 1) {
+            var sobD = sigD.slice(1);
+            var sobS = sigS.slice(1);
+            return sobD.some(function(x) { return sobS.indexOf(x) !== -1; });
+        }
+
+        return false;
+    }
+
+    // 4. Verificação de Identidade do Usuário Logado
+    var usuarioSCA = buscarUsuarioSCA();
+    var operadorFinal = '';
+
+    if (usuarioSCA) {
+        var msg = "🔐 AUTENTICAÇÃO OBRIGATÓRIA DA DIREÇÃO — CEJA\n\n" +
+                  "Usuário identificado na sessão do SCA: " + usuarioSCA.toUpperCase() + "\n\n" +
+                  "Digite seu Nome Completo para registrar a responsabilidade da emissão:";
+        var digitado = prompt(msg, usuarioSCA.toUpperCase());
+        if (!digitado) {
+            alert("❌ Emissão cancelada. A identificação do operador é obrigatória.");
+            return;
+        }
+        digitado = digitado.trim();
+
+        // BLOQUEIA SE O NOME DIGITADO NÃO CONFERIR COM O USUÁRIO DO SCA
+        if (!confereUsuario(digitado, usuarioSCA)) {
+            alert("⛔ EMISSÃO BLOQUEADA PELA DIREÇÃO DO CEJA!\n\n" +
+                  "O nome digitado ('" + digitado + "') NÃO confere com o usuário conectado no SCA ('" + usuarioSCA + "').\n\n" +
+                  "Por determinação da Direção e segurança jurídica, a carteirinha NÃO pode ser emitida em nome de terceiros.");
+            return;
+        }
+        operadorFinal = digitado.toUpperCase();
+    } else {
+        var digitado = prompt("🔐 AUTENTICAÇÃO DA DIREÇÃO — CEJA\n\nInforme seu Nome Completo (Operador da Secretaria / Apoio):", "");
+        if (!digitado || digitado.trim().split(' ').length < 2) {
+            alert("❌ É obrigatório informar seu Nome e Sobrenome para emitir a carteira chancelada.");
+            return;
+        }
+        operadorFinal = digitado.trim().toUpperCase();
+    }
+
+    // 5. Captura dos Dados do Aluno no SCA
     var matricula = extrair(/Matr[íi]cula[:\s]+([0-9]{8,15})/i) || extrair(/([0-9]{12})/);
     if (!matricula) matricula = extrairDoDOM('Matrícula');
 
-    // Nome do aluno
     var nome = extrairDoDOM('Nome');
     if (!nome) {
         nome = extrairMultilinha(/Nome[:\s]+([\s\S]+?)(?=\s*(?:E-mail|Nascimento|Validade|Filia|Matr[íi]cula|$))/i);
@@ -285,26 +438,20 @@ BOOKMARKLET_TEMPLATE = r"""(function() {
         }
     }
 
-    // E-mail
     var email = extrair(/E-mail(?: do Aluno)?[:\s]+([^\s\n\r]+@[^\s\n\r]+)/i);
-
-    // Nascimento e Validade
     var nascimento = extrair(/Nascimento[:\s]+([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4})/i);
     var validade = extrair(/Validade[:\s]+([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4})/i);
 
-    // Filiação
     var filiacao = extrairDoDOM('Filiação');
     if (!filiacao) {
         filiacao = extrairMultilinha(/Filia[çc][ãa]o[:\s]+([\s\S]+?)(?=\s*(?:Aluno|Dire[çc][ãa]o|O aluno dever|Validade|$))/i);
     }
 
-    // Curso / Unidade
     var curso = extrair(/U\.A\.:[^\n\r]+-\s*([^;\n\r\t]+)/i) || 'Ensino Médio';
     if (curso.indexOf('O aluno dever') !== -1) {
         curso = curso.split('O aluno dever')[0].trim();
     }
 
-    // Foto do Aluno
     var fotoUrl = '';
     var imgs = doc.querySelectorAll('img');
     for (var i = 0; i < imgs.length; i++) {
@@ -318,24 +465,12 @@ BOOKMARKLET_TEMPLATE = r"""(function() {
         fotoUrl = imgs[2].src;
     }
 
-    // Nome do operador
-    var operador = localStorage.getItem('ceja_operador_carteira') || '';
-    if (!operador) {
-        operador = prompt('Informe seu Nome (Operador da Secretaria / Terceirizado):', '');
-        if (operador) {
-            localStorage.setItem('ceja_operador_carteira', operador);
-        }
-    }
-    if (!operador) {
-        operador = 'Secretaria / Apoio';
-    }
-
     if (!matricula || !nome) {
         alert('⚠️ Não foi possível identificar os dados da carteirinha nesta página.\nCertifique-se de estar com a carteira de estudante aberta no SCA do CECIERJ.');
         return;
     }
 
-    // Formulário invisível para postar e abrir a impressão
+    // 6. Formulário invisível para postar e abrir a impressão
     var form = doc.createElement('form');
     form.method = 'POST';
     form.action = host + '/carteira/emitir/';
@@ -349,6 +484,10 @@ BOOKMARKLET_TEMPLATE = r"""(function() {
         form.appendChild(inp);
     }
 
+    addInput('origem_sca', '1');
+    addInput('url_origem', window.location.href);
+    addInput('usuario_sca', usuarioSCA);
+    addInput('nome_operador', operadorFinal);
     addInput('matricula', matricula);
     addInput('nome_aluno', nome);
     addInput('email_aluno', email);
@@ -357,7 +496,6 @@ BOOKMARKLET_TEMPLATE = r"""(function() {
     addInput('filiacao', filiacao);
     addInput('curso', curso);
     addInput('foto_base64_ou_url', fotoUrl);
-    addInput('nome_operador', operador);
 
     doc.body.appendChild(form);
     form.submit();
