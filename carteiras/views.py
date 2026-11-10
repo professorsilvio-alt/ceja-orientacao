@@ -101,7 +101,8 @@ def emitir_carteira_api(request):
         email_aluno = data.get('email_aluno', '').strip()
         data_nascimento = data.get('data_nascimento', '').strip()
         data_validade = data.get('data_validade', '').strip()
-        filiacao = data.get('filiacao', '').strip()
+        filiacao = re.sub(r'[_\-─—=]{2,}', '', data.get('filiacao', '')).strip()
+        filiacao = re.sub(r'\s+', ' ', filiacao).strip()
         foto_base64_ou_url = data.get('foto_base64_ou_url', '').strip()
 
         # Cria o registro no banco de dados
@@ -152,6 +153,8 @@ def imprimir_carteira(request, codigo):
     e a aba oculta com QR Code e dados de autenticação.
     """
     carteira = get_object_or_404(CarteiraEstudanteEmitida, codigo_autenticidade=codigo)
+    if carteira.filiacao:
+        carteira.filiacao = re.sub(r'[_\-─—=]{2,}', '', carteira.filiacao).strip()
     config = ConfiguracaoCarteira.get_config()
 
     # URL absoluta para validação do QR Code
@@ -446,6 +449,9 @@ BOOKMARKLET_TEMPLATE = r"""(function() {
     if (!filiacao) {
         filiacao = extrairMultilinha(/Filia[çc][ãa]o[:\s]+([\s\S]+?)(?=\s*(?:Aluno|Dire[çc][ãa]o|O aluno dever|Validade|$))/i);
     }
+    if (filiacao) {
+        filiacao = filiacao.replace(/[_\-─—=]{2,}/g, '').replace(/\s{2,}/g, ' ').trim();
+    }
 
     var curso = extrair(/U\.A\.:[^\n\r]+-\s*([^;\n\r\t]+)/i) || 'Ensino Médio';
     if (curso.indexOf('O aluno dever') !== -1) {
@@ -550,6 +556,15 @@ def sincronizar_servidor(request):
             curso='Ensino Médio'
         )
         logs.append(f"corrigidos_262011000081: {atualizados}")
+
+        # Limpa qualquer traço/sublinhado capturado indevidamente no campo filiacao
+        qtd_limpos = 0
+        for cart in CarteiraEstudanteEmitida.objects.all():
+            if cart.filiacao and re.search(r'[_\-─—=]{2,}', cart.filiacao):
+                cart.filiacao = re.sub(r'[_\-─—=]{2,}', '', cart.filiacao).strip()
+                cart.save(update_fields=['filiacao'])
+                qtd_limpos += 1
+        logs.append(f"filiacoes_limpas: {qtd_limpos}")
 
         recentes = list(CarteiraEstudanteEmitida.objects.values('id', 'codigo_autenticidade', 'matricula', 'nome_aluno')[:5])
         logs.append(f"recentes: {recentes}")

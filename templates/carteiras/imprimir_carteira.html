@@ -692,7 +692,7 @@
         <!-- Filiação -->
         <div class="verso-filiacao">
           <div class="rotulo">Filiação:</div>
-          <div class="nomes">{{ carteira.filiacao|default:"Não informada" }}</div>
+          <div class="nomes">{{ carteira.filiacao|cut:"_"|default:"Não informada" }}</div>
         </div>
 
         <!-- Assinaturas -->
