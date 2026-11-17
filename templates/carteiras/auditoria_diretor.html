@@ -1,271 +1,276 @@
 {% extends "base.html" %}
 
 {% block title %}Auditoria de Carteirinhas — Direção{% endblock %}
+{% block nav_carteiras %}active{% endblock %}
+{% block breadcrumb %}<i class="bi bi-person-vcard text-info me-1"></i> Carteiras de Estudante{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-3">
-
-  <!-- CABEÇALHO DA AUDITORIA -->
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-    <div>
-      <h1 class="h3 fw-bold text-dark mb-1">
-        <i class="bi bi-shield-check text-primary me-2"></i> Auditoria de Carteiras de Estudante
-      </h1>
-      <p class="text-muted mb-0">Controle geral da chancela digital da Direção e rastreamento de emissões dos terceirizados.</p>
+<!-- CABEÇALHO DA AUDITORIA -->
+<div class="page-header">
+  <div>
+    <div class="page-title d-flex align-items-center gap-2">
+      <i class="bi bi-shield-check text-primary"></i> Auditoria de Carteiras de Estudante
     </div>
+    <div class="page-subtitle">Controle geral da chancela digital da Direção e rastreamento de emissões dos terceirizados.</div>
+  </div>
 
-    <div class="d-flex align-items-center gap-2">
-      <a href="{% url 'carteiras_publica' %}" target="_blank" class="btn btn-outline-primary">
-        <i class="bi bi-box-arrow-up-right me-1"></i> Abrir Link Público
-      </a>
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <a href="{% url 'carteiras_publica' %}" target="_blank" class="btn-gestao btn-gestao-secondary" style="border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa;">
+      <i class="bi bi-box-arrow-up-right"></i> Abrir Link Público
+    </a>
 
-      <!-- FORMULÁRIO DE LIGA/DESLIGA GERAL -->
-      <form method="POST" class="d-inline">
-        {% csrf_token %}
-        <input type="hidden" name="toggle_emissao" value="1">
+    <!-- FORMULÁRIO DE LIGA/DESLIGA GERAL -->
+    <form method="POST" class="d-inline m-0">
+      {% csrf_token %}
+      <input type="hidden" name="toggle_emissao" value="1">
+      {% if config.emissao_publica_ativa %}
+        <button type="submit" class="btn-gestao btn-gestao-danger" onclick="return confirm('Deseja pausar as emissões públicas de carteirinhas? Os funcionários terceirizados não conseguirão emitir novas carteiras até que você reative.')">
+          <i class="bi bi-pause-circle-fill"></i> Pausar Emissões Públicas
+        </button>
+      {% else %}
+        <button type="submit" class="btn-gestao btn-gestao-success" onclick="return confirm('Deseja reativar a emissão pública de carteirinhas?')">
+          <i class="bi bi-play-circle-fill"></i> Reativar Emissões Públicas
+        </button>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- CARDS DE ESTATÍSTICA -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-person-badge"></i></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ total_emitidas }}</div>
+        <div class="stat-label">TOTAL DE CARTEIRAS EMITIDAS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-info">
+        <div class="stat-value text-success">{{ total_ativas }}</div>
+        <div class="stat-label">CARTEIRAS VÁLIDAS / ATIVAS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon cyan"><i class="bi bi-sliders"></i></div>
+      <div class="stat-info">
         {% if config.emissao_publica_ativa %}
-          <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Deseja pausar as emissões públicas de carteirinhas? Os funcionários terceirizados não conseguirão emitir novas carteiras até que você reative.')">
-            <i class="bi bi-pause-circle-fill me-1"></i> Pausar Emissões Públicas
-          </button>
+          <div class="stat-value text-success" style="font-size: 1.25rem;"><i class="bi bi-circle-fill fs-6 me-1"></i> ATIVO &amp; LIBERADO</div>
         {% else %}
-          <button type="submit" class="btn btn-success" onclick="return confirm('Deseja reativar a emissão pública de carteirinhas?')">
-            <i class="bi bi-play-circle-fill me-1"></i> Reativar Emissões Públicas
-          </button>
+          <div class="stat-value text-danger" style="font-size: 1.25rem;"><i class="bi bi-pause-circle-fill fs-6 me-1"></i> PAUSADO PELA DIREÇÃO</div>
         {% endif %}
-      </form>
+        <div class="stat-label">STATUS DO LINK PÚBLICO</div>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- CARDS DE ESTATÍSTICA -->
-  <div class="row g-3 mb-4">
+<!-- CONFIGURAÇÃO DOS DIRETORES E MODO DE ASSINATURA -->
+<div class="card-gestao mb-4">
+  <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom" style="border-color: var(--card-border) !important;">
+    <h5 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
+      <i class="bi bi-pen-fill text-primary"></i> Assinaturas da Direção (3 Diretores Cadastrados)
+    </h5>
+    <span class="badge-gestao badge-primary">{{ config.get_modo_assinatura_display }}</span>
+  </div>
+
+  <form method="POST" class="row g-3 align-items-end">
+    {% csrf_token %}
+    <div class="col-md-8">
+      <label class="form-label text-secondary small fw-bold">SELEÇÃO DO MODO DE ASSINATURA PARA AS PRÓXIMAS CARTEIRINHAS:</label>
+      <select name="modo_assinatura" class="form-select" style="background: rgba(15, 23, 42, 0.85); color: #f8fafc; border-color: var(--card-border);">
+        <option value="random" {% if config.modo_assinatura == 'random' %}selected{% endif %}>🎲 Aleatório / Rotativo (Sorteia entre Silvio, Fabiana e Luís a cada emissão)</option>
+        <option value="silvio" {% if config.modo_assinatura == 'silvio' %}selected{% endif %}>👤 Silvio Luiz Fernandes Freitas (Direção)</option>
+        <option value="fabiana" {% if config.modo_assinatura == 'fabiana' %}selected{% endif %}>👤 Fabiana Rodrigues de Souza (Direção)</option>
+        <option value="luis" {% if config.modo_assinatura == 'luis' %}selected{% endif %}>👤 Luís Carlos Henriques Monteiro (Direção)</option>
+      </select>
+    </div>
     <div class="col-md-4">
-      <div class="card border-0 shadow-sm p-3 rounded-3 bg-white">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-muted small fw-bold">TOTAL DE CARTEIRAS EMITIDAS</div>
-            <div class="fs-3 fw-bold text-dark">{{ total_emitidas }}</div>
-          </div>
-          <div class="fs-1 text-primary opacity-50"><i class="bi bi-person-badge"></i></div>
-        </div>
-      </div>
+      <button type="submit" class="btn-gestao btn-gestao-primary w-100 justify-content-center" style="height: 42px;">
+        <i class="bi bi-check-lg me-1"></i> Salvar Modo de Assinatura
+      </button>
     </div>
+  </form>
 
+  <div class="row g-3 mt-3 pt-3 border-top" style="border-color: var(--card-border) !important;">
     <div class="col-md-4">
-      <div class="card border-0 shadow-sm p-3 rounded-3 bg-white">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-muted small fw-bold">CARTEIRAS VÁLIDAS / ATIVAS</div>
-            <div class="fs-3 fw-bold text-success">{{ total_ativas }}</div>
-          </div>
-          <div class="fs-1 text-success opacity-50"><i class="bi bi-check2-circle"></i></div>
+      <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border);">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="bi bi-person-fill text-primary"></i>
+          <strong class="text-white">Silvio Luiz Fernandes Freitas</strong>
+        </div>
+        <div class="text-secondary small d-flex align-items-center gap-1">
+          <i class="bi bi-check-circle-fill text-success"></i> Assinatura oficial ativa
         </div>
       </div>
     </div>
-
     <div class="col-md-4">
-      <div class="card border-0 shadow-sm p-3 rounded-3 bg-white">
-        <div class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-muted small fw-bold">STATUS DO LINK PÚBLICO</div>
-            {% if config.emissao_publica_ativa %}
-              <div class="fs-5 fw-bold text-success"><i class="bi bi-circle-fill fs-6 me-1"></i> ATIVO & LIBERADO</div>
-            {% else %}
-              <div class="fs-5 fw-bold text-danger"><i class="bi bi-pause-circle-fill fs-6 me-1"></i> PAUSADO PELA DIREÇÃO</div>
-            {% endif %}
-          </div>
-          <div class="fs-1 text-info opacity-50"><i class="bi bi-sliders"></i></div>
+      <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border);">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="bi bi-person-fill text-info"></i>
+          <strong class="text-white">Fabiana Rodrigues de Souza</strong>
+        </div>
+        <div class="text-secondary small d-flex align-items-center gap-1">
+          <i class="bi bi-check-circle-fill text-success"></i> Assinatura oficial ativa
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border);">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="bi bi-person-fill text-cyan" style="color: var(--cyan);"></i>
+          <strong class="text-white">Luís Carlos Henriques Monteiro</strong>
+        </div>
+        <div class="text-secondary small d-flex align-items-center gap-1">
+          <i class="bi bi-check-circle-fill text-success"></i> Assinatura oficial ativa
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- CONFIGURAÇÃO DOS DIRETORES E MODO DE ASSINATURA -->
-  <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
-    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-      <h5 class="card-title h6 mb-0 fw-bold">
-        <i class="bi bi-pen-fill text-primary me-2"></i> Assinaturas da Direção (3 Diretores Cadastrados)
-      </h5>
-      <span class="badge bg-primary">{{ config.get_modo_assinatura_display }}</span>
-    </div>
-    <div class="card-body p-3 p-md-4">
-      <form method="POST" class="row g-3 align-items-end">
-        {% csrf_token %}
-        <div class="col-md-8">
-          <label class="form-label small fw-bold text-muted">SELEÇÃO DO MODO DE ASSINATURA PARA AS PRÓXIMAS CARTEIRINHAS:</label>
-          <select name="modo_assinatura" class="form-select">
-            <option value="random" {% if config.modo_assinatura == 'random' %}selected{% endif %}>🎲 Aleatório / Rotativo (Sorteia entre Silvio, Fabiana e Luís a cada emissão)</option>
-            <option value="silvio" {% if config.modo_assinatura == 'silvio' %}selected{% endif %}>👤 Silvio Luiz Fernandes Freitas (Direção)</option>
-            <option value="fabiana" {% if config.modo_assinatura == 'fabiana' %}selected{% endif %}>👤 Fabiana Rodrigues de Souza (Direção)</option>
-            <option value="luis" {% if config.modo_assinatura == 'luis' %}selected{% endif %}>👤 Luís Carlos Henriques Monteiro (Direção)</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <button type="submit" class="btn btn-primary w-100 fw-semibold">
-            <i class="bi bi-check-lg me-1"></i> Salvar Modo de Assinatura
-          </button>
-        </div>
-      </form>
-      <div class="row g-2 mt-3 pt-3 border-top">
-        <div class="col-md-4">
-          <div class="p-2 border rounded bg-light small">
-            <strong>Silvio Luiz Fernandes Freitas</strong><br>
-            <span class="text-muted">Assinatura oficial ativa</span>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="p-2 border rounded bg-light small">
-            <strong>Fabiana Rodrigues de Souza</strong><br>
-            <span class="text-muted">Assinatura oficial ativa</span>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="p-2 border rounded bg-light small">
-            <strong>Luís Carlos Henriques Monteiro</strong><br>
-            <span class="text-muted">Assinatura oficial ativa</span>
-          </div>
-        </div>
+<!-- FILTRO DE BUSCA -->
+<div class="card-gestao mb-4">
+  <form method="GET" class="row g-2 align-items-center">
+    <div class="col-md-10">
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-muted border-secondary" style="border-color: var(--card-border) !important;">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por Nome do Aluno, Matrícula ou Código de Autenticidade..." style="height: 42px; font-size: 0.88rem; background: rgba(15, 23, 42, 0.6); color: #fff; border-color: var(--card-border);">
       </div>
     </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn-gestao btn-gestao-primary w-100 justify-content-center" style="height: 42px; font-weight: 700;">
+        <i class="bi bi-funnel me-1"></i> Filtrar
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- TABELA DE AUDITORIA -->
+<div class="card-gestao p-0 overflow-hidden mb-4">
+  <div class="p-3 px-4 border-bottom d-flex align-items-center justify-content-between" style="border-color: var(--card-border) !important;">
+    <h5 class="fw-bold mb-0 text-white">Registros de Emissão com Assinatura da Direção</h5>
+    <span class="badge-gestao badge-secondary">{{ itens|length }} registro(s)</span>
   </div>
 
-  <!-- FILTRO DE BUSCA -->
-  <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
-    <div class="card-body p-3">
-      <form method="GET" class="row g-2 align-items-center">
-        <div class="col-md-10">
-          <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" name="q" value="{{ q }}" class="form-control border-start-0" placeholder="Buscar por Nome do Aluno, Matrícula ou Código de Autenticidade...">
-          </div>
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100 fw-semibold">
-            <i class="bi bi-funnel me-1"></i> Filtrar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- TABELA DE AUDITORIA -->
-  <div class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden">
-    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-      <h5 class="card-title h6 mb-0 fw-bold">Registros de Emissão com Assinatura da Direção</h5>
-      <span class="badge bg-light text-dark">{{ itens|length }} registro(s)</span>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
+  <div class="table-responsive">
+    <table class="table-gestao">
+      <thead>
+        <tr>
+          <th class="ps-4">Data e Hora</th>
+          <th>Aluno(a)</th>
+          <th>Matrícula</th>
+          <th>Diretor(a) Responsável</th>
+          <th>Operador / Terceirizado</th>
+          <th>IP</th>
+          <th>Código Autenticidade</th>
+          <th>Status</th>
+          <th class="text-end pe-4">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in itens %}
           <tr>
-            <th class="ps-3">Data e Hora</th>
-            <th>Aluno(a)</th>
-            <th>Matrícula</th>
-            <th>Diretor(a) Responsável</th>
-            <th>Operador / Terceirizado</th>
-            <th>IP</th>
-            <th>Código Autenticidade</th>
-            <th>Status</th>
-            <th class="text-end pe-3">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in itens %}
-            <tr>
-              <td class="ps-3 text-muted small">
-                {{ item.criado_em|date:"d/m/Y H:i" }}
-              </td>
-              <td>
-                <strong class="text-dark">{{ item.nome_aluno }}</strong>
-              </td>
-              <td>
-                <code>{{ item.matricula }}</code>
-              </td>
-              <td>
-                <span class="badge bg-primary-subtle text-primary border" style="font-size: 0.78rem;">
-                  <i class="bi bi-pen me-1"></i>{{ item.nome_diretor|default:"Silvio Luiz Fernandes Freitas" }}
+            <td class="ps-4 text-secondary small">
+              {{ item.criado_em|date:"d/m/Y H:i" }}
+            </td>
+            <td>
+              <strong class="text-white">{{ item.nome_aluno }}</strong>
+            </td>
+            <td>
+              <code style="background: rgba(15, 23, 42, 0.8); color: #38bdf8; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.2);">{{ item.matricula }}</code>
+            </td>
+            <td>
+              <span class="badge-gestao badge-primary">
+                <i class="bi bi-pen me-1"></i>{{ item.nome_diretor|default:"Silvio Luiz Fernandes Freitas" }}
+              </span>
+            </td>
+            <td>
+              <span class="badge-gestao badge-secondary">{{ item.nome_operador }}</span>
+            </td>
+            <td class="small text-secondary">
+              {{ item.ip_origem|default:"---" }}
+            </td>
+            <td>
+              <code style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700; font-family: monospace;">{{ item.codigo_autenticidade }}</code>
+            </td>
+            <td>
+              {% if item.ativo %}
+                <span class="badge-gestao badge-success">
+                  <i class="bi bi-check-circle-fill me-1"></i> Válida
                 </span>
-              </td>
-              <td>
-                <span class="badge bg-light text-dark border">{{ item.nome_operador }}</span>
-              </td>
-              <td class="small text-muted">
-                {{ item.ip_origem|default:"---" }}
-              </td>
-              <td>
-                <span class="badge bg-primary-subtle text-primary fw-bold" style="font-family: monospace;">
-                  {{ item.codigo_autenticidade }}
+              {% else %}
+                <span class="badge-gestao badge-danger" title="Motivo: {{ item.motivo_cancelamento }}">
+                  <i class="bi bi-x-circle-fill me-1"></i> Revogada
                 </span>
-              </td>
-              <td>
+              {% endif %}
+            </td>
+            <td class="text-end pe-4">
+              <div class="btn-group btn-group-sm">
+                <!-- REIMPRIMIR CARTEIRA -->
+                <a href="{% url 'carteiras_imprimir' item.codigo_autenticidade %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);" title="Ver / Imprimir Carteira">
+                  <i class="bi bi-printer"></i>
+                </a>
+
+                <!-- VALIDAR QR CODE -->
+                <a href="{% url 'carteiras_validar' item.codigo_autenticidade %}" target="_blank" class="btn btn-sm" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);" title="Ver Validação Pública">
+                  <i class="bi bi-qr-code"></i>
+                </a>
+
+                <!-- REVOGAR -->
                 {% if item.ativo %}
-                  <span class="badge bg-success-subtle text-success border border-success-subtle">
-                    <i class="bi bi-check-circle me-1"></i> Válida
-                  </span>
-                {% else %}
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle" title="Motivo: {{ item.motivo_cancelamento }}">
-                    <i class="bi bi-x-circle me-1"></i> Revogada
-                  </span>
+                  <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);" title="Revogar Carteira" onclick="abrirModalRevogar('{{ item.codigo_autenticidade }}', '{{ item.nome_aluno|escapejs }}')">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 {% endif %}
-              </td>
-              <td class="text-end pe-3">
-                <div class="btn-group btn-group-sm">
-                  <!-- REIMPRIMIR CARTEIRA -->
-                  <a href="{% url 'carteiras_imprimir' item.codigo_autenticidade %}" target="_blank" class="btn btn-outline-primary" title="Ver / Imprimir Carteira">
-                    <i class="bi bi-printer"></i>
-                  </a>
-
-                  <!-- VALIDAR QR CODE -->
-                  <a href="{% url 'carteiras_validar' item.codigo_autenticidade %}" target="_blank" class="btn btn-outline-secondary" title="Ver Validação Pública">
-                    <i class="bi bi-qr-code"></i>
-                  </a>
-
-                  <!-- REVOGAR -->
-                  {% if item.ativo %}
-                    <button type="button" class="btn btn-outline-danger" title="Revogar Carteira" onclick="abrirModalRevogar('{{ item.codigo_autenticidade }}', '{{ item.nome_aluno|escapejs }}')">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  {% endif %}
-                </div>
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="8" class="text-center py-4 text-muted">
-                <i class="bi bi-inbox fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma carteirinha emitida até o momento.
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9" class="text-center py-5 text-secondary">
+              <i class="bi bi-inbox fs-1 d-block text-secondary mb-2 opacity-50"></i>
+              Nenhuma carteirinha emitida até o momento.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-
 </div>
 
 <!-- MODAL PARA REVOGAR CARTEIRA -->
 <div class="modal fade" id="modalRevogar" tabindex="-1">
   <div class="modal-dialog">
-    <div class="modal-content">
+    <div class="modal-content" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary);">
       <form method="POST">
         {% csrf_token %}
         <input type="hidden" name="revogar_codigo" id="inputRevogarCodigo">
-        <div class="modal-header bg-danger text-white">
+        <div class="modal-header" style="background: rgba(239, 68, 68, 0.2); border-bottom: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5;">
           <h5 class="modal-title h6 fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> Revogar Carteira de Estudante</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <p>Tem certeza de que deseja invalidar a carteira do(a) aluno(a) <strong id="modalAlunoNome"></strong>?</p>
+          <p>Tem certeza de que deseja invalidar a carteira do(a) aluno(a) <strong id="modalAlunoNome" class="text-white"></strong>?</p>
           <div class="mb-3">
-            <label class="form-label small fw-bold">Motivo da Revogação:</label>
-            <input type="text" name="motivo_cancelamento" class="form-control" required placeholder="Ex: Matrícula cancelada, erro de digitação, etc.">
+            <label class="form-label text-secondary small fw-bold">Motivo da Revogação:</label>
+            <input type="text" name="motivo_cancelamento" class="form-control" required placeholder="Ex: Matrícula cancelada, erro de digitação, etc." style="background: rgba(15, 23, 42, 0.85); color: #fff; border-color: var(--card-border);">
           </div>
-          <p class="small text-muted mb-0">Qualquer pessoa que ler o QR Code será informada de que este documento foi formalmente cancelado pela Direção.</p>
+          <p class="small text-secondary mb-0">Qualquer pessoa que ler o QR Code será informada de que este documento foi formalmente cancelado pela Direção.</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
-          <button type="submit" class="btn btn-danger fw-bold">Confirmar Revogação</button>
+        <div class="modal-footer" style="border-top: 1px solid var(--card-border);">
+          <button type="button" class="btn-gestao btn-gestao-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="submit" class="btn-gestao btn-gestao-danger fw-bold">Confirmar Revogação</button>
         </div>
       </form>
     </div>
@@ -280,4 +285,3 @@
   }
 </script>
 {% endblock %}
-
