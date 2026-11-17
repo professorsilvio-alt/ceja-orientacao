@@ -592,6 +592,9 @@ def sincronizar_servidor(request):
             cargo_diretor='Direção'
         )
 
+        # Remove registros de teste
+        CarteiraEstudanteEmitida.objects.filter(matricula__startswith='99999999999').delete()
+
         recentes = list(CarteiraEstudanteEmitida.objects.values('id', 'codigo_autenticidade', 'matricula', 'nome_aluno')[:5])
         logs.append(f"recentes: {recentes}")
     except Exception as e:
