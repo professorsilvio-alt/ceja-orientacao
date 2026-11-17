@@ -1,12 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
+from django.urls import reverse
 import json
 import re
+import urllib.parse
+from datetime import datetime
 
 from .models import ConfiguracaoCarteira, CarteiraEstudanteEmitida, gerar_codigo_autenticidade
 from .utils import (
@@ -190,6 +194,105 @@ def imprimir_carteira(request, codigo):
     return render(request, 'carteiras/imprimir_carteira.html', context)
 
 
+def parse_data_validade(data_str):
+    """
+    Analisa strings de data em diversos formatos (DD/MM/AAAA, AAAA-MM-DD, DD/MM/AA)
+    e retorna um objeto datetime.date correspondente ou None se inválida.
+    """
+    if not data_str:
+        return None
+    s = str(data_str).strip()
+    m_iso = re.match(r'^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})$', s)
+    if m_iso:
+        try:
+            return datetime(int(m_iso.group(1)), int(m_iso.group(2)), int(m_iso.group(3))).date()
+        except ValueError:
+            pass
+    m_br = re.match(r'^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$', s)
+    if m_br:
+        try:
+            return datetime(int(m_br.group(3)), int(m_br.group(2)), int(m_br.group(1))).date()
+        except ValueError:
+            pass
+    m_curto = re.match(r'^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})$', s)
+    if m_curto:
+        try:
+            return datetime(int(m_curto.group(3)) + 2000, int(m_curto.group(2)), int(m_curto.group(1))).date()
+        except ValueError:
+            pass
+    return None
+
+
+@never_cache
+def carteira_digital_aluno(request, codigo):
+    """
+    Exibe a Carteirinha Digital interativa do Aluno acessada via link direto.
+    O link só dá acesso enquanto a carteirinha estiver ativa e dentro do prazo de validade.
+    Toda vez que o aluno clica no link, a validade e status são checados em tempo real no servidor.
+    """
+    carteira = get_object_or_404(CarteiraEstudanteEmitida, codigo_autenticidade=codigo)
+    if carteira.filiacao:
+        carteira.filiacao = re.sub(r'[_\-─—=]{2,}', '', carteira.filiacao).strip()
+    config = ConfiguracaoCarteira.get_config()
+
+    # Validação temporal rigorosa: checa se hoje > data_validade
+    validade_date = parse_data_validade(carteira.data_validade)
+    hoje = timezone.localdate()
+    esta_expirada = False
+    dias_restantes = None
+
+    if validade_date:
+        dias_restantes = (validade_date - hoje).days
+        if hoje > validade_date:
+            esta_expirada = True
+
+    # URL pública de validação via QR Code
+    validar_url = request.build_absolute_uri(
+        reverse('carteiras_validar', kwargs={'codigo': carteira.codigo_autenticidade})
+    )
+    qr_b64 = gerar_qrcode_base64(validar_url)
+
+    # Assinatura do Diretor que chancelou a carteira
+    diretor_id = getattr(carteira, 'diretor_id', '') or 'silvio'
+    assinatura_b64 = obter_assinatura_base64(diretor_id)
+    brasao_b64 = obter_brasao_base64()
+
+    # Link completo desta carteirinha digital
+    link_digital = request.build_absolute_uri()
+
+    # Mensagem personalizada pronta para envio via WhatsApp
+    msg_whatsapp = (
+        f"🎓 *CEJA Professora Rosa Soares*\n\n"
+        f"Olá, *{carteira.nome_aluno}*!\n"
+        f"Aqui está o link oficial da sua *Carteira de Estudante Digital*:\n"
+        f"🔗 {link_digital}\n\n"
+        f"📅 Validade: *{carteira.data_validade or 'Regular'}*\n"
+        f"🆔 Matrícula: *{carteira.matricula}*\n"
+        f"🏛️ Chancelada pela Direção Geral.\n\n"
+        f"_Acesse este link sempre que precisar comprovar sua identificação e direito à meia-entrada escolar._"
+    )
+    link_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote(msg_whatsapp)}"
+
+    # Horário atual formatado para o relógio anti-print de Brasília
+    agora_brasilia = timezone.localtime(timezone.now())
+
+    context = {
+        'carteira': carteira,
+        'config': config,
+        'esta_expirada': esta_expirada,
+        'validade_date': validade_date,
+        'dias_restantes': dias_restantes,
+        'hoje': hoje,
+        'qr_b64': qr_b64,
+        'assinatura_b64': assinatura_b64,
+        'brasao_b64': brasao_b64,
+        'link_digital': link_digital,
+        'link_whatsapp': link_whatsapp,
+        'agora_brasilia': agora_brasilia,
+    }
+    return render(request, 'carteiras/digital_aluno.html', context)
+
+
 def validar_carteira_publica(request, codigo):
     """
     Página pública de validação acessada via QR Code por fiscais, instituições ou alunos.
@@ -198,10 +301,17 @@ def validar_carteira_publica(request, codigo):
     carteira = CarteiraEstudanteEmitida.objects.filter(codigo_autenticidade=codigo).first()
     config = ConfiguracaoCarteira.get_config()
 
+    esta_expirada = False
+    if carteira:
+        validade_date = parse_data_validade(carteira.data_validade)
+        if validade_date and timezone.localdate() > validade_date:
+            esta_expirada = True
+
     context = {
         'carteira': carteira,
         'codigo_buscado': codigo,
         'config': config,
+        'esta_expirada': esta_expirada,
     }
     return render(request, 'carteiras/validar_publico.html', context)
 

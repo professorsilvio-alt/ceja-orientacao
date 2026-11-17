@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Carteira Digital de Estudante — {{ carteira.nome_aluno }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#003566">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CEJA Carteira">
+
+  <!-- Bootstrap 5 & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Google Fonts Inter & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #090e17;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(2, 99, 165, 0.25) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(30, 58, 138, 0.3) 0%, transparent 45%);
+      color: #f1f5f9;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px 32px;
+    }
+
+    .container-digital {
+      width: 100%;
+      max-width: 430px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── BARRA SUPERIOR DE SEGURANÇA E RELÓGIO AO VIVO (ANTI-PRINT) ── */
+    .top-security-bar {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 10px #22c55e;
+      animation: pulse-green 1.8s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .live-status-text {
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #86efac;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-clock {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #94a3b8;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .live-clock span.seconds {
+      color: #38bdf8;
+    }
+
+    /* ── CONTAINER DO CARTÃO 3D FLIP ── */
+    .card-flip-scene {
+      width: 100%;
+      perspective: 1200px;
+      margin-bottom: 20px;
+    }
+
+    .card-flip-object {
+      width: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .card-flip-object.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    /* ── FACES DO CARTÃO (FRENTE E VERSO) ── */
+    .card-face {
+      width: 100%;
+      background: linear-gradient(145deg, #002b54 0%, #004b87 45%, #0263a5 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border-radius: 20px;
+      padding: 16px 18px;
+      box-shadow: 0 16px 36px rgba(0, 30, 70, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-face-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: linear-gradient(145deg, #001f3f 0%, #003366 50%, #004b87 100%);
+    }
+
+    /* Efeito Holográfico Refletivo (Shimmer) */
+    .shimmer-effect {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.08) 45%,
+        rgba(255, 255, 255, 0.25) 50%,
+        rgba(255, 255, 255, 0.08) 55%,
+        transparent 65%
+      );
+      transform: rotate(30deg);
+      animation: holographic-shimmer 6s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes holographic-shimmer {
+      0% { transform: translateY(-70%) rotate(30deg); }
+      50% { transform: translateY(70%) rotate(30deg); }
+      100% { transform: translateY(-70%) rotate(30deg); }
+    }
+
+    /* ── CABEÇALHO DO CARTÃO ── */
+    .card-header-gov {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .brasao-gov {
+      width: 38px;
+      height: 44px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      flex-shrink: 0;
+    }
+
+    .gov-titles {
+      line-height: 1.18;
+    }
+
+    .gov-school {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: -0.2px;
+    }
+
+    .gov-sub {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 1px;
+    }
+
+    .gov-tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+      letter-spacing: 0.4px;
+    }
+
+    /* ── CORPO DO CARTÃO (FOTO E DADOS) ── */
+    .card-body-content {
+      display: flex;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+      align-items: stretch;
+    }
+
+    .student-photo-box {
+      width: 90px;
+      height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .student-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .student-photo-placeholder {
+      font-size: 2rem;
+      color: #64748b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .student-photo-placeholder span {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .student-details {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .data-row {
+      line-height: 1.15;
+    }
+
+    .data-label {
+      font-size: 0.63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #93c5fd;
+      letter-spacing: 0.4px;
+      display: block;
+      margin-bottom: 1.5px;
+    }
+
+    .data-matricula {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .data-course {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .data-nasc {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    /* ── NOME DO ALUNO ── */
+    .student-name-block {
+      margin-top: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .student-name-val {
+      font-size: 1rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      line-height: 1.25;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      word-break: break-word;
+    }
+
+    /* ── RODAPÉ DA FRENTE (VALIDADE E INDICAÇÃO DE FLIP) ── */
+    .card-footer-front {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge-validade-green {
+      background: rgba(34, 197, 94, 0.18);
+      border: 1px solid rgba(34, 197, 94, 0.45);
+      color: #86efac;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-tap-flip {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-tap-flip:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+
+    /* ── ESTILOS DO VERSO DO CARTÃO ── */
+    .verso-inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .verso-filiacao-block {
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+    }
+
+    .verso-filiacao-block .rotulo {
+      font-size: 0.62rem;
+      color: #93c5fd;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .verso-filiacao-block .nomes {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    /* Bloco da Assinatura Oficial */
+    .verso-signature-block {
+      text-align: center;
+      position: relative;
+      padding: 4px 0;
+      margin-top: 4px;
+    }
+
+    .signature-img-wrap {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: -4px;
+    }
+
+    .signature-img-wrap img {
+      max-height: 44px;
+      max-width: 170px;
+      object-fit: contain;
+      filter: brightness(0) invert(1) drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+    }
+
+    .sig-line {
+      width: 170px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.4);
+      margin: 0 auto 3px;
+    }
+
+    .sig-name {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.2px;
+    }
+
+    .sig-role {
+      font-size: 0.62rem;
+      color: #93c5fd;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* QR Code e Código de Autenticidade no Verso */
+    .verso-qr-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    .qr-thumb {
+      width: 62px;
+      height: 62px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 3px;
+      flex-shrink: 0;
+    }
+
+    .qr-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .qr-meta {
+      line-height: 1.25;
+    }
+
+    .qr-auth-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+    }
+
+    .qr-desc {
+      font-size: 0.65rem;
+      color: #cbd5e1;
+      margin-top: 2px;
+    }
+
+    .verso-disclaimer {
+      font-size: 0.62rem;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.2;
+      margin-top: 8px;
+    }
+
+    /* ── BARRA DE AÇÕES DO ALUNO (BOTÕES INFERIORES) ── */
+    .actions-panel {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-action-main {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-action-flip {
+      background: rgba(2, 99, 165, 0.35);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+
+    .btn-action-flip:hover {
+      background: rgba(2, 99, 165, 0.5);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-whatsapp {
+      background: #15803d;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(21, 128, 61, 0.4);
+    }
+
+    .btn-action-whatsapp:hover {
+      background: #16a34a;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-copy {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f1f5f9;
+    }
+
+    .btn-action-copy:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-print {
+      background: transparent;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      color: #94a3b8;
+      font-size: 0.82rem;
+      padding: 8px;
+    }
+
+    .btn-action-print:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ── CARTÃO DE EXPIRADO OU REVOGADO ── */
+    .card-blocked {
+      width: 100%;
+      background: #111827;
+      border: 1.5px solid #ef4444;
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(239, 68, 68, 0.15);
+      margin-bottom: 20px;
+    }
+
+    .icon-blocked {
+      font-size: 3.2rem;
+      color: #ef4444;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: shake 0.6s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .title-blocked {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .badge-expired {
+      display: inline-block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    .desc-blocked {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 20px;
+      text-align: justify;
+    }
+
+    .info-student-summary {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.82rem;
+      margin-bottom: 20px;
+    }
+
+    .info-student-summary strong {
+      color: #ffffff;
+    }
+
+    /* ── TOAST NOTIFICATION ── */
+    .toast-copy {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .toast-copy.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container-digital">
+
+    {% if carteira.ativo and not esta_expirada %}
+      <!-- ── 1. CARTEIRINHA VÁLIDA E ATIVA ── -->
+
+      <!-- BARRA DE SEGURANÇA E RELÓGIO AO VIVO (ANTI-PRINT) -->
+      <div class="top-security-bar">
+        <div class="live-status">
+          <div class="live-status-text">
+            <span class="pulse-dot"></span>
+            <span>Documento Digital Ativo</span>
+          </div>
+          <div class="live-clock" title="Horário oficial de Brasília (prova de visualização ao vivo)">
+            <i class="bi bi-clock-fill me-1" style="color: #38bdf8;"></i>
+            <span id="relogioHora">{{ agora_brasilia|date:"H:i" }}</span>:<span class="seconds" id="relogioSegundos">{{ agora_brasilia|date:"s" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENÁRIO DO CARTÃO 3D FLIP -->
+      <div class="card-flip-scene">
+        <div class="card-flip-object" id="cardFlip" onclick="toggleFlip()">
+          
+          <!-- ── FACE 1: FRENTE DO CARTÃO ── -->
+          <div class="card-face card-face-front">
+            <div class="shimmer-effect"></div>
+
+            <!-- Cabeçalho -->
+            <div class="card-header-gov">
+              <img src="{% if brasao_b64 %}{{ brasao_b64 }}{% else %}/static/brasao_ceja.png{% endif %}" alt="Brasão" class="brasao-gov">
+              <div class="gov-titles">
+                <div class="gov-school">{{ config.unidade_escolar }}</div>
+                <div class="gov-sub">Governo do Estado do Rio de Janeiro</div>
+                <span class="gov-tag"><i class="bi bi-person-badge-fill me-1"></i>Carteira de Estudante</span>
+              </div>
+            </div>
+
+            <!-- Corpo: Foto e Dados Principais -->
+            <div class="card-body-content">
+              <div class="student-photo-box">
+                {% if carteira.foto_base64_ou_url %}
+                  <img src="{{ carteira.foto_base64_ou_url }}" alt="Foto do Aluno">
+                {% else %}
+                  <div class="student-photo-placeholder">
+                    <i class="bi bi-person-fill"></i>
+                    <span>Foto 3x4</span>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="student-details">
+                <div class="data-row">
+                  <span class="data-label">Matrícula</span>
+                  <div class="data-matricula">
+                    <span>{{ carteira.matricula }}</span>
+                    <i class="bi bi-copy fs-6 opacity-75" title="Copiar Matrícula" onclick="event.stopPropagation(); copiarTexto('{{ carteira.matricula }}', 'Matrícula copiada!');"></i>
+                  </div>
+                </div>
+
+                <div class="data-row">
+                  <span class="data-label">Curso / Modalidade</span>
+                  <div class="data-course">{{ carteira.curso }}</div>
+                </div>
+
+                <div class="data-row">
+                  <span class="data-label">Nascimento</span>
+                  <div class="data-nasc">{{ carteira.data_nascimento|default:"---" }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nome do Aluno -->
+            <div class="student-name-block">
+              <span class="data-label">Nome Completo do(a) Aluno(a)</span>
+              <div class="student-name-val">{{ carteira.nome_aluno }}</div>
+            </div>
+
+            <!-- Rodapé Frente -->
+            <div class="card-footer-front">
+              <div class="badge-validade-green">
+                <i class="bi bi-shield-check-fill"></i>
+                <span>Válida até {{ carteira.data_validade|default:"Regular" }}</span>
+              </div>
+
+              <button type="button" class="btn-tap-flip" title="Clique para ver o verso">
+                <i class="bi bi-arrow-repeat"></i>
+                <span>Ver Verso</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ── FACE 2: VERSO DO CARTÃO ── -->
+          <div class="card-face card-face-back">
+            <div class="shimmer-effect"></div>
+
+            <div class="verso-inner">
+              <div>
+                <!-- Filiação -->
+                <div class="verso-filiacao-block">
+                  <div class="rotulo"><i class="bi bi-people-fill me-1"></i>Filiação</div>
+                  <div class="nomes">{{ carteira.filiacao|default:"Não informada" }}</div>
+                </div>
+
+                <!-- Assinatura Oficial da Direção -->
+                <div class="verso-signature-block">
+                  <div class="signature-img-wrap">
+                    {% if assinatura_b64 %}
+                      <img src="{{ assinatura_b64 }}" alt="Assinatura da Direção">
+                    {% endif %}
+                  </div>
+                  <div class="sig-line"></div>
+                  <div class="sig-name">{{ carteira.nome_diretor|default:config.nome_diretor }}</div>
+                  <div class="sig-role">{{ carteira.cargo_diretor|default:config.cargo_diretor }} &bull; CEJA Rosa Soares</div>
+                </div>
+              </div>
+
+              <!-- Bloco do QR Code e Autenticação -->
+              <div>
+                <div class="verso-qr-block">
+                  <div class="qr-thumb">
+                    <img src="{{ qr_b64 }}" alt="QR Code">
+                  </div>
+                  <div class="qr-meta">
+                    <div style="font-size: 0.62rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Chancela Digital</div>
+                    <div class="qr-auth-code">{{ carteira.codigo_autenticidade }}</div>
+                    <div class="qr-desc">Aponte a câmera para consultar a autenticidade oficial.</div>
+                  </div>
+                </div>
+
+                <div class="verso-disclaimer">
+                  Apresentação obrigatória para acesso à escola e benefícios da lei de meia-entrada (Lei 12.852/2013).
+                </div>
+
+                <div class="d-flex justify-content-end mt-2">
+                  <button type="button" class="btn-tap-flip">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Ver Frente</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PAINEL DE AÇÕES DO ALUNO -->
+      <div class="actions-panel">
+        <button type="button" class="btn-action-main btn-action-flip" onclick="toggleFlip()">
+          <i class="bi bi-arrow-repeat fs-5"></i>
+          <span id="flipBtnText">Virar Cartão (Ver Verso)</span>
+        </button>
+
+        <a href="{{ link_whatsapp }}" target="_blank" class="btn-action-main btn-action-whatsapp">
+          <i class="bi bi-whatsapp fs-5"></i>
+          <span>Guardar no meu WhatsApp</span>
+        </a>
+
+        <button type="button" class="btn-action-main btn-action-copy" onclick="copiarTexto('{{ link_digital }}', 'Link da carteirinha copiado!')">
+          <i class="bi bi-link-45deg fs-5"></i>
+          <span>Copiar Link de Acesso</span>
+        </button>
+
+        <a href="{% url 'carteiras_imprimir' carteira.codigo_autenticidade %}" target="_blank" class="btn-action-main btn-action-print">
+          <i class="bi bi-printer me-1"></i> Abrir versão em PDF / Impressão A4 Duplex
+        </a>
+      </div>
+
+    {% elif esta_expirada %}
+      <!-- ── 2. CARTEIRINHA EXPIRADA PELO PRAZO DE VALIDADE ── -->
+
+      <div class="card-blocked" style="border-color: #f59e0b; box-shadow: 0 16px 36px rgba(245, 158, 11, 0.15);">
+        <div class="icon-blocked" style="color: #f59e0b;">
+          <i class="bi bi-hourglass-bottom"></i>
+        </div>
+
+        <h1 class="title-blocked">Link de Acesso Expirado</h1>
+        <div class="badge-expired" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fde047;">
+          <i class="bi bi-clock-history me-1"></i> Validade Terminada em {{ carteira.data_validade }}
+        </div>
+
+        <p class="desc-blocked">
+          O prazo de validade desta <strong>Carteira de Estudante Digital</strong> expirou em <strong>{{ carteira.data_validade }}</strong>. 
+          Conforme as normas do CEJA Professora Rosa Soares, o link de acesso permanece ativo estritamente durante a vigência do período letivo.
+        </p>
+
+        <div class="info-student-summary">
+          <div><strong>Aluno(a):</strong> {{ carteira.nome_aluno }}</div>
+          <div><strong>Matrícula:</strong> <code>{{ carteira.matricula }}</code></div>
+          <div><strong>Curso:</strong> {{ carteira.curso }}</div>
+          <div><strong>Código:</strong> {{ carteira.codigo_autenticidade }}</div>
+        </div>
+
+        <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.6); border: 1px dashed rgba(255,255,255,0.15); font-size: 0.8rem; color: #94a3b8; text-align: center;">
+          <i class="bi bi-info-circle-fill text-warning me-1"></i>
+          Para renovar sua carteirinha e continuar usufruindo da identificação e da meia-entrada, procure a secretaria da escola.
+        </div>
+      </div>
+
+    {% else %}
+      <!-- ── 3. CARTEIRINHA REVOGADA ADMINISTRATIVAMENTE ── -->
+
+      <div class="card-blocked">
+        <div class="icon-blocked">
+          <i class="bi bi-shield-x"></i>
+        </div>
+
+        <h1 class="title-blocked">Carteira Digital Revogada</h1>
+        <div class="badge-expired">
+          <i class="bi bi-x-octagon-fill me-1"></i> Cancelada pela Direção Geral
+        </div>
+
+        <p class="desc-blocked">
+          Esta carteira de estudante foi formalmente desativada e revogada pela Direção do CEJA Rosa Soares.
+          {% if carteira.motivo_cancelamento %}
+            <br><br><strong>Motivo registrado:</strong> {{ carteira.motivo_cancelamento }}
+          {% endif %}
+        </p>
+
+        <div class="info-student-summary">
+          <div><strong>Aluno(a):</strong> {{ carteira.nome_aluno }}</div>
+          <div><strong>Matrícula:</strong> <code>{{ carteira.matricula }}</code></div>
+          <div><strong>Código:</strong> {{ carteira.codigo_autenticidade }}</div>
+        </div>
+
+        <div class="p-3 rounded-3" style="background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.3); font-size: 0.8rem; color: #fca5a5; text-align: center;">
+          Qualquer uso deste documento cancelado constitui irregularidade administrativa.
+        </div>
+      </div>
+
+    {% endif %}
+
+    <!-- RODAPÉ INSTITUCIONAL -->
+    <div class="text-center mt-4 small" style="color: #64748b; font-size: 0.72rem;">
+      CEJA Professora Rosa Soares &bull; SEEDUC RJ<br>
+      Sistema de Autenticação Digital e Carteiras
+    </div>
+
+  </div>
+
+  <!-- TOAST DE COPIADO COM SUCESSO -->
+  <div class="toast-copy" id="toastMsg">
+    <i class="bi bi-check-circle-fill text-info"></i>
+    <span id="toastText">Copiado com sucesso!</span>
+  </div>
+
+  <script>
+    // Função para virar o cartão 3D
+    let isFlipped = false;
+    function toggleFlip() {
+      const card = document.getElementById('cardFlip');
+      const btnText = document.getElementById('flipBtnText');
+      if (!card) return;
+      
+      isFlipped = !isFlipped;
+      if (isFlipped) {
+        card.classList.add('is-flipped');
+        if (btnText) btnText.innerText = 'Virar Cartão (Ver Frente)';
+      } else {
+        card.classList.remove('is-flipped');
+        if (btnText) btnText.innerText = 'Virar Cartão (Ver Verso)';
+      }
+    }
+
+    // Relógio dinâmico anti-print (Horário de Brasília)
+    function atualizarRelogio() {
+      const elH = document.getElementById('relogioHora');
+      const elS = document.getElementById('relogioSegundos');
+      if (!elH || !elS) return;
+
+      const agora = new Date();
+      // Ajusta para horário do dispositivo formatado
+      const h = String(agora.getHours()).padStart(2, '0');
+      const m = String(agora.getMinutes()).padStart(2, '0');
+      const s = String(agora.getSeconds()).padStart(2, '0');
+
+      elH.textContent = `${h}:${m}`;
+      elS.textContent = s;
+    }
+    setInterval(atualizarRelogio, 1000);
+
+    // Função de copiar texto com Toast elegante
+    function copiarTexto(texto, mensagem) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+          mostrarToast(mensagem);
+        }).catch(() => {
+          fallbackCopy(texto, mensagem);
+        });
+      } else {
+        fallbackCopy(texto, mensagem);
+      }
+    }
+
+    function fallbackCopy(texto, mensagem) {
+      const temp = document.createElement('textarea');
+      temp.value = texto;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      mostrarToast(mensagem);
+    }
+
+    function mostrarToast(mensagem) {
+      const toast = document.getElementById('toastMsg');
+      const text = document.getElementById('toastText');
+      if (!toast || !text) return;
+      text.textContent = mensagem;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+  </script>
+
+</body>
+</html>

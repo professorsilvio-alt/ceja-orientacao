@@ -592,6 +592,9 @@
       <button class="btn btn-primary" onclick="window.print()">
         <i class="bi bi-printer-fill"></i> Imprimir Carteira Duplex (18cm x 7.8cm)
       </button>
+      <a href="{% url 'carteiras_digital' carteira.codigo_autenticidade %}" target="_blank" class="btn btn-secondary" style="background: #10b981; color: white;">
+        <i class="bi bi-phone-fill"></i> Carteira Digital do Aluno
+      </a>
       <a href="{% url 'carteiras_publica' %}" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Nova Emissão
       </a>
@@ -788,6 +791,7 @@
             <strong>Autenticado por:</strong> {{ carteira.nome_operador }}<br>
             <strong>Direção Responsável:</strong> {{ carteira.nome_diretor|default:config.nome_diretor }}<br>
             <strong>Data/Hora:</strong> {{ carteira.criado_em|date:"d/m/Y às H:i:s" }}<br>
+            <strong>Link Digital:</strong> cejarosasoares.pythonanywhere.com/carteira/digital/{{ carteira.codigo_autenticidade }}/<br>
             Aponte a câmera do celular para o QR Code para consultar a autenticidade oficial.
           </div>
         </div>

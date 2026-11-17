@@ -101,14 +101,32 @@
     <div class="p-4 text-center">
       
       {% if carteira and carteira.ativo %}
-        <div class="status-badge status-valid">
-          <i class="bi bi-patch-check-fill fs-5"></i> DOCUMENTO OFICIAL AUTENTICADO
-        </div>
+        {% if esta_expirada %}
+          <div class="status-badge" style="background: #f59e0b; color: #ffffff;">
+            <i class="bi bi-clock-history fs-5"></i> DOCUMENTO EXPIRADO — VENCIDO
+          </div>
 
-        <p class="mt-4 text-muted small">
-          A Direção do CEJA Professora Rosa Soares atesta a plena autenticidade desta 
-          <strong>Carteira de Identificação Estudantil</strong>, chancelada digitalmente pela Direção Geral.
-        </p>
+          <div class="alert alert-warning mt-3 text-start small">
+            <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> Atenção:</strong> 
+            A validade oficial desta carteira terminou em <strong>{{ carteira.data_validade }}</strong>. 
+            O documento não é mais válido para identificação ativa nem benefícios de meia-entrada escolar.
+          </div>
+        {% else %}
+          <div class="status-badge status-valid">
+            <i class="bi bi-patch-check-fill fs-5"></i> DOCUMENTO OFICIAL AUTENTICADO
+          </div>
+
+          <p class="mt-3 text-muted small">
+            A Direção do CEJA Professora Rosa Soares atesta a plena autenticidade desta 
+            <strong>Carteira de Identificação Estudantil</strong>, chancelada digitalmente pela Direção Geral.
+          </p>
+
+          <div class="mb-3">
+            <a href="{% url 'carteiras_digital' carteira.codigo_autenticidade %}" class="btn btn-sm btn-outline-primary" style="font-weight: 700; border-radius: 20px;">
+              <i class="bi bi-phone me-1"></i> Ver Carteirinha Digital do Aluno
+            </a>
+          </div>
+        {% endif %}
 
         <div class="text-start mt-4">
           

@@ -248,8 +248,13 @@
             </td>
             <td class="text-end pe-4 col-acoes">
               <div class="d-inline-flex align-items-center gap-1">
-                <!-- REIMPRIMIR CARTEIRA -->
-                <a href="{% url 'carteiras_imprimir' item.codigo_autenticidade %}" target="_blank" class="btn-gestao btn-gestao-primary" style="padding: 6px 10px; font-size: 0.84rem;" title="Ver / Imprimir Carteira">
+                <!-- CARTEIRA DIGITAL DO ALUNO (LINK DIRETO) -->
+                <a href="{% url 'carteiras_digital' item.codigo_autenticidade %}" target="_blank" class="btn-gestao" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 6px 10px; font-size: 0.84rem;" title="Abrir Carteira Digital do Aluno">
+                  <i class="bi bi-phone-fill"></i>
+                </a>
+
+                <!-- REIMPRIMIR CARTEIRA EM PAPEL A4 DUPLEX -->
+                <a href="{% url 'carteiras_imprimir' item.codigo_autenticidade %}" target="_blank" class="btn-gestao btn-gestao-primary" style="padding: 6px 10px; font-size: 0.84rem;" title="Ver / Imprimir em Papel (18cm x 7.8cm)">
                   <i class="bi bi-printer-fill"></i>
                 </a>
 
