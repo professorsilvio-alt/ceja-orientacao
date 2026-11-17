@@ -786,6 +786,7 @@
           <div class="chancela-dir-cod">{{ carteira.codigo_autenticidade }}</div>
           <div class="chancela-dir-instrucao">
             <strong>Autenticado por:</strong> {{ carteira.nome_operador }}<br>
+            <strong>Direção Responsável:</strong> {{ carteira.nome_diretor|default:config.nome_diretor }}<br>
             <strong>Data/Hora:</strong> {{ carteira.criado_em|date:"d/m/Y às H:i:s" }}<br>
             Aponte a câmera do celular para o QR Code para consultar a autenticidade oficial.
           </div>

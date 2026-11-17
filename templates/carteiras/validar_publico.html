@@ -155,7 +155,7 @@
           <div class="info-group">
             <div class="info-label">Autenticado por Delegação</div>
             <div class="info-val small text-muted">
-              Operador: <strong>{{ carteira.nome_operador }}</strong> &bull; Chancelado sob autorização da Direção ({{ config.nome_diretor }}).
+              Operador: <strong>{{ carteira.nome_operador }}</strong> &bull; Chancelado digitalmente pela Direção: <strong>{{ carteira.nome_diretor|default:config.nome_diretor }}</strong>.
             </div>
           </div>
 

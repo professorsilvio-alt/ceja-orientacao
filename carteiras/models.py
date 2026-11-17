@@ -17,13 +17,24 @@ class ConfiguracaoCarteira(models.Model):
     )
     nome_diretor = models.CharField(
         max_length=200,
-        default="Silvio da Silva Rosa Soares",
+        default="Silvio Luiz Fernandes Freitas",
         verbose_name="Nome do Diretor"
     )
     cargo_diretor = models.CharField(
         max_length=150,
         default="Direção",
         verbose_name="Cargo / Titulação"
+    )
+    modo_assinatura = models.CharField(
+        max_length=50,
+        default="random",
+        choices=[
+            ('random', 'Aleatório (Distribui entre os 3 Diretores)'),
+            ('silvio', 'Silvio Luiz Fernandes Freitas'),
+            ('fabiana', 'Fabiana Rodrigues de Souza'),
+            ('luis', 'Luís Carlos Henriques Monteiro'),
+        ],
+        verbose_name="Modo de Assinatura"
     )
     unidade_escolar = models.CharField(
         max_length=255,
@@ -135,6 +146,24 @@ class CarteiraEstudanteEmitida(models.Model):
     )
 
     # Dados de Auditoria e Responsabilidade
+    diretor_id = models.CharField(
+        max_length=50,
+        default='silvio',
+        blank=True,
+        verbose_name="ID do Diretor"
+    )
+    nome_diretor = models.CharField(
+        max_length=200,
+        default="Silvio Luiz Fernandes Freitas",
+        blank=True,
+        verbose_name="Nome do Diretor que Assinou"
+    )
+    cargo_diretor = models.CharField(
+        max_length=150,
+        default="Direção",
+        blank=True,
+        verbose_name="Cargo do Diretor"
+    )
     nome_operador = models.CharField(
         max_length=200,
         verbose_name="Operador / Funcionário que Autenticou",

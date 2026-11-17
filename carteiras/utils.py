@@ -85,19 +85,62 @@ def gerar_codigo_barras_svg(matricula: str) -> str:
     return "".join(svg_parts)
 
 
-def obter_assinatura_base64() -> str:
+import random
+
+DIRETORES_CONFIG = {
+    'silvio': {
+        'id': 'silvio',
+        'nome': 'Silvio Luiz Fernandes Freitas',
+        'cargo': 'Direção',
+        'arquivo': 'media/seguro/assinatura_silvio.png',
+        'fallback_drive': r"G:\Meu Drive\TRABALHO DIREÇÃO\1 - SILVIO\Assinatura-removebg-preview.png",
+    },
+    'fabiana': {
+        'id': 'fabiana',
+        'nome': 'Fabiana Rodrigues de Souza',
+        'cargo': 'Direção',
+        'arquivo': 'media/seguro/assinatura_fabiana.png',
+        'fallback_drive': r"G:\Meu Drive\TRABALHO DIREÇÃO\3 - FABIANA\Documentos comprobatórios\AssFABY_0001.pdf",
+    },
+    'luis': {
+        'id': 'luis',
+        'nome': 'Luís Carlos Henriques Monteiro',
+        'cargo': 'Direção',
+        'arquivo': 'media/seguro/assinatura_luis.png',
+        'fallback_drive': r"G:\Meu Drive\TRABALHO DIREÇÃO\0 - LUÍS CARLOS\PESSOAL\LCM - ASSINATURA - SEM FUNDO.png",
+    },
+}
+
+
+def obter_diretor_para_emissao(modo: str = 'random') -> dict:
     """
-    Carrega o arquivo seguro da assinatura do Diretor e converte para base64.
+    Retorna os dados do diretor para assinar a carteirinha.
+    Se o modo for 'random', escolhe aleatoriamente entre os 3 diretores.
+    """
+    modo = (modo or 'random').lower().strip()
+    if modo in DIRETORES_CONFIG:
+        return DIRETORES_CONFIG[modo]
+    # Sorteia entre os 3 diretores cadastrados
+    return random.choice(list(DIRETORES_CONFIG.values()))
+
+
+def obter_assinatura_base64(diretor_id: str = 'silvio') -> str:
+    """
+    Carrega o arquivo seguro da assinatura do Diretor especificado e converte para base64.
+    Suporta Silvio Luiz Fernandes Freitas, Fabiana Rodrigues de Souza e Luís Carlos Henriques Monteiro.
     Não expõe o arquivo diretamente via URL estática.
     """
+    diretor_id = (diretor_id or 'silvio').lower().strip()
+    info = DIRETORES_CONFIG.get(diretor_id, DIRETORES_CONFIG['silvio'])
+
     caminhos_possiveis = [
+        os.path.join(settings.BASE_DIR, info['arquivo']),
+        info.get('fallback_drive', ''),
         os.path.join(settings.BASE_DIR, 'media', 'seguro', 'assinatura_silvio.png'),
-        r"G:\Meu Drive\TRABALHO DIREÇÃO\1 - SILVIO\Assinatura.png",
-        os.path.join(settings.BASE_DIR, 'scratch', 'assinatura.png'),
     ]
 
     for p in caminhos_possiveis:
-        if os.path.exists(p):
+        if p and os.path.exists(p):
             try:
                 with open(p, 'rb') as f:
                     b64 = base64.b64encode(f.read()).decode('utf-8')

@@ -13,7 +13,9 @@ from .utils import (
     gerar_qrcode_base64,
     gerar_codigo_barras_svg,
     obter_assinatura_base64,
-    obter_brasao_base64
+    obter_brasao_base64,
+    obter_diretor_para_emissao,
+    DIRETORES_CONFIG,
 )
 
 
@@ -105,6 +107,10 @@ def emitir_carteira_api(request):
         filiacao = re.sub(r'\s+', ' ', filiacao).strip()
         foto_base64_ou_url = data.get('foto_base64_ou_url', '').strip()
 
+        # Seleciona o Diretor responsável pela assinatura (Aleatório ou Fixo da Configuração)
+        modo_ass = getattr(config, 'modo_assinatura', 'random') or 'random'
+        diretor_escolhido = obter_diretor_para_emissao(modo_ass)
+
         # Cria o registro no banco de dados
         carteira = CarteiraEstudanteEmitida.objects.create(
             codigo_autenticidade=gerar_codigo_autenticidade(),
@@ -117,6 +123,9 @@ def emitir_carteira_api(request):
             data_validade=data_validade,
             filiacao=filiacao,
             foto_base64_ou_url=foto_base64_ou_url,
+            diretor_id=diretor_escolhido['id'],
+            nome_diretor=diretor_escolhido['nome'],
+            cargo_diretor=diretor_escolhido['cargo'],
             nome_operador=nome_operador_audit,
             ip_origem=ip,
             user_agent=user_agent,
@@ -161,7 +170,9 @@ def imprimir_carteira(request, codigo):
     url_validacao = request.build_absolute_uri(f"/carteira/validar/{carteira.codigo_autenticidade}/")
     qr_b64 = gerar_qrcode_base64(url_validacao)
     barcode_svg = gerar_codigo_barras_svg(carteira.matricula)
-    assinatura_b64 = obter_assinatura_base64()
+    # Assinatura do diretor específico desta carteira (Silvio / Fabiana / Luís)
+    diretor_id = getattr(carteira, 'diretor_id', '') or 'silvio'
+    assinatura_b64 = obter_assinatura_base64(diretor_id)
     brasao_b64 = obter_brasao_base64()
 
     auto_print = request.GET.get('auto_print') == '1'
@@ -215,6 +226,13 @@ def painel_auditoria_diretor(request):
         messages.success(request, f"Emissão pública de carteirinhas {status_txt} com sucesso!")
         return redirect('carteiras_auditoria')
 
+    # Alterar modo de assinatura (random / silvio / fabiana / luis)
+    if request.method == 'POST' and 'modo_assinatura' in request.POST:
+        config.modo_assinatura = request.POST.get('modo_assinatura', 'random')
+        config.save()
+        messages.success(request, f"Modo de assinatura atualizado para: {config.get_modo_assinatura_display()}!")
+        return redirect('carteiras_auditoria')
+
     # Revogar carteira
     if request.method == 'POST' and 'revogar_codigo' in request.POST:
         cod = request.POST.get('revogar_codigo')
@@ -236,6 +254,7 @@ def painel_auditoria_diretor(request):
 
     context = {
         'config': config,
+        'diretores_config': DIRETORES_CONFIG,
         'itens': itens[:100],
         'total_emitidas': CarteiraEstudanteEmitida.objects.count(),
         'total_ativas': CarteiraEstudanteEmitida.objects.filter(ativo=True).count(),
@@ -565,6 +584,13 @@ def sincronizar_servidor(request):
                 cart.save(update_fields=['filiacao'])
                 qtd_limpos += 1
         logs.append(f"filiacoes_limpas: {qtd_limpos}")
+
+        # Garante que registros anteriores tenham diretor atribuído
+        CarteiraEstudanteEmitida.objects.filter(diretor_id='').update(
+            diretor_id='silvio',
+            nome_diretor='Silvio Luiz Fernandes Freitas',
+            cargo_diretor='Direção'
+        )
 
         recentes = list(CarteiraEstudanteEmitida.objects.values('id', 'codigo_autenticidade', 'matricula', 'nome_aluno')[:5])
         logs.append(f"recentes: {recentes}")
