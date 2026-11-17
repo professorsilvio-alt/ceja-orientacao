@@ -5,6 +5,33 @@
 {% block breadcrumb %}<i class="bi bi-person-vcard text-info me-1"></i> Carteiras de Estudante{% endblock %}
 
 {% block content %}
+<style>
+  .table-gestao th, .table-gestao td {
+    vertical-align: middle;
+  }
+  .table-gestao td.td-aluno {
+    white-space: normal;
+    min-width: 150px;
+    max-width: 220px;
+    line-height: 1.25;
+  }
+  .col-acoes {
+    position: sticky;
+    right: 0;
+    background: #1e293b !important;
+    z-index: 2;
+    min-width: 125px;
+    box-shadow: -6px 0 12px rgba(0, 0, 0, 0.4);
+  }
+  thead th.col-acoes {
+    background: #162032 !important;
+    z-index: 3;
+  }
+  .table-gestao tbody tr:hover td.col-acoes {
+    background: #233044 !important;
+  }
+</style>
+
 <!-- CABEÇALHO DA AUDITORIA -->
 <div class="page-header">
   <div>
@@ -159,52 +186,56 @@
 <!-- TABELA DE AUDITORIA -->
 <div class="card-gestao p-0 overflow-hidden mb-4">
   <div class="p-3 px-4 border-bottom d-flex align-items-center justify-content-between" style="border-color: var(--card-border) !important;">
-    <h5 class="fw-bold mb-0 text-white">Registros de Emissão com Assinatura da Direção</h5>
+    <h5 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
+      <i class="bi bi-list-check text-primary"></i> Registros de Emissão com Assinatura da Direção
+    </h5>
     <span class="badge-gestao badge-secondary">{{ itens|length }} registro(s)</span>
   </div>
 
   <div class="table-responsive">
-    <table class="table-gestao">
+    <table class="table-gestao mb-0">
       <thead>
         <tr>
-          <th class="ps-4">Data e Hora</th>
-          <th>Aluno(a)</th>
-          <th>Matrícula</th>
-          <th>Diretor(a) Responsável</th>
-          <th>Operador / Terceirizado</th>
-          <th>IP</th>
-          <th>Código Autenticidade</th>
-          <th>Status</th>
-          <th class="text-end pe-4">Ações</th>
+          <th class="ps-4 text-nowrap"><i class="bi bi-calendar-event me-1"></i>Data/Hora</th>
+          <th class="text-nowrap"><i class="bi bi-person me-1"></i>Aluno(a)</th>
+          <th class="text-nowrap"><i class="bi bi-card-text me-1"></i>Matrícula</th>
+          <th class="text-nowrap"><i class="bi bi-pen me-1"></i>Direção</th>
+          <th class="text-nowrap"><i class="bi bi-person-badge me-1"></i>Operador / IP</th>
+          <th class="text-nowrap"><i class="bi bi-shield-lock me-1"></i>Código Autenticidade</th>
+          <th class="text-nowrap"><i class="bi bi-check-circle me-1"></i>Status</th>
+          <th class="text-end pe-4 col-acoes text-nowrap"><i class="bi bi-gear-fill me-1"></i>Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for item in itens %}
           <tr>
-            <td class="ps-4 text-secondary small">
-              {{ item.criado_em|date:"d/m/Y H:i" }}
+            <td class="ps-4 text-secondary small text-nowrap">
+              <span class="text-white fw-bold">{{ item.criado_em|date:"d/m/Y" }}</span><br>
+              <span class="text-secondary">{{ item.criado_em|date:"H:i" }}</span>
             </td>
-            <td>
+            <td class="td-aluno">
               <strong class="text-white">{{ item.nome_aluno }}</strong>
             </td>
-            <td>
-              <code style="background: rgba(15, 23, 42, 0.8); color: #38bdf8; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.2);">{{ item.matricula }}</code>
+            <td class="text-nowrap">
+              <code style="background: rgba(15, 23, 42, 0.8); color: #38bdf8; padding: 3px 7px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.2); font-weight: 700;">{{ item.matricula }}</code>
             </td>
-            <td>
-              <span class="badge-gestao badge-primary">
-                <i class="bi bi-pen me-1"></i>{{ item.nome_diretor|default:"Silvio Luiz Fernandes Freitas" }}
+            <td class="text-nowrap">
+              <span class="badge-gestao badge-primary" style="max-width: 175px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-flex; align-items: center;" title="{{ item.nome_diretor|default:'Silvio Luiz Fernandes Freitas' }}">
+                <i class="bi bi-pen me-1 flex-shrink-0"></i><span class="text-truncate">{{ item.nome_diretor|default:"Silvio Luiz Fernandes Freitas" }}</span>
               </span>
             </td>
-            <td>
-              <span class="badge-gestao badge-secondary">{{ item.nome_operador }}</span>
+            <td class="text-nowrap">
+              <div class="fw-semibold text-white" style="font-size: 0.85rem;"><i class="bi bi-person-fill text-secondary me-1"></i>{{ item.nome_operador }}</div>
+              {% if item.ip_origem %}
+                <div class="text-secondary small mt-0" style="font-size: 0.72rem; opacity: 0.8;">
+                  <i class="bi bi-hdd-network me-1"></i>{{ item.ip_origem }}
+                </div>
+              {% endif %}
             </td>
-            <td class="small text-secondary">
-              {{ item.ip_origem|default:"---" }}
+            <td class="text-nowrap">
+              <code style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700; font-family: monospace; white-space: nowrap;">{{ item.codigo_autenticidade }}</code>
             </td>
-            <td>
-              <code style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700; font-family: monospace;">{{ item.codigo_autenticidade }}</code>
-            </td>
-            <td>
+            <td class="text-nowrap">
               {% if item.ativo %}
                 <span class="badge-gestao badge-success">
                   <i class="bi bi-check-circle-fill me-1"></i> Válida
@@ -215,22 +246,22 @@
                 </span>
               {% endif %}
             </td>
-            <td class="text-end pe-4">
-              <div class="btn-group btn-group-sm">
+            <td class="text-end pe-4 col-acoes">
+              <div class="d-inline-flex align-items-center gap-1">
                 <!-- REIMPRIMIR CARTEIRA -->
-                <a href="{% url 'carteiras_imprimir' item.codigo_autenticidade %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);" title="Ver / Imprimir Carteira">
-                  <i class="bi bi-printer"></i>
+                <a href="{% url 'carteiras_imprimir' item.codigo_autenticidade %}" target="_blank" class="btn-gestao btn-gestao-primary" style="padding: 6px 10px; font-size: 0.84rem;" title="Ver / Imprimir Carteira">
+                  <i class="bi bi-printer-fill"></i>
                 </a>
 
                 <!-- VALIDAR QR CODE -->
-                <a href="{% url 'carteiras_validar' item.codigo_autenticidade %}" target="_blank" class="btn btn-sm" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);" title="Ver Validação Pública">
+                <a href="{% url 'carteiras_validar' item.codigo_autenticidade %}" target="_blank" class="btn-gestao btn-gestao-secondary" style="padding: 6px 10px; font-size: 0.84rem; border: 1px solid rgba(148, 163, 184, 0.35); color: #38bdf8;" title="Ver Validação Pública">
                   <i class="bi bi-qr-code"></i>
                 </a>
 
                 <!-- REVOGAR -->
                 {% if item.ativo %}
-                  <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);" title="Revogar Carteira" onclick="abrirModalRevogar('{{ item.codigo_autenticidade }}', '{{ item.nome_aluno|escapejs }}')">
-                    <i class="bi bi-trash"></i>
+                  <button type="button" class="btn-gestao btn-gestao-danger" style="padding: 6px 10px; font-size: 0.84rem;" title="Revogar Carteira" onclick="abrirModalRevogar('{{ item.codigo_autenticidade }}', '{{ item.nome_aluno|escapejs }}')">
+                    <i class="bi bi-trash-fill"></i>
                   </button>
                 {% endif %}
               </div>
@@ -238,7 +269,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="9" class="text-center py-5 text-secondary">
+            <td colspan="8" class="text-center py-5 text-secondary">
               <i class="bi bi-inbox fs-1 d-block text-secondary mb-2 opacity-50"></i>
               Nenhuma carteirinha emitida até o momento.
             </td>
