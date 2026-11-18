@@ -89,26 +89,78 @@
               {{ form.hora_fim }}
             </div>
 
-            {% if not aviso %}
+            <!-- Painel Completo de Personalização da Recorrência Semanal -->
             <div class="col-12">
-              <div class="p-3 rounded border" style="background:rgba(15, 23, 42, 0.55); border-color:var(--card-border) !important;">
-                <div class="form-check form-switch">
-                  {{ form.repetir_semanalmente }}
-                  <label class="form-check-label fw-bold ms-2 text-white" for="id_repetir_semanalmente" style="cursor:pointer;">
-                    <i class="bi bi-arrow-repeat text-info me-1"></i> Repetir semanalmente neste mesmo dia da semana
-                  </label>
+              <div class="p-3 rounded-3 border" style="background:rgba(15, 23, 42, 0.65); border-color:rgba(56, 189, 248, 0.3) !important;">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                  <div class="form-check form-switch m-0">
+                    {{ form.repetir_semanalmente }}
+                    <label class="form-check-label fw-bold ms-2 text-white" for="id_repetir_semanalmente" style="cursor:pointer; font-size:0.95rem;">
+                      <i class="bi bi-arrow-repeat text-info me-1"></i> Personalizar Recorrência: Repetir semanalmente até um dia específico
+                    </label>
+                  </div>
+                  <span class="badge-gestao badge-info" id="badge-status-recorrencia">Sem repetição (Apenas na data acima)</span>
                 </div>
-                <div id="wrap-repetir-ate" class="mt-2 ps-4" style="display:none;">
-                  <div class="row align-items-center g-2">
-                    <div class="col-sm-6">
-                      <label class="form-label small text-secondary mb-1">Repetir até a data (deixe vazio para repetir até o fim do mês):</label>
-                      {{ form.repetir_ate_data }}
+
+                <div class="row g-3 align-items-end">
+                  <!-- Repetir até o dia X -->
+                  <div class="col-md-5">
+                    <label class="form-label small fw-bold text-info mb-1">
+                      <i class="bi bi-calendar-range me-1"></i>REPETIR SEMANALMENTE ATÉ O DIA:
+                    </label>
+                    {{ form.repetir_ate_data }}
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+                      <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="definirDataLimiteRecorrencia('fim_mes')">Até o fim do mês</button>
+                      <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="definirDataLimiteRecorrencia('2_semanas')">+2 semanas</button>
+                      <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="definirDataLimiteRecorrencia('1_mes')">+1 mês</button>
+                      <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="definirDataLimiteRecorrencia('fim_semestre')">Fim do semestre</button>
                     </div>
                   </div>
+
+                  <!-- Dias da semana da repetição -->
+                  <div class="col-md-4">
+                    <label class="form-label small fw-bold text-secondary mb-1">
+                      DIAS DA SEMANA A REPETIR:
+                    </label>
+                    <div class="d-flex flex-wrap gap-1" id="grupo-dias-recorrencia">
+                      <label class="btn btn-outline-secondary btn-sm px-2 py-1 dia-rec-label" style="font-size:0.76rem; cursor:pointer;">
+                        <input type="checkbox" name="dias_semana_recorrencia" value="0" class="d-none chk-dia-rec"> Seg
+                      </label>
+                      <label class="btn btn-outline-secondary btn-sm px-2 py-1 dia-rec-label" style="font-size:0.76rem; cursor:pointer;">
+                        <input type="checkbox" name="dias_semana_recorrencia" value="1" class="d-none chk-dia-rec"> Ter
+                      </label>
+                      <label class="btn btn-outline-secondary btn-sm px-2 py-1 dia-rec-label" style="font-size:0.76rem; cursor:pointer;">
+                        <input type="checkbox" name="dias_semana_recorrencia" value="2" class="d-none chk-dia-rec"> Qua
+                      </label>
+                      <label class="btn btn-outline-secondary btn-sm px-2 py-1 dia-rec-label" style="font-size:0.76rem; cursor:pointer;">
+                        <input type="checkbox" name="dias_semana_recorrencia" value="3" class="d-none chk-dia-rec"> Qui
+                      </label>
+                      <label class="btn btn-outline-secondary btn-sm px-2 py-1 dia-rec-label" style="font-size:0.76rem; cursor:pointer;">
+                        <input type="checkbox" name="dias_semana_recorrencia" value="4" class="d-none chk-dia-rec"> Sex
+                      </label>
+                    </div>
+                    <small class="text-secondary d-block mt-1" style="font-size:0.7rem;">
+                      Você pode marcar 1 ou mais dias da semana.
+                    </small>
+                  </div>
+
+                  <!-- Frequência -->
+                  <div class="col-md-3">
+                    <label class="form-label small fw-bold text-secondary mb-1">
+                      FREQUÊNCIA:
+                    </label>
+                    <select name="intervalo_semanas" id="id_intervalo_semanas" class="form-select" style="font-size:0.84rem;">
+                      <option value="1" selected>Toda semana (Semanal)</option>
+                      <option value="2">A cada 2 semanas (Quinzenal)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Prévia das datas geradas -->
+                <div id="preview-datas-recorrencia" class="mt-3 p-2 px-3 rounded" style="display:none; background:rgba(2, 132, 199, 0.12); border:1px dashed rgba(56, 189, 248, 0.4); font-size:0.82rem; color:#e2e8f0;">
                 </div>
               </div>
             </div>
-            {% endif %}
           </div>
         </div>
 
@@ -162,7 +214,11 @@
   const inpTitulo = document.getElementById('id_titulo_atend');
   const previewEl = document.getElementById('preview-mensagem-totem');
   const chkRepetir = document.getElementById('id_repetir_semanalmente');
-  const wrapRepetirAte = document.getElementById('wrap-repetir-ate');
+  const inpRepetirAte = document.getElementById('id_repetir_ate_data');
+  const selIntervalo = document.getElementById('id_intervalo_semanas');
+  const badgeRec = document.getElementById('badge-status-recorrencia');
+  const previewRecEl = document.getElementById('preview-datas-recorrencia');
+  const chkDiasRec = document.querySelectorAll('.chk-dia-rec');
 
   // Preenche data via querystring (?data=YYYY-MM-DD) se presente
   const urlParams = new URLSearchParams(window.location.search);
@@ -173,6 +229,176 @@
   } else if (dataParam && inpData && !{{ aviso|yesno:"true,false" }}) {
     inpData.value = dataParam;
   }
+
+  function atualizarEstiloDiasRec() {
+    chkDiasRec.forEach(chk => {
+      const lbl = chk.closest('.dia-rec-label');
+      if (!lbl) return;
+      if (chk.checked) {
+        lbl.classList.remove('btn-outline-secondary');
+        lbl.classList.add('btn-info', 'text-dark', 'fw-bold');
+      } else {
+        lbl.classList.remove('btn-info', 'text-dark', 'fw-bold');
+        lbl.classList.add('btn-outline-secondary');
+      }
+    });
+  }
+
+  function sincronizarDiaSemanaBase(forcarUnico = false) {
+    if (!inpData || !inpData.value) return;
+    const partes = inpData.value.split('-');
+    if (partes.length !== 3) return;
+    const dObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+    const jsDow = dObj.getDay(); // 0=Dom, 1=Seg..5=Sex, 6=Sáb
+    const pyDow = jsDow - 1;     // 0=Seg..4=Sex
+
+    const algumMarcado = Array.from(chkDiasRec).some(c => c.checked);
+    if (forcarUnico || !algumMarcado) {
+      chkDiasRec.forEach(c => {
+        c.checked = (parseInt(c.value) === pyDow);
+      });
+      atualizarEstiloDiasRec();
+    }
+  }
+
+  chkDiasRec.forEach(chk => {
+    chk.addEventListener('change', () => {
+      atualizarEstiloDiasRec();
+      if (Array.from(chkDiasRec).filter(c => c.checked).length > 0 && inpRepetirAte && inpRepetirAte.value) {
+        if (chkRepetir) chkRepetir.checked = true;
+      }
+      atualizarPreviewRecorrencia();
+    });
+  });
+
+  if (inpData) {
+    inpData.addEventListener('change', () => {
+      sincronizarDiaSemanaBase(true);
+      atualizarPreviewRecorrencia();
+    });
+  }
+
+  window.definirDataLimiteRecorrencia = function(modo) {
+    if (!inpData || !inpData.value || !inpRepetirAte) return;
+    const p = inpData.value.split('-');
+    const base = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    let alvo = new Date(base);
+
+    if (modo === 'fim_mes') {
+      alvo = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+    } else if (modo === '2_semanas') {
+      alvo.setDate(alvo.getDate() + 14);
+    } else if (modo === '1_mes') {
+      alvo.setMonth(alvo.getMonth() + 1);
+    } else if (modo === 'fim_semestre') {
+      if (base.getMonth() < 6) {
+        alvo = new Date(base.getFullYear(), 6, 0); // 30/06
+      } else {
+        alvo = new Date(base.getFullYear(), 11, 18); // ~18/12
+      }
+    }
+
+    const iso = `${alvo.getFullYear()}-${String(alvo.getMonth() + 1).padStart(2, '0')}-${String(alvo.getDate()).padStart(2, '0')}`;
+    inpRepetirAte.value = iso;
+    if (chkRepetir) chkRepetir.checked = true;
+    sincronizarDiaSemanaBase(false);
+    atualizarPreviewRecorrencia();
+  };
+
+  if (inpRepetirAte) {
+    inpRepetirAte.addEventListener('change', () => {
+      if (inpRepetirAte.value && chkRepetir) {
+        chkRepetir.checked = true;
+      }
+      atualizarPreviewRecorrencia();
+    });
+  }
+
+  if (chkRepetir) {
+    chkRepetir.addEventListener('change', () => {
+      if (chkRepetir.checked && inpRepetirAte && !inpRepetirAte.value) {
+        definirDataLimiteRecorrencia('fim_mes');
+      } else {
+        atualizarPreviewRecorrencia();
+      }
+    });
+  }
+
+  if (selIntervalo) {
+    selIntervalo.addEventListener('change', atualizarPreviewRecorrencia);
+  }
+
+  function atualizarPreviewRecorrencia() {
+    if (!chkRepetir || !inpData || !inpData.value) return;
+    sincronizarDiaSemanaBase(false);
+
+    if (!chkRepetir.checked) {
+      if (badgeRec) {
+        badgeRec.textContent = 'Sem repetição (Apenas na data selecionada)';
+        badgeRec.className = 'badge-gestao badge-secondary';
+      }
+      if (previewRecEl) previewRecEl.style.display = 'none';
+      return;
+    }
+
+    const pBase = inpData.value.split('-');
+    const dtBase = new Date(parseInt(pBase[0]), parseInt(pBase[1]) - 1, parseInt(pBase[2]));
+
+    let dtFim = null;
+    if (inpRepetirAte && inpRepetirAte.value) {
+      const pFim = inpRepetirAte.value.split('-');
+      dtFim = new Date(parseInt(pFim[0]), parseInt(pFim[1]) - 1, parseInt(pFim[2]));
+    } else {
+      dtFim = new Date(dtBase.getFullYear(), dtBase.getMonth() + 1, 0);
+    }
+
+    const diasMarcados = Array.from(chkDiasRec).filter(c => c.checked).map(c => parseInt(c.value));
+    if (diasMarcados.length === 0 && dtBase.getDay() >= 1 && dtBase.getDay() <= 5) {
+      diasMarcados.push(dtBase.getDay() - 1);
+    }
+
+    const intervalo = selIntervalo ? (parseInt(selIntervalo.value) || 1) : 1;
+    const nomesCurto = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
+
+    // Segunda-feira da semana inicial para cálculo de semanas
+    const jsDowBase = dtBase.getDay();
+    const diffSeg = jsDowBase === 0 ? -6 : 1 - jsDowBase;
+    const segBase = new Date(dtBase);
+    segBase.setDate(dtBase.getDate() + diffSeg);
+
+    const datasGeradas = [];
+    const cur = new Date(dtBase);
+    while (cur <= dtFim && datasGeradas.length < 60) {
+      const jsDow = cur.getDay();
+      const pyDow = jsDow - 1;
+      const diffDias = Math.round((cur - segBase) / (1000 * 60 * 60 * 24));
+      const numSemana = Math.floor(diffDias / 7);
+
+      const isMesmaDataBase = (cur.getTime() === dtBase.getTime());
+      if (isMesmaDataBase || (pyDow >= 0 && pyDow <= 4 && diasMarcados.includes(pyDow) && (numSemana % intervalo === 0))) {
+        const dFmt = `${String(cur.getDate()).padStart(2, '0')}/${String(cur.getMonth() + 1).padStart(2, '0')} (${pyDow >= 0 && pyDow <= 4 ? nomesCurto[pyDow] : ''})`;
+        datasGeradas.push(dFmt);
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    const fimFmt = `${String(dtFim.getDate()).padStart(2, '0')}/${String(dtFim.getMonth() + 1).padStart(2, '0')}/${dtFim.getFullYear()}`;
+    if (badgeRec) {
+      badgeRec.textContent = `🔄 Repetindo até ${fimFmt} (${datasGeradas.length} datas)`;
+      badgeRec.className = 'badge-gestao badge-info';
+    }
+    if (previewRecEl) {
+      previewRecEl.style.display = 'block';
+      previewRecEl.innerHTML = `
+        <div class="fw-bold text-info mb-1"><i class="bi bi-calendar2-check me-1"></i>Serão registrados ${datasGeradas.length} aviso(s) até ${fimFmt}:</div>
+        <div class="d-flex flex-wrap gap-1">
+          ${datasGeradas.map(d => `<span class="badge bg-dark border border-info text-light" style="font-size:0.75rem;">${d}</span>`).join('')}
+        </div>
+      `;
+    }
+  }
+
+  sincronizarDiaSemanaBase(true);
 
   function setHora(h) {
     if (inpHora) {
@@ -190,12 +416,6 @@
         if (inpDisc && found.disciplina) inpDisc.value = found.disciplina;
         atualizarPreview();
       }
-    });
-  }
-
-  if (chkRepetir && wrapRepetirAte) {
-    chkRepetir.addEventListener('change', () => {
-      wrapRepetirAte.style.display = chkRepetir.checked ? 'block' : 'none';
     });
   }
 

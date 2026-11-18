@@ -599,39 +599,66 @@ def view_agenda_atendimentos(request):
     })
 
 
-@quadro_horarios_required
-@verificar_primeiro_acesso
-def view_novo_atendimento_professor(request):
-    """Cadastra uma ausência ou reposição de atendimento de professor (com opção de repetição semanal)."""
-    professores = Professor.objects.filter(ativo=True).prefetch_related('disciplinas_lecionadas').order_by('nome_completo')
-    form = AgendaAtendimentoProfessorForm(request.POST or None)
+def _gerar_repeticoes_semanais(request, aviso, form):
+    """
+    Cria os lançamentos recorrentes semanais até a data limite informada (repetir_ate_data),
+    respeitando os dias da semana selecionados (Seg a Sex) e a frequência (Semanal ou Quinzenal).
+    """
+    ate_data = form.cleaned_data.get('repetir_ate_data')
+    repetir = form.cleaned_data.get('repetir_semanalmente') or bool(ate_data)
+    if not repetir:
+        return 0
 
-    if request.method == 'POST' and form.is_valid():
-        aviso = form.save(commit=False)
-        aviso.criado_por = request.user
-        aviso.save()
+    data_base = aviso.data
+    if not ate_data:
+        if data_base.month == 12:
+            ate_data = date(data_base.year + 1, 1, 1) - timedelta(days=1)
+        else:
+            ate_data = date(data_base.year, data_base.month + 1, 1) - timedelta(days=1)
 
-        repetir = form.cleaned_data.get('repetir_semanalmente')
-        ate_data = form.cleaned_data.get('repetir_ate_data')
-        criados_extras = 0
+    if ate_data <= data_base:
+        return 0
 
-        if repetir:
-            data_base = aviso.data
-            if not ate_data:
-                # Por padrão repete até o final do mês da data selecionada
-                if data_base.month == 12:
-                    ate_data = date(data_base.year + 1, 1, 1) - timedelta(days=1)
-                else:
-                    ate_data = date(data_base.year, data_base.month + 1, 1) - timedelta(days=1)
+    raw_dias = request.POST.getlist('dias_semana_recorrencia')
+    dias_marcados = set()
+    for d_str in raw_dias:
+        try:
+            v = int(d_str)
+            if 0 <= v <= 4:
+                dias_marcados.add(v)
+        except ValueError:
+            pass
 
-            proxima_data = data_base + timedelta(days=7)
-            while proxima_data <= ate_data and criados_extras < 24:
+    if not dias_marcados:
+        if 0 <= data_base.weekday() <= 4:
+            dias_marcados.add(data_base.weekday())
+
+    try:
+        intervalo = max(1, int(request.POST.get('intervalo_semanas', '1') or 1))
+    except ValueError:
+        intervalo = 1
+
+    # Segunda-feira da semana inicial
+    seg_base = data_base - timedelta(days=data_base.weekday())
+
+    criados_extras = 0
+    cur_data = data_base + timedelta(days=1)
+    while cur_data <= ate_data and criados_extras < 60:
+        num_semana = (cur_data - seg_base).days // 7
+        if cur_data.weekday() in dias_marcados and (num_semana % intervalo == 0):
+            ja_existe = AgendaAtendimentoProfessor.objects.filter(
+                tipo=aviso.tipo,
+                nome_professor=aviso.nome_professor,
+                data=cur_data,
+                hora_inicio=aviso.hora_inicio,
+            ).exists()
+            if not ja_existe:
                 AgendaAtendimentoProfessor.objects.create(
                     tipo=aviso.tipo,
                     professor=aviso.professor,
                     nome_professor=aviso.nome_professor,
                     disciplina=aviso.disciplina,
-                    data=proxima_data,
+                    data=cur_data,
                     hora_inicio=aviso.hora_inicio,
                     hora_fim=aviso.hora_fim,
                     titulo=aviso.titulo,
@@ -640,7 +667,24 @@ def view_novo_atendimento_professor(request):
                     criado_por=request.user,
                 )
                 criados_extras += 1
-                proxima_data += timedelta(days=7)
+        cur_data += timedelta(days=1)
+
+    return criados_extras
+
+
+@quadro_horarios_required
+@verificar_primeiro_acesso
+def view_novo_atendimento_professor(request):
+    """Cadastra uma ausência ou reposição de atendimento de professor (com opção de repetição semanal personalizada)."""
+    professores = Professor.objects.filter(ativo=True).prefetch_related('disciplinas_lecionadas').order_by('nome_completo')
+    form = AgendaAtendimentoProfessorForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        aviso = form.save(commit=False)
+        aviso.criado_por = request.user
+        aviso.save()
+
+        criados_extras = _gerar_repeticoes_semanais(request, aviso, form)
 
         if criados_extras > 0:
             messages.success(
@@ -682,7 +726,11 @@ def view_editar_atendimento_professor(request, pk):
 
     if request.method == 'POST' and form.is_valid():
         aviso_salvo = form.save()
-        messages.success(request, 'Registro atualizado com sucesso!')
+        criados_extras = _gerar_repeticoes_semanais(request, aviso_salvo, form)
+        if criados_extras > 0:
+            messages.success(request, f'Registro atualizado (+{criados_extras} repetições semanais criadas)!')
+        else:
+            messages.success(request, 'Registro atualizado com sucesso!')
         return redirect(f"{reverse('agenda_atendimentos')}?mes={aviso_salvo.data.month}&ano={aviso_salvo.data.year}")
 
     profs_js = []
