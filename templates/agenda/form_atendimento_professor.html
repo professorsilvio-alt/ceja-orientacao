@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_atendimentos %}active{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'agenda_atendimentos' %}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-calendar2-week-fill me-1"></i>Ausências e Reposições
+  </a> › {{ titulo }}
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <div class="page-title"><i class="bi bi-calendar-plus-fill text-info me-2"></i>{{ titulo }}</div>
+    <div class="page-subtitle">
+      Este aviso ficará imediatamente visível na aba de Ausências e Reposições do Totem para consulta dos alunos.
+    </div>
+  </div>
+  <a href="{% url 'agenda_atendimentos' %}" class="btn-gestao btn-gestao-secondary">
+    <i class="bi bi-arrow-left me-1"></i> Voltar à Agenda
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9 col-xl-8">
+    <div class="card-gestao shadow-lg">
+      <form method="post" id="form-atendimento-prof">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger mb-4" style="font-size:0.85rem;">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Verifique os campos obrigatórios abaixo.
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Seção 1: Tipo e Professor -->
+        <div class="p-3 mb-4 rounded border" style="background:rgba(255,255,255,0.02); border-color:var(--card-border) !important;">
+          <h6 class="mb-3 fw-bold" style="color:var(--blue);"><i class="bi bi-person-video3 me-2"></i>1. Tipo de Aviso e Professor</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Tipo de Aviso *</label>
+              {{ form.tipo }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Selecionar Professor do Cadastro (Opcional)</label>
+              {{ form.professor }}
+              <small class="text-secondary d-block mt-1" style="font-size:0.74rem;">
+                Preenche o nome e a disciplina automaticamente.
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Nome do Professor (exibido ao aluno) *</label>
+              {{ form.nome_professor }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Disciplina(s) *</label>
+              {{ form.disciplina }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção 2: Data, Horário e Recorrência -->
+        <div class="p-3 mb-4 rounded border" style="background:rgba(255,255,255,0.02); border-color:var(--card-border) !important;">
+          <h6 class="mb-3 fw-bold" style="color:var(--blue);"><i class="bi bi-clock-fill me-2"></i>2. Data e Horário do Atendimento</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Data *</label>
+              {{ form.data }}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Horário de Início *</label>
+              {{ form.hora_inicio }}
+              <div class="d-flex flex-wrap gap-1 mt-1">
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="setHora('08:50')">08:50</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="setHora('12:10')">12:10</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="setHora('13:00')">13:00</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="setHora('13:50')">13:50</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="setHora('17:10')">17:10</button>
+                <button type="button" class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:0.7rem;" onclick="setHora('18:00')">18:00</button>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Horário Final (Opcional)</label>
+              {{ form.hora_fim }}
+            </div>
+
+            {% if not aviso %}
+            <div class="col-12">
+              <div class="p-3 rounded border" style="background:rgba(15, 23, 42, 0.55); border-color:var(--card-border) !important;">
+                <div class="form-check form-switch">
+                  {{ form.repetir_semanalmente }}
+                  <label class="form-check-label fw-bold ms-2 text-white" for="id_repetir_semanalmente" style="cursor:pointer;">
+                    <i class="bi bi-arrow-repeat text-info me-1"></i> Repetir semanalmente neste mesmo dia da semana
+                  </label>
+                </div>
+                <div id="wrap-repetir-ate" class="mt-2 ps-4" style="display:none;">
+                  <div class="row align-items-center g-2">
+                    <div class="col-sm-6">
+                      <label class="form-label small text-secondary mb-1">Repetir até a data (deixe vazio para repetir até o fim do mês):</label>
+                      {{ form.repetir_ate_data }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Seção 3: Mensagem e Visibilidade no Totem -->
+        <div class="p-3 mb-4 rounded border" style="background:rgba(255,255,255,0.02); border-color:var(--card-border) !important;">
+          <h6 class="mb-3 fw-bold" style="color:var(--blue);"><i class="bi bi-chat-square-text-fill me-2"></i>3. Mensagem Exibida aos Alunos no Totem</h6>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-bold">Título / Mensagem no Calendário</label>
+              {{ form.titulo }}
+              <div class="mt-2 p-2 rounded" style="background:rgba(15,23,42,0.8); border:1px dashed rgba(56,189,248,0.35); font-size:0.84rem;">
+                <span class="text-secondary small fw-bold me-2">Prévia no Totem:</span>
+                <span id="preview-mensagem-totem" class="fw-bold text-info"></span>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-bold">Observações Adicionais (Opcional)</label>
+              {{ form.observacoes }}
+            </div>
+
+            <div class="col-12">
+              <div class="form-check form-switch">
+                {{ form.visivel_totem }}
+                <label class="form-check-label fw-bold ms-2 text-white" for="id_visivel_totem" style="cursor:pointer;">
+                  Exibir publicamente na aba de Ausências e Reposições do Totem
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 pt-2">
+          <a href="{% url 'agenda_atendimentos' %}" class="btn-gestao btn-gestao-secondary px-4">Cancelar</a>
+          <button type="submit" class="btn-gestao btn-gestao-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Salvar na Agenda e no Totem
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const PROFS_MAP = {{ profs_json|default:"[]"|safe }};
+  const selProf = document.getElementById('id_professor_atend');
+  const inpNome = document.getElementById('id_nome_professor_atend');
+  const inpDisc = document.getElementById('id_disciplina_atend');
+  const selTipo = document.getElementById('id_tipo_atend');
+  const inpHora = document.getElementById('id_hora_inicio_atend');
+  const inpTitulo = document.getElementById('id_titulo_atend');
+  const previewEl = document.getElementById('preview-mensagem-totem');
+  const chkRepetir = document.getElementById('id_repetir_semanalmente');
+  const wrapRepetirAte = document.getElementById('wrap-repetir-ate');
+
+  // Preenche data via querystring (?data=YYYY-MM-DD) se presente
+  const urlParams = new URLSearchParams(window.location.search);
+  const dataParam = urlParams.get('data');
+  const inpData = document.getElementById('id_data_atend');
+  if (dataParam && inpData && !inpData.value) {
+    inpData.value = dataParam;
+  } else if (dataParam && inpData && !{{ aviso|yesno:"true,false" }}) {
+    inpData.value = dataParam;
+  }
+
+  function setHora(h) {
+    if (inpHora) {
+      inpHora.value = h;
+      atualizarPreview();
+    }
+  }
+
+  if (selProf) {
+    selProf.addEventListener('change', () => {
+      const idVal = parseInt(selProf.value);
+      const found = PROFS_MAP.find(p => p.id === idVal);
+      if (found) {
+        if (inpNome) inpNome.value = found.nome_curto;
+        if (inpDisc && found.disciplina) inpDisc.value = found.disciplina;
+        atualizarPreview();
+      }
+    });
+  }
+
+  if (chkRepetir && wrapRepetirAte) {
+    chkRepetir.addEventListener('change', () => {
+      wrapRepetirAte.style.display = chkRepetir.checked ? 'block' : 'none';
+    });
+  }
+
+  function atualizarPreview() {
+    const tipo = selTipo ? selTipo.value : 'ausencia';
+    const nome = (inpNome && inpNome.value.trim()) ? inpNome.value.trim() : 'Prof. Nome';
+    const disc = (inpDisc && inpDisc.value.trim()) ? ` (${inpDisc.value.trim()})` : '';
+    const hora = (inpHora && inpHora.value) ? inpHora.value.slice(0, 5) : '08:50';
+    const customTit = (inpTitulo && inpTitulo.value.trim()) ? inpTitulo.value.trim() : '';
+
+    let texto = customTit;
+    if (!texto) {
+      if (tipo === 'ausencia') {
+        texto = `Não haverá atendimento com ${nome}${disc}`;
+      } else if (tipo === 'reposicao') {
+        texto = `Reposição de atendimento com ${nome}${disc}`;
+      } else {
+        texto = `Alteração de atendimento com ${nome}${disc}`;
+      }
+    }
+    if (previewEl) {
+      previewEl.textContent = `${hora} ${texto}`;
+      previewEl.className = tipo === 'ausencia' ? 'fw-bold text-danger' : (tipo === 'reposicao' ? 'fw-bold text-success' : 'fw-bold text-warning');
+    }
+  }
+
+  [inpNome, inpDisc, selTipo, inpHora, inpTitulo].forEach(el => {
+    if (el) {
+      el.addEventListener('input', atualizarPreview);
+      el.addEventListener('change', atualizarPreview);
+    }
+  });
+  atualizarPreview();
+</script>
+{% endblock %}

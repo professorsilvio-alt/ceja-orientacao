@@ -363,3 +363,114 @@ class ReservaAuditorio(models.Model):
         inicio = datetime.combine(date.today(), self.hora_inicio)
         fim = datetime.combine(date.today(), self.hora_fim)
         return int((fim - inicio).total_seconds() / 60)
+
+
+TIPO_AGENDA_ATENDIMENTO_CHOICES = [
+    ('ausencia', 'Ausência / Sem Atendimento'),
+    ('reposicao', 'Reposição de Atendimento'),
+    ('alteracao', 'Alteração de Horário / Aviso'),
+]
+
+
+class AgendaAtendimentoProfessor(models.Model):
+    """
+    Agenda pública de ausências e reposições de aulas/atendimentos dos professores.
+    Exibida no painel de gestão e na aba dedicada do Totem para consulta dos alunos.
+    """
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPO_AGENDA_ATENDIMENTO_CHOICES,
+        default='ausencia',
+        verbose_name='Tipo de Aviso'
+    )
+    professor = models.ForeignKey(
+        'professores.Professor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='avisos_atendimento',
+        verbose_name='Professor (Cadastro)'
+    )
+    nome_professor = models.CharField(
+        max_length=150,
+        verbose_name='Nome do Professor (como exibido ao aluno)',
+        help_text='Ex: Prof. Vitor, Prof. Fernando, Prof.ª Viviane'
+    )
+    disciplina = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name='Disciplina(s)',
+        help_text='Ex: Matemática, Filosofia & Sociologia, História'
+    )
+    data = models.DateField(
+        db_index=True,
+        verbose_name='Data'
+    )
+    hora_inicio = models.TimeField(
+        verbose_name='Horário'
+    )
+    hora_fim = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name='Horário de Término (Opcional)'
+    )
+    titulo = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Mensagem / Descrição no Calendário',
+        help_text='Deixe em branco para gerar automaticamente (Ex: Não haverá atendimento com o Prof. ...)'
+    )
+    observacoes = models.TextField(
+        blank=True,
+        verbose_name='Observações para os Alunos (Opcional)'
+    )
+    visivel_totem = models.BooleanField(
+        default=True,
+        verbose_name='Visível no Totem para os Alunos'
+    )
+    criado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='agenda_atendimentos_criados',
+        verbose_name='Registrado por'
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Ausência / Reposição de Atendimento'
+        verbose_name_plural = 'Ausências e Reposições de Atendimento'
+        ordering = ['data', 'hora_inicio', 'nome_professor']
+
+    def save(self, *args, **kwargs):
+        if self.professor and not self.nome_professor:
+            primeiro = self.professor.nome_completo.split()[0]
+            prefixo = 'Prof.ª' if self.professor.sexo and self.professor.sexo.upper().startswith('F') else 'Prof.'
+            self.nome_professor = f'{prefixo} {primeiro}'
+        if self.professor and not self.disciplina:
+            discs = list(self.professor.disciplinas_lecionadas.values_list('nome', flat=True))
+            self.disciplina = ' & '.join(discs) if discs else (self.professor.disciplina_ingresso or '')
+        if not self.titulo:
+            disc_part = f' ({self.disciplina})' if self.disciplina else ''
+            if self.tipo == 'ausencia':
+                self.titulo = f'Não haverá atendimento com {self.nome_professor}{disc_part}'
+            elif self.tipo == 'reposicao':
+                self.titulo = f'Reposição de atendimento com {self.nome_professor}{disc_part}'
+            else:
+                self.titulo = f'Alteração de atendimento com {self.nome_professor}{disc_part}'
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.data:%d/%m/%Y} {self.hora_inicio:%H:%M} — {self.titulo}'
+
+    @property
+    def badge_color(self):
+        cores = {
+            'ausencia': 'danger',
+            'reposicao': 'success',
+            'alteracao': 'warning',
+        }
+        return cores.get(self.tipo, 'secondary')
+

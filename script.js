@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'screen-disciplinas':  '📚 Disciplinas',
     'screen-faleconosco':  '💬 Fale Conosco',
     'screen-auditorio':    '🏛️ Agenda do Auditório',
+    'screen-atendimentos': '📅 Ausências e Reposições',
   };
 
   let currentScreen = 'screen-home';
@@ -72,6 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (targetId === 'screen-auditorio') {
       renderAuditorioTotem();
+    }
+
+    if (targetId === 'screen-atendimentos') {
+      renderAtendimentosTotem();
     }
 
     // Exit current
@@ -1678,6 +1683,363 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
     listEl.innerHTML = html;
+  }
+
+
+  // ==========================================================================
+  // 13. AGENDA DE AUSÊNCIAS E REPOSIÇÕES DE AULAS NO TOTEM
+  // ==========================================================================
+  const ATENDIMENTOS_FALLBACK = [
+    { id: 1, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Vitor', disciplina: 'Matemática', data: '2026-11-03', hora_inicio: '18:00', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Vitor (Matemática)' },
+    { id: 2, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-04', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 3, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Rafael Maia', disciplina: 'Filosofia & Sociologia', data: '2026-11-04', hora_inicio: '13:00', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Rafael Maia (Filosofia & Sociologia)' },
+    { id: 4, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-05', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 5, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Vitor', disciplina: 'Matemática', data: '2026-11-06', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Vitor (Matemática)' },
+    { id: 6, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Elázaro', disciplina: 'Biologia', data: '2026-11-06', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o professor Elázaro (Biologia)' },
+    { id: 7, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Vitor', disciplina: 'Matemática', data: '2026-11-10', hora_inicio: '18:00', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Vitor (Matemática)' },
+    { id: 8, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-11', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 9, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-12', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 10, tipo: 'reposicao', tipo_display: 'Reposição de Atendimento', nome_professor: 'Prof. Carlos Laurindo', disciplina: 'História', data: '2026-11-12', hora_inicio: '17:10', hora_fim: '', titulo: 'Reposição de atendimento com o Prof. Carlos Laurindo (História)' },
+    { id: 11, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Vitor', disciplina: 'Matemática', data: '2026-11-13', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Vitor (Matemática)' },
+    { id: 12, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-18', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 13, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Mário', disciplina: 'História', data: '2026-11-18', hora_inicio: '13:50', hora_fim: '', titulo: 'Não haverá atendimento com o professor Mário (História)' },
+    { id: 14, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-19', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 15, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Carlos Laurindo', disciplina: 'História', data: '2026-11-19', hora_inicio: '12:10', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Carlos Laurindo (História)' },
+    { id: 16, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof.ª Viviane', disciplina: 'Química', data: '2026-11-23', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com a professora Viviane (Química)' },
+    { id: 17, tipo: 'reposicao', tipo_display: 'Reposição de Atendimento', nome_professor: 'Prof. Mário', disciplina: 'História', data: '2026-11-23', hora_inicio: '12:10', hora_fim: '', titulo: 'Reposição de atendimento com o Prof. Mário (História)' },
+    { id: 18, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-25', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 19, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-11-26', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 20, tipo: 'reposicao', tipo_display: 'Reposição de Atendimento', nome_professor: 'Prof. Carlos Laurindo', disciplina: 'História', data: '2026-11-26', hora_inicio: '17:10', hora_fim: '', titulo: 'Reposição de atendimento com o Prof. Carlos Laurindo (História)' },
+    { id: 21, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-12-02', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' },
+    { id: 22, tipo: 'ausencia', tipo_display: 'Ausência / Sem Atendimento', nome_professor: 'Prof. Fernando', disciplina: 'Filosofia & Sociologia', data: '2026-12-03', hora_inicio: '08:50', hora_fim: '', titulo: 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)' }
+  ];
+
+  let totemAtendMes = (new Date()).getMonth() + 1;
+  let totemAtendAno = (new Date()).getFullYear();
+  let totemAtendEventos = [];
+  let totemAtendProximos = [];
+  let totemAtendInitialized = false;
+  let totemAtendDataSelecionada = null;
+  let totemAtendFiltroTipo = 'todos';
+
+  const API_TOTEM_BASE = (window.location.hostname.includes('github.io') || window.location.protocol === 'file:')
+    ? 'https://cejarosasoares.pythonanywhere.com'
+    : '';
+
+  window.renderAtendimentosTotem = function() {
+    if (!totemAtendInitialized) {
+      totemAtendInitialized = true;
+
+      const btnAnt = document.getElementById('btn-totem-atend-ant');
+      const btnProx = document.getElementById('btn-totem-atend-prox');
+      const btnHoje = document.getElementById('btn-totem-atend-hoje');
+
+      if (btnAnt) {
+        btnAnt.addEventListener('click', () => {
+          if (totemAtendMes === 1) {
+            totemAtendMes = 12;
+            totemAtendAno--;
+          } else {
+            totemAtendMes--;
+          }
+          carregarDadosAtendimentosTotem();
+        });
+      }
+
+      if (btnProx) {
+        btnProx.addEventListener('click', () => {
+          if (totemAtendMes === 12) {
+            totemAtendMes = 1;
+            totemAtendAno++;
+          } else {
+            totemAtendMes++;
+          }
+          carregarDadosAtendimentosTotem();
+        });
+      }
+
+      if (btnHoje) {
+        btnHoje.addEventListener('click', () => {
+          const agora = new Date();
+          totemAtendMes = agora.getMonth() + 1;
+          totemAtendAno = agora.getFullYear();
+          const hojeIso = `${totemAtendAno}-${String(totemAtendMes).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+          carregarDadosAtendimentosTotem(hojeIso);
+        });
+      }
+
+      const filtroContainer = document.getElementById('atendimentos-filtros-container');
+      if (filtroContainer) {
+        filtroContainer.querySelectorAll('.filter-pill').forEach(btn => {
+          btn.addEventListener('click', () => {
+            filtroContainer.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            totemAtendFiltroTipo = btn.getAttribute('data-tipo') || 'todos';
+            montarGridAtendimentosTotem(totemAtendEventos);
+            if (totemAtendDataSelecionada) {
+              selecionarDiaAtendimentosTotem(totemAtendDataSelecionada);
+            }
+          });
+        });
+      }
+    }
+
+    carregarDadosAtendimentosTotem();
+  };
+
+  function obterFallbackMes(mes, ano) {
+    const prefix = `${ano}-${String(mes).padStart(2, '0')}-`;
+    return ATENDIMENTOS_FALLBACK.filter(ev => ev.data.startsWith(prefix));
+  }
+
+  function carregarDadosAtendimentosTotem(forcarDia = null) {
+    const lblMesAno = document.getElementById('totem-atend-mes-ano');
+    if (lblMesAno) {
+      lblMesAno.textContent = `${MESES_NOMES[totemAtendMes - 1]} de ${totemAtendAno}`;
+    }
+
+    if (totemAtendEventos.length === 0) {
+      totemAtendEventos = obterFallbackMes(totemAtendMes, totemAtendAno);
+    }
+    montarGridAtendimentosTotem(totemAtendEventos);
+
+    fetch(`${API_TOTEM_BASE}/api/totem/atendimentos/?mes=${totemAtendMes}&ano=${totemAtendAno}`)
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(data => {
+        totemAtendEventos = data.eventos || [];
+        totemAtendProximos = data.proximos || [];
+        montarGridAtendimentosTotem(totemAtendEventos);
+        renderizarProximosAtendimentosTotem();
+
+        const hojeIso = data.hoje || (new Date()).toISOString().split('T')[0];
+        const partesHoje = hojeIso.split('-');
+        const isMesAtual = (parseInt(partesHoje[1]) === totemAtendMes && parseInt(partesHoje[0]) === totemAtendAno);
+
+        if (forcarDia) {
+          selecionarDiaAtendimentosTotem(forcarDia);
+        } else if (isMesAtual) {
+          selecionarDiaAtendimentosTotem(hojeIso);
+        } else if (totemAtendEventos.length > 0) {
+          selecionarDiaAtendimentosTotem(totemAtendEventos[0].data);
+        } else {
+          const primeiroIso = `${totemAtendAno}-${String(totemAtendMes).padStart(2, '0')}-01`;
+          selecionarDiaAtendimentosTotem(primeiroIso);
+        }
+      })
+      .catch(() => {
+        totemAtendEventos = obterFallbackMes(totemAtendMes, totemAtendAno);
+        const hoje = new Date();
+        const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+        totemAtendProximos = ATENDIMENTOS_FALLBACK.filter(e => e.data >= hojeIso);
+        montarGridAtendimentosTotem(totemAtendEventos);
+        renderizarProximosAtendimentosTotem();
+        if (forcarDia) {
+          selecionarDiaAtendimentosTotem(forcarDia);
+        } else if (totemAtendEventos.length > 0) {
+          selecionarDiaAtendimentosTotem(hojeIso);
+        }
+      });
+  }
+
+  function montarGridAtendimentosTotem(eventosLista) {
+    const grid = document.getElementById('totem-atend-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const hoje = new Date();
+    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+
+    const primeiroDia = new Date(totemAtendAno, totemAtendMes - 1, 1);
+    const ultimoDia = new Date(totemAtendAno, totemAtendMes, 0);
+
+    // 5 colunas: Segunda a Sexta
+    const diaSemana1 = primeiroDia.getDay(); // 0=Dom, 1=Seg..6=Sáb
+    let offsetInicio = 0;
+    if (diaSemana1 >= 1 && diaSemana1 <= 5) {
+      offsetInicio = diaSemana1 - 1;
+    }
+
+    let totalCelulas = 0;
+    for (let i = 0; i < offsetInicio; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'totem-cal-cell outro-mes';
+      grid.appendChild(cell);
+      totalCelulas++;
+    }
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+      const dObj = new Date(totemAtendAno, totemAtendMes - 1, d);
+      const dow = dObj.getDay();
+      if (dow === 0 || dow === 6) continue; // Apenas Seg-Sex
+
+      const dataStr = `${totemAtendAno}-${String(totemAtendMes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const cell = document.createElement('div');
+      let classes = 'totem-cal-cell';
+      if (dataStr === hojeStr) classes += ' hoje';
+      if (dataStr === totemAtendDataSelecionada) classes += ' selecionado';
+      cell.className = classes;
+      cell.setAttribute('data-date', dataStr);
+
+      const header = document.createElement('div');
+      header.className = 'totem-cal-day-header';
+      header.innerHTML = `
+        <span class="totem-cal-day-num">${d}</span>
+        ${dataStr === hojeStr ? '<span class="badge-hoje-tag">HOJE</span>' : ''}
+      `;
+      cell.appendChild(header);
+
+      let doDia = eventosLista.filter(r => r.data === dataStr);
+      if (totemAtendFiltroTipo !== 'todos') {
+        doDia = doDia.filter(r => r.tipo === totemAtendFiltroTipo);
+      }
+
+      doDia.slice(0, 2).forEach(ev => {
+        const chip = document.createElement('div');
+        chip.className = `totem-event-chip badge-tipo-${ev.tipo}`;
+        const icon = ev.tipo === 'reposicao' ? '🟢' : '🔴';
+        chip.innerHTML = `${icon} <strong>${ev.hora_inicio}</strong> ${ev.titulo}`;
+        chip.title = `${ev.hora_inicio} — ${ev.titulo}`;
+        cell.appendChild(chip);
+      });
+
+      if (doDia.length > 2) {
+        const mais = document.createElement('div');
+        mais.className = 'totem-more-badge';
+        mais.textContent = `+${doDia.length - 2} mais`;
+        cell.appendChild(mais);
+      }
+
+      cell.addEventListener('click', () => selecionarDiaAtendimentosTotem(dataStr));
+      grid.appendChild(cell);
+      totalCelulas++;
+    }
+
+    const sobra = totalCelulas % 5;
+    if (sobra !== 0) {
+      for (let i = 0; i < (5 - sobra); i++) {
+        const cell = document.createElement('div');
+        cell.className = 'totem-cal-cell outro-mes';
+        grid.appendChild(cell);
+      }
+    }
+  }
+
+  window.selecionarDiaAtendimentosTotem = function(dataStr) {
+    totemAtendDataSelecionada = dataStr;
+    const grid = document.getElementById('totem-atend-grid');
+    if (grid) {
+      grid.querySelectorAll('.totem-cal-cell').forEach(c => {
+        if (c.getAttribute('data-date') === dataStr) {
+          c.classList.add('selecionado');
+        } else {
+          c.classList.remove('selecionado');
+        }
+      });
+    }
+
+    const titleEl = document.getElementById('totem-atend-data-titulo');
+    const statusEl = document.getElementById('totem-atend-status-dia');
+    const listEl = document.getElementById('totem-atend-eventos-lista');
+    if (!listEl) return;
+
+    const partes = dataStr.split('-');
+    const dObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+    if (titleEl) {
+      titleEl.textContent = formatarDataPorExtenso(dObj);
+    }
+
+    let doDia = totemAtendEventos.filter(r => r.data === dataStr);
+    if (totemAtendFiltroTipo !== 'todos') {
+      doDia = doDia.filter(r => r.tipo === totemAtendFiltroTipo);
+    }
+
+    if (statusEl) {
+      if (doDia.length === 0) {
+        statusEl.innerHTML = '<span style="color:#16a34a; font-weight:800;">● Atendimento Normal</span>';
+      } else {
+        statusEl.innerHTML = `<span style="color:#dc2626; font-weight:800;">● ${doDia.length} ${doDia.length === 1 ? 'aviso registrado' : 'avisos registrados'}</span>`;
+      }
+    }
+
+    if (doDia.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 24px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-top:4px;">
+          <div style="font-size: 28px; margin-bottom: 6px;">✅</div>
+          <div style="color: #15803d; font-size: 14px; font-weight: 800;">Atendimentos Normais</div>
+          <div style="color: #4b5563; font-size: 12px; margin-top: 3px;">Nenhuma ausência ou alteração registrada para esta data.</div>
+        </div>
+      `;
+    } else {
+      let html = '';
+      doDia.forEach(ev => {
+        const rotuloTipo = ev.tipo === 'reposicao'
+          ? '🟢 Reposição de Aula'
+          : (ev.tipo === 'alteracao' ? '🟡 Alteração de Horário' : '🔴 Sem Atendimento');
+        const horarioFmt = ev.hora_fim ? `${ev.hora_inicio} às ${ev.hora_fim}` : `A partir de ${ev.hora_inicio}`;
+        html += `
+          <div class="totem-event-card tipo-${ev.tipo}">
+            <div class="totem-event-card-top">
+              <span class="totem-event-time-badge">⏰ ${horarioFmt}</span>
+              <span class="badge-tipo badge-tipo-${ev.tipo}" style="font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800;">${rotuloTipo}</span>
+            </div>
+            <h5 class="totem-event-title">${ev.titulo}</h5>
+            <div class="totem-event-sub">
+              👩‍🏫 Professor(a): <strong>${ev.nome_professor || '—'}</strong>
+              ${ev.disciplina ? ` • 📚 <strong>${ev.disciplina}</strong>` : ''}
+            </div>
+            ${ev.observacoes ? `<div class="totem-event-desc">📝 ${ev.observacoes}</div>` : ''}
+          </div>
+        `;
+      });
+      listEl.innerHTML = html;
+    }
+  };
+
+  function renderizarProximosAtendimentosTotem() {
+    const listEl = document.getElementById('totem-atend-proximos-lista');
+    if (!listEl) return;
+
+    const hoje = new Date();
+    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+
+    let lista = totemAtendProximos.length > 0
+      ? totemAtendProximos
+      : totemAtendEventos.filter(r => r.data >= hojeStr);
+
+    if (lista.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding: 10px; color: var(--text-muted); font-size: 12px;">
+          Nenhum aviso futuro registrado no momento.
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    lista.slice(0, 6).forEach(ev => {
+      const p = ev.data.split('-');
+      const dataFmt = `${p[2]}/${p[1]}`;
+      const badgeTxt = ev.tipo === 'reposicao' ? '🟢 Reposição' : '🔴 Ausência';
+      html += `
+        <div class="upcoming-item" onclick="selecionarDiaAtendimentosTotem('${ev.data}')" title="Toque para ver os detalhes deste dia">
+          <div class="upcoming-item-left">
+            <span class="badge-tipo badge-tipo-${ev.tipo}" style="font-size:10px; padding:2px 6px; border-radius:6px; font-weight:800;">${badgeTxt}</span>
+            <span class="upcoming-item-date">${dataFmt} • ${ev.hora_inicio}</span>
+            <span class="upcoming-item-title">${ev.titulo}</span>
+          </div>
+          <span style="font-size:12px; color:var(--primary); font-weight:800;">›</span>
+        </div>
+      `;
+    });
+    listEl.innerHTML = html;
+  }
+
+  // Abre diretamente a aba de Ausências e Reposições se o link vier com #atendimentos
+  if (window.location.hash === '#atendimentos') {
+    setTimeout(() => showScreen('screen-atendimentos'), 150);
   }
 
 

@@ -15,7 +15,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 from professores.models import Professor, HorarioProfessor
-from agenda.models import ReservaAuditorio
+from agenda.models import ReservaAuditorio, AgendaAtendimentoProfessor
+from agenda.views import garantir_seed_atendimentos_iniciais
 from .models import MensagemFaleConosco
 
 logger = logging.getLogger(__name__)
@@ -192,6 +193,77 @@ def view_auditorio_totem(request):
         'hoje': hoje.isoformat(),
         'reservas': lista,
         'proximas': proximas_lista,
+    })
+
+
+def view_atendimentos_totem(request):
+    """
+    GET /api/totem/atendimentos/?mes=MM&ano=AAAA
+    Retorna a agenda de Ausências e Reposições de Aulas dos Professores para exibição no Totem.
+    """
+    garantir_seed_atendimentos_iniciais()
+
+    hoje = timezone.now().date()
+    ano = int(request.GET.get('ano', hoje.year))
+    mes = int(request.GET.get('mes', hoje.month))
+
+    primeiro_dia = date(ano, mes, 1)
+    if mes == 12:
+        ultimo_dia = date(ano + 1, 1, 1) - timedelta(days=1)
+    else:
+        ultimo_dia = date(ano, mes + 1, 1) - timedelta(days=1)
+
+    eventos_qs = AgendaAtendimentoProfessor.objects.filter(
+        data__gte=primeiro_dia,
+        data__lte=ultimo_dia,
+        visivel_totem=True
+    ).order_by('data', 'hora_inicio')
+
+    lista = []
+    for ev in eventos_qs:
+        lista.append({
+            'id': ev.id,
+            'tipo': ev.tipo,
+            'tipo_display': ev.get_tipo_display(),
+            'nome_professor': ev.nome_professor,
+            'disciplina': ev.disciplina,
+            'titulo': ev.titulo,
+            'observacoes': ev.observacoes or '',
+            'data': ev.data.isoformat(),
+            'data_formatada': ev.data.strftime('%d/%m/%Y'),
+            'hora_inicio': ev.hora_inicio.strftime('%H:%M'),
+            'hora_fim': ev.hora_fim.strftime('%H:%M') if ev.hora_fim else '',
+            'badge_color': ev.badge_color,
+        })
+
+    proximos_qs = AgendaAtendimentoProfessor.objects.filter(
+        data__gte=hoje,
+        visivel_totem=True
+    ).order_by('data', 'hora_inicio')[:20]
+
+    proximos_lista = []
+    for ev in proximos_qs:
+        proximos_lista.append({
+            'id': ev.id,
+            'tipo': ev.tipo,
+            'tipo_display': ev.get_tipo_display(),
+            'nome_professor': ev.nome_professor,
+            'disciplina': ev.disciplina,
+            'titulo': ev.titulo,
+            'observacoes': ev.observacoes or '',
+            'data': ev.data.isoformat(),
+            'data_formatada': ev.data.strftime('%d/%m/%Y'),
+            'hora_inicio': ev.hora_inicio.strftime('%H:%M'),
+            'hora_fim': ev.hora_fim.strftime('%H:%M') if ev.hora_fim else '',
+            'badge_color': ev.badge_color,
+        })
+
+    return _json_cors_response({
+        'ano': ano,
+        'mes': mes,
+        'hoje': hoje.isoformat(),
+        'eventos': lista,
+        'proximos': proximos_lista,
     })
 
 

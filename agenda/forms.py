@@ -1,7 +1,7 @@
 """Formulários do app agenda"""
 from django import forms
 from django.utils import timezone
-from .models import RegistroPresenca, ReservaAuditorio
+from .models import RegistroPresenca, ReservaAuditorio, AgendaAtendimentoProfessor
 
 
 def aplicar_estilo_campos(form_instance):
@@ -229,4 +229,69 @@ class AgendamentoPublicoAuditorioForm(forms.ModelForm):
         if commit:
             reserva.save()
         return reserva
+
+
+class AgendaAtendimentoProfessorForm(forms.ModelForm):
+    """
+    Formulário para cadastrar ou editar Ausências e Reposições de Aulas dos Professores.
+    Inclui suporte a repetição semanal opcional (para quando o professor não atende em um dia fixo do mês).
+    """
+    repetir_semanalmente = forms.BooleanField(
+        required=False,
+        initial=False,
+        label='Repetir semanalmente neste mesmo dia da semana',
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_repetir_semanalmente'})
+    )
+    repetir_ate_data = forms.DateField(
+        required=False,
+        label='Repetir até a data',
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'id': 'id_repetir_ate_data'}, format='%Y-%m-%d')
+    )
+
+    class Meta:
+        model = AgendaAtendimentoProfessor
+        fields = [
+            'tipo', 'professor', 'nome_professor', 'disciplina',
+            'data', 'hora_inicio', 'hora_fim',
+            'titulo', 'observacoes', 'visivel_totem'
+        ]
+        widgets = {
+            'tipo': forms.Select(attrs={'id': 'id_tipo_atend'}),
+            'professor': forms.Select(attrs={'id': 'id_professor_atend'}),
+            'nome_professor': forms.TextInput(attrs={
+                'id': 'id_nome_professor_atend',
+                'placeholder': 'Ex: Prof. Vitor, Prof. Fernando, Prof.ª Viviane'
+            }),
+            'disciplina': forms.TextInput(attrs={
+                'id': 'id_disciplina_atend',
+                'placeholder': 'Ex: Matemática, Filosofia & Sociologia, História'
+            }),
+            'data': forms.DateInput(attrs={'type': 'date', 'id': 'id_data_atend'}, format='%Y-%m-%d'),
+            'hora_inicio': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_inicio_atend'}),
+            'hora_fim': forms.TimeInput(attrs={'type': 'time', 'id': 'id_hora_fim_atend'}),
+            'titulo': forms.TextInput(attrs={
+                'id': 'id_titulo_atend',
+                'placeholder': 'Gerado automaticamente se deixado em branco'
+            }),
+            'observacoes': forms.Textarea(attrs={
+                'rows': 2,
+                'id': 'id_observacoes_atend',
+                'placeholder': 'Detalhes opcionais (Ex: Atendimento antecipado / Reposição referente ao dia...)'
+            }),
+            'visivel_totem': forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_visivel_totem'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['data'].initial = timezone.now().date()
+        self.fields['data'].input_formats = ['%Y-%m-%d']
+        self.fields['repetir_ate_data'].input_formats = ['%Y-%m-%d']
+        self.fields['hora_inicio'].initial = '08:50'
+        self.fields['professor'].required = False
+        self.fields['disciplina'].required = False
+        self.fields['hora_fim'].required = False
+        self.fields['titulo'].required = False
+        self.fields['observacoes'].required = False
+        aplicar_estilo_campos(self)
+
 

@@ -115,6 +115,11 @@
       </li>
       {% endif %}
       <li>
+        <a href="{% url 'agenda_atendimentos' %}" class="sidebar-link {% block nav_atendimentos %}{% endblock %}">
+          <i class="bi bi-calendar2-week-fill text-info"></i> Ausências e Reposições
+        </a>
+      </li>
+      <li>
         <a href="{% url 'agenda_auditorio' %}" class="sidebar-link {% block nav_auditorio %}{% endblock %}">
           <i class="bi bi-calendar-event-fill"></i> Auditório
         </a>

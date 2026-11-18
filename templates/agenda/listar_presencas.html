@@ -9,9 +9,14 @@
     <div class="page-title">Presenças e Faltas</div>
     <div class="page-subtitle">{{ registros.count }} registro{{ registros.count|pluralize:"s" }} no período{% if nome_filtro %} para "<strong>{{ nome_filtro }}</strong>"{% endif %}</div>
   </div>
-  <a href="{% url 'novo_registro_presenca' %}" class="btn-gestao btn-gestao-primary">
-    <i class="bi bi-plus-lg"></i> Registrar Ocorrência
-  </a>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'agenda_atendimentos' %}" class="btn-gestao btn-gestao-secondary" style="border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8;">
+      <i class="bi bi-calendar2-week-fill"></i> Agenda de Ausências e Reposições (Totem)
+    </a>
+    <a href="{% url 'novo_registro_presenca' %}" class="btn-gestao btn-gestao-primary">
+      <i class="bi bi-plus-lg"></i> Registrar Ocorrência
+    </a>
+  </div>
 </div>
 
 <!-- Filtros -->

@@ -18,4 +18,11 @@ urlpatterns = [
     # Auditório — Link Público de Consulta e Agendamento
     path('auditorio/publico/', views.view_auditorio_publico, name='agenda_auditorio_publico'),
     path('auditorio/publico/disponibilidade/', views.view_verificar_disponibilidade_json, name='verificar_disponibilidade_auditorio'),
+
+    # Ausências e Reposições de Aulas (Professores / Totem)
+    path('atendimentos/', views.view_agenda_atendimentos, name='agenda_atendimentos'),
+    path('atendimentos/novo/', views.view_novo_atendimento_professor, name='novo_atendimento_professor'),
+    path('atendimentos/<int:pk>/editar/', views.view_editar_atendimento_professor, name='editar_atendimento_professor'),
+    path('atendimentos/<int:pk>/excluir/', views.view_excluir_atendimento_professor, name='excluir_atendimento_professor'),
+    path('atendimentos/json/', views.view_atendimentos_json, name='atendimentos_json'),
 ]

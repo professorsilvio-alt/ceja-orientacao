@@ -9,8 +9,11 @@ from django.db import transaction
 from django.urls import reverse
 from datetime import date, timedelta, time
 from usuarios.views import diretor_required, coordenador_ou_diretor_required, verificar_primeiro_acesso
-from .models import RegistroPresenca, ReservaAuditorio
-from .forms import RegistroPresencaForm, ReservaAuditorioForm, AgendamentoPublicoAuditorioForm
+from .models import RegistroPresenca, ReservaAuditorio, AgendaAtendimentoProfessor
+from .forms import (
+    RegistroPresencaForm, ReservaAuditorioForm,
+    AgendamentoPublicoAuditorioForm, AgendaAtendimentoProfessorForm
+)
 from professores.models import Professor
 from funcionarios.models import FuncionarioAdministrativo, FuncionarioTerceirizado
 
@@ -445,4 +448,304 @@ def view_verificar_disponibilidade_json(request):
         })
     except Exception as e:
         return JsonResponse({'disponivel': True, 'mensagem': ''})
+
+
+# ── AGENDA DE AUSÊNCIAS E REPOSIÇÕES DE AULAS (PROFESSORES / TOTEM) ──
+
+def garantir_seed_atendimentos_iniciais():
+    """
+    Popula inicialmente a tabela de Ausências e Reposições com os eventos
+    de Novembro/Dezembro de 2026 da agenda da escola caso esteja vazia.
+    """
+    try:
+        if AgendaAtendimentoProfessor.objects.exists():
+            return
+        eventos_iniciais = [
+            # Semana 1 de Novembro 2026
+            ('ausencia', 'Prof. Vitor', 'Matemática', date(2026, 11, 3), time(18, 0), 'Não haverá atendimento com o Prof. Vitor (Matemática)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 4), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Rafael Maia', 'Filosofia & Sociologia', date(2026, 11, 4), time(13, 0), 'Não haverá atendimento com o Prof. Rafael Maia (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 5), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Vitor', 'Matemática', date(2026, 11, 6), time(8, 50), 'Não haverá atendimento com o Prof. Vitor (Matemática)'),
+            ('ausencia', 'Prof. Elázaro', 'Biologia', date(2026, 11, 6), time(8, 50), 'Não haverá atendimento com o professor Elázaro (Biologia)'),
+            # Semana 2 de Novembro 2026
+            ('ausencia', 'Prof. Vitor', 'Matemática', date(2026, 11, 10), time(18, 0), 'Não haverá atendimento com o Prof. Vitor (Matemática)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 11), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 12), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('reposicao', 'Prof. Carlos Laurindo', 'História', date(2026, 11, 12), time(17, 10), 'Reposição de atendimento com o Prof. Carlos Laurindo (História)'),
+            ('ausencia', 'Prof. Vitor', 'Matemática', date(2026, 11, 13), time(8, 50), 'Não haverá atendimento com o Prof. Vitor (Matemática)'),
+            # Semana 3 de Novembro 2026
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 18), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Mário', 'História', date(2026, 11, 18), time(13, 50), 'Não haverá atendimento com o professor Mário (História)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 19), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Carlos Laurindo', 'História', date(2026, 11, 19), time(12, 10), 'Não haverá atendimento com o Prof. Carlos Laurindo (História)'),
+            # Semana 4 de Novembro 2026
+            ('ausencia', 'Prof.ª Viviane', 'Química', date(2026, 11, 23), time(8, 50), 'Não haverá atendimento com a professora Viviane (Química)'),
+            ('reposicao', 'Prof. Mário', 'História', date(2026, 11, 23), time(12, 10), 'Reposição de atendimento com o Prof. Mário (História)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 25), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 11, 26), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('reposicao', 'Prof. Carlos Laurindo', 'História', date(2026, 11, 26), time(17, 10), 'Reposição de atendimento com o Prof. Carlos Laurindo (História)'),
+            # Primeira semana de Dezembro 2026
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 12, 2), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+            ('ausencia', 'Prof. Fernando', 'Filosofia & Sociologia', date(2026, 12, 3), time(8, 50), 'Não haverá atendimento com o Prof. Fernando (Filosofia & Sociologia)'),
+        ]
+        objs = [
+            AgendaAtendimentoProfessor(
+                tipo=tp,
+                nome_professor=prof,
+                disciplina=disc,
+                data=dt,
+                hora_inicio=hr,
+                titulo=tit,
+                visivel_totem=True
+            )
+            for tp, prof, disc, dt, hr, tit in eventos_iniciais
+        ]
+        AgendaAtendimentoProfessor.objects.bulk_create(objs)
+    except Exception:
+        pass
+
+
+@login_required
+@verificar_primeiro_acesso
+def view_agenda_atendimentos(request):
+    """
+    Calendário visual de Ausências e Reposições de Aulas dos Professores.
+    Alimentará a aba pública correspondente no Totem.
+    """
+    garantir_seed_atendimentos_iniciais()
+
+    hoje = timezone.now().date()
+    mes = int(request.GET.get('mes', hoje.month))
+    ano = int(request.GET.get('ano', hoje.year))
+    tipo_filtro = request.GET.get('tipo', '').strip()
+
+    primeiro_dia = date(ano, mes, 1)
+    if mes == 12:
+        ultimo_dia = date(ano + 1, 1, 1) - timedelta(days=1)
+    else:
+        ultimo_dia = date(ano, mes + 1, 1) - timedelta(days=1)
+
+    eventos_qs = AgendaAtendimentoProfessor.objects.filter(
+        data__gte=primeiro_dia,
+        data__lte=ultimo_dia,
+    ).order_by('data', 'hora_inicio')
+
+    if tipo_filtro:
+        eventos_qs = eventos_qs.filter(tipo=tipo_filtro)
+
+    proximos = AgendaAtendimentoProfessor.objects.filter(
+        data__gte=hoje,
+        visivel_totem=True,
+    ).order_by('data', 'hora_inicio')[:15]
+
+    if mes == 1:
+        mes_ant, ano_ant = 12, ano - 1
+    else:
+        mes_ant, ano_ant = mes - 1, ano
+    if mes == 12:
+        mes_prox, ano_prox = 1, ano + 1
+    else:
+        mes_prox, ano_prox = mes + 1, ano
+
+    MESES_NOMES = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ]
+
+    eventos_data = []
+    for ev in eventos_qs:
+        eventos_data.append({
+            'id': ev.id,
+            'tipo': ev.tipo,
+            'tipo_display': ev.get_tipo_display(),
+            'nome_professor': ev.nome_professor,
+            'disciplina': ev.disciplina,
+            'titulo': ev.titulo,
+            'data': ev.data.isoformat(),
+            'hora_inicio': ev.hora_inicio.strftime('%H:%M'),
+            'hora_fim': ev.hora_fim.strftime('%H:%M') if ev.hora_fim else '',
+            'observacoes': ev.observacoes,
+            'visivel_totem': ev.visivel_totem,
+        })
+
+    total_ausencias = eventos_qs.filter(tipo='ausencia').count()
+    total_reposicoes = eventos_qs.filter(tipo='reposicao').count()
+
+    can_edit = (
+        request.user.perfil in ['diretor', 'coordenador_pedagogico', 'orientador_educacional', 'administrativo']
+        or request.user.is_superuser
+    )
+
+    return render(request, 'agenda/atendimentos_professores.html', {
+        'eventos': eventos_qs,
+        'eventos_json': json.dumps(eventos_data),
+        'proximos': proximos,
+        'total_ausencias': total_ausencias,
+        'total_reposicoes': total_reposicoes,
+        'tipo_filtro': tipo_filtro,
+        'mes': mes,
+        'ano': ano,
+        'nome_mes': MESES_NOMES[mes - 1],
+        'hoje': hoje,
+        'primeiro_dia': primeiro_dia,
+        'ultimo_dia': ultimo_dia,
+        'mes_ant': mes_ant, 'ano_ant': ano_ant,
+        'mes_prox': mes_prox, 'ano_prox': ano_prox,
+        'can_edit': can_edit,
+    })
+
+
+@login_required
+@verificar_primeiro_acesso
+def view_novo_atendimento_professor(request):
+    """Cadastra uma ausência ou reposição de atendimento de professor (com opção de repetição semanal)."""
+    professores = Professor.objects.filter(ativo=True).prefetch_related('disciplinas_lecionadas').order_by('nome_completo')
+    form = AgendaAtendimentoProfessorForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        aviso = form.save(commit=False)
+        aviso.criado_por = request.user
+        aviso.save()
+
+        repetir = form.cleaned_data.get('repetir_semanalmente')
+        ate_data = form.cleaned_data.get('repetir_ate_data')
+        criados_extras = 0
+
+        if repetir:
+            data_base = aviso.data
+            if not ate_data:
+                # Por padrão repete até o final do mês da data selecionada
+                if data_base.month == 12:
+                    ate_data = date(data_base.year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    ate_data = date(data_base.year, data_base.month + 1, 1) - timedelta(days=1)
+
+            proxima_data = data_base + timedelta(days=7)
+            while proxima_data <= ate_data and criados_extras < 24:
+                AgendaAtendimentoProfessor.objects.create(
+                    tipo=aviso.tipo,
+                    professor=aviso.professor,
+                    nome_professor=aviso.nome_professor,
+                    disciplina=aviso.disciplina,
+                    data=proxima_data,
+                    hora_inicio=aviso.hora_inicio,
+                    hora_fim=aviso.hora_fim,
+                    titulo=aviso.titulo,
+                    observacoes=aviso.observacoes,
+                    visivel_totem=aviso.visivel_totem,
+                    criado_por=request.user,
+                )
+                criados_extras += 1
+                proxima_data += timedelta(days=7)
+
+        if criados_extras > 0:
+            messages.success(
+                request,
+                f'Aviso "{aviso.titulo}" registrado com sucesso (+{criados_extras} repetições semanais criadas)!'
+            )
+        else:
+            messages.success(request, f'Aviso "{aviso.titulo}" registrado com sucesso e já visível no Totem!')
+        return redirect(f"{reverse('agenda_atendimentos')}?mes={aviso.data.month}&ano={aviso.data.year}")
+
+    # Mapa de professores para autopreenchimento no JS
+    profs_js = []
+    for p in professores:
+        discs = list(p.disciplinas_lecionadas.values_list('nome', flat=True))
+        disc_str = ' & '.join(discs) if discs else (p.disciplina_ingresso or '')
+        primeiro_nome = p.nome_completo.split()[0]
+        prefixo = 'Prof.ª' if (p.sexo and p.sexo.upper().startswith('F')) else 'Prof.'
+        profs_js.append({
+            'id': p.id,
+            'nome_completo': p.nome_completo,
+            'nome_curto': f'{prefixo} {primeiro_nome}',
+            'disciplina': disc_str,
+        })
+
+    return render(request, 'agenda/form_atendimento_professor.html', {
+        'form': form,
+        'professores': professores,
+        'profs_json': json.dumps(profs_js),
+        'titulo': 'Registrar Ausência ou Reposição de Aula',
+    })
+
+
+@login_required
+@verificar_primeiro_acesso
+def view_editar_atendimento_professor(request, pk):
+    aviso = get_object_or_404(AgendaAtendimentoProfessor, pk=pk)
+    professores = Professor.objects.filter(ativo=True).prefetch_related('disciplinas_lecionadas').order_by('nome_completo')
+    form = AgendaAtendimentoProfessorForm(request.POST or None, instance=aviso)
+
+    if request.method == 'POST' and form.is_valid():
+        aviso_salvo = form.save()
+        messages.success(request, 'Registro atualizado com sucesso!')
+        return redirect(f"{reverse('agenda_atendimentos')}?mes={aviso_salvo.data.month}&ano={aviso_salvo.data.year}")
+
+    profs_js = []
+    for p in professores:
+        discs = list(p.disciplinas_lecionadas.values_list('nome', flat=True))
+        disc_str = ' & '.join(discs) if discs else (p.disciplina_ingresso or '')
+        primeiro_nome = p.nome_completo.split()[0]
+        prefixo = 'Prof.ª' if (p.sexo and p.sexo.upper().startswith('F')) else 'Prof.'
+        profs_js.append({
+            'id': p.id,
+            'nome_completo': p.nome_completo,
+            'nome_curto': f'{prefixo} {primeiro_nome}',
+            'disciplina': disc_str,
+        })
+
+    return render(request, 'agenda/form_atendimento_professor.html', {
+        'form': form,
+        'professores': professores,
+        'profs_json': json.dumps(profs_js),
+        'titulo': f'Editar: {aviso.titulo}',
+        'aviso': aviso,
+    })
+
+
+@login_required
+@verificar_primeiro_acesso
+def view_excluir_atendimento_professor(request, pk):
+    aviso = get_object_or_404(AgendaAtendimentoProfessor, pk=pk)
+    mes, ano = aviso.data.month, aviso.data.year
+    if request.method == 'POST':
+        aviso.delete()
+        messages.success(request, 'Aviso removido da agenda e do Totem.')
+    return redirect(f"{reverse('agenda_atendimentos')}?mes={mes}&ano={ano}")
+
+
+def view_atendimentos_json(request):
+    """Retorna os avisos de ausência e reposição do mês em JSON."""
+    garantir_seed_atendimentos_iniciais()
+    mes = int(request.GET.get('mes', timezone.now().month))
+    ano = int(request.GET.get('ano', timezone.now().year))
+    primeiro_dia = date(ano, mes, 1)
+    if mes == 12:
+        ultimo_dia = date(ano + 1, 1, 1) - timedelta(days=1)
+    else:
+        ultimo_dia = date(ano, mes + 1, 1) - timedelta(days=1)
+
+    qs = AgendaAtendimentoProfessor.objects.filter(
+        data__gte=primeiro_dia,
+        data__lte=ultimo_dia,
+        visivel_totem=True
+    ).order_by('data', 'hora_inicio')
+
+    data = []
+    for ev in qs:
+        data.append({
+            'id': ev.id,
+            'tipo': ev.tipo,
+            'tipo_display': ev.get_tipo_display(),
+            'nome_professor': ev.nome_professor,
+            'disciplina': ev.disciplina,
+            'titulo': ev.titulo,
+            'data': ev.data.isoformat(),
+            'hora_inicio': ev.hora_inicio.strftime('%H:%M'),
+            'hora_fim': ev.hora_fim.strftime('%H:%M') if ev.hora_fim else '',
+            'observacoes': ev.observacoes,
+        })
+    return JsonResponse({'eventos': data})
+
 

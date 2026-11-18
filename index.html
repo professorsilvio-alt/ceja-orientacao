@@ -353,6 +353,17 @@
     .badge-tipo-reuniao { background: #ede9fe !important; color: #7c3aed !important; border: 1px solid rgba(124, 58, 237, 0.25) !important; }
     .badge-tipo-outro   { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid rgba(71, 85, 105, 0.25) !important; }
 
+    /* Ausências e Reposições no Totem */
+    #btn-menu-atendimentos { border-top: 3px solid #ef4444 !important; }
+    .badge-tipo-ausencia  { background: #fee2e2 !important; color: #dc2626 !important; border: 1px solid rgba(220, 38, 38, 0.3) !important; }
+    .badge-tipo-reposicao { background: #dcfce7 !important; color: #15803d !important; border: 1px solid rgba(21, 128, 61, 0.3) !important; }
+    .badge-tipo-alteracao { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid rgba(180, 83, 9, 0.3) !important; }
+    .totem-event-card.tipo-ausencia  { border-left-color: #dc2626 !important; background: #fff5f5 !important; }
+    .totem-event-card.tipo-reposicao { border-left-color: #16a34a !important; background: #f0fdf4 !important; }
+    .totem-event-card.tipo-alteracao { border-left-color: #d97706 !important; background: #fffbeb !important; }
+    .filter-pill.pill-ausencia.active  { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
+    .filter-pill.pill-reposicao.active { background: #16a34a !important; border-color: #16a34a !important; color: #fff !important; }
+
     .totem-more-badge {
       font-size: 9.5px !important;
       font-weight: 800 !important;
@@ -626,6 +637,12 @@
             <div class="menu-card-icon">🗓️</div>
             <div class="menu-card-label">Horário Semanal da Escola</div>
             <div class="menu-card-desc">Veja os horários de atendimento por dia da semana</div>
+          </button>
+
+          <button class="menu-card" data-screen="screen-atendimentos" id="btn-menu-atendimentos">
+            <div class="menu-card-icon">📅</div>
+            <div class="menu-card-label">Ausências e Reposições</div>
+            <div class="menu-card-sub">Avisos de atendimento dos professores</div>
           </button>
 
           <button class="menu-card" data-screen="screen-matricula" id="btn-menu-matricula">
@@ -904,6 +921,10 @@
               <span class="btn-refresh-icon">🔄</span>
               <span class="btn-refresh-text">Atualizar</span>
             </button>
+            <button type="button" class="btn-refresh-horarios" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none;" onclick="document.getElementById('btn-menu-atendimentos').click();">
+              <span>📅</span>
+              <span>Ver Ausências e Reposições</span>
+            </button>
           </div>
         </div>
         <!-- Renderizado dinamicamente via JS a partir de dados_escola.js / Google Sheets -->
@@ -1135,6 +1156,104 @@
                   <h5>⚡ Próximas Atividades em Destaque</h5>
                 </div>
                 <div class="upcoming-list" id="totem-proximas-atividades-lista">
+                  <!-- Gerado via JS -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           TELA 9 — AUSÊNCIAS E REPOSIÇÕES DE AULAS DOS PROFESSORES
+      ════════════════════════════════════════════════════ -->
+      <div class="screen" id="screen-atendimentos">
+
+        <div class="auditorio-modern-wrap">
+
+          <!-- Top Bar: Título, Status e Navegação de Mês -->
+          <div class="auditorio-top-bar">
+            <div class="auditorio-title-group">
+              <div class="auditorio-badge-status">
+                <span class="status-indicator-dot"></span>
+                <span class="status-text">Avisos de Atendimento dos Professores em Tempo Real</span>
+              </div>
+              <h2 class="auditorio-main-heading">📅 Ausências e Reposições de Aulas</h2>
+            </div>
+
+            <!-- Controles de Mês & Botão Hoje -->
+            <div class="auditorio-nav-controls">
+              <button type="button" class="btn-cal-nav" id="btn-totem-atend-ant" aria-label="Mês Anterior">
+                <span class="nav-arrow">◀</span> Anterior
+              </button>
+              <div class="totem-mes-ano-box">
+                <h3 id="totem-atend-mes-ano" class="totem-auditorio-title">Carregando...</h3>
+              </div>
+              <button type="button" class="btn-cal-nav" id="btn-totem-atend-prox" aria-label="Próximo Mês">
+                Próximo <span class="nav-arrow">▶</span>
+              </button>
+              <button type="button" class="btn-cal-hoje" id="btn-totem-atend-hoje" title="Ir para a data de hoje">
+                📍 Hoje
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtros de Categorias -->
+          <div class="auditorio-filter-bar">
+            <div class="auditorio-filter-pills" id="atendimentos-filtros-container">
+              <button type="button" class="filter-pill active" data-tipo="todos">Todos os Avisos</button>
+              <button type="button" class="filter-pill pill-ausencia" data-tipo="ausencia">🔴 Não Haverá Atendimento (Ausências)</button>
+              <button type="button" class="filter-pill pill-reposicao" data-tipo="reposicao">🟢 Reposições de Atendimento</button>
+            </div>
+          </div>
+
+          <!-- Dashboard Grid: Esquerda = Calendário (Seg a Sex) | Direita = Painel do Dia -->
+          <div class="auditorio-dashboard-grid">
+
+            <!-- Coluna 1: Calendário Interativo (Segunda a Sexta) -->
+            <div class="auditorio-calendar-card">
+              <div class="auditorio-totem-headers" id="totem-atend-headers" style="grid-template-columns: repeat(5, minmax(0, 1fr)) !important;">
+                <div>Segunda-feira</div>
+                <div>Terça-feira</div>
+                <div>Quarta-feira</div>
+                <div>Quinta-feira</div>
+                <div>Sexta-feira</div>
+              </div>
+              <div class="auditorio-totem-cells" id="totem-atend-grid" style="grid-template-columns: repeat(5, minmax(0, 1fr)) !important;">
+                <!-- Gerado dinamicamente via JS -->
+              </div>
+              <div class="calendar-footer-hint">
+                <span>💡 Toque em qualquer dia para ver detalhadamente quais professores não atenderão ou farão reposição.</span>
+              </div>
+            </div>
+
+            <!-- Coluna 2: Painel Lateral do Dia Selecionado & Próximos Avisos -->
+            <div class="auditorio-side-panel">
+
+              <!-- Detalhes do Dia Selecionado -->
+              <div class="day-details-card">
+                <div class="day-details-header">
+                  <div class="selected-date-badge">
+                    <span class="cal-icon">📅</span>
+                    <h4 id="totem-atend-data-titulo">Selecione um dia</h4>
+                  </div>
+                  <div class="day-status-pill" id="totem-atend-status-dia"></div>
+                </div>
+
+                <div class="day-events-list" id="totem-atend-eventos-lista">
+                  <!-- Avisos do dia inseridos via JS -->
+                </div>
+              </div>
+
+              <!-- Próximos Avisos e Reposições -->
+              <div class="upcoming-events-card">
+                <div class="upcoming-header">
+                  <h5>⚡ Próximos Avisos e Reposições</h5>
+                </div>
+                <div class="upcoming-list" id="totem-atend-proximos-lista">
                   <!-- Gerado via JS -->
                 </div>
               </div>
@@ -1466,17 +1585,25 @@
   </div>
 
   <!-- Scripts -->
-  <script src="dados_escola.js?v=20261013_v7"></script>
-  <script src="sync_client.js?v=20261013_v7"></script>
-  <script src="script.js?v=20261013_v7"></script>
+  <script src="dados_escola.js?v=20261118_v1"></script>
+  <script src="sync_client.js?v=20261118_v1"></script>
+  <script src="script.js?v=20261118_v1"></script>
   <script>
-    // Inicialização direta e imediata do auditório ao tocar no card
+    // Inicialização direta e imediata do auditório e ausências/reposições ao tocar no card
     document.addEventListener('click', function(e) {
-      const card = e.target.closest('#btn-menu-auditorio') || (e.target.dataset && e.target.dataset.screen === 'screen-auditorio');
-      if (card) {
+      const cardAud = e.target.closest('#btn-menu-auditorio') || (e.target.dataset && e.target.dataset.screen === 'screen-auditorio');
+      if (cardAud) {
         setTimeout(function() {
           if (typeof renderAuditorioTotem === 'function') {
             renderAuditorioTotem();
+          }
+        }, 50);
+      }
+      const cardAtend = e.target.closest('#btn-menu-atendimentos') || (e.target.dataset && e.target.dataset.screen === 'screen-atendimentos');
+      if (cardAtend) {
+        setTimeout(function() {
+          if (typeof renderAtendimentosTotem === 'function') {
+            renderAtendimentosTotem();
           }
         }, 50);
       }
