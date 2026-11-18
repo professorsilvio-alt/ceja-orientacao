@@ -92,6 +92,12 @@ def verificar_primeiro_acesso(view_func):
 # AUTENTICAÇÃO
 # ============================================================
 
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+
+@never_cache
+@ensure_csrf_cookie
 def view_login(request):
     """Tela de login por CPF + senha."""
     if request.user.is_authenticated:

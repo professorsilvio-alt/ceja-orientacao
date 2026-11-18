@@ -172,6 +172,10 @@ REST_FRAMEWORK = {
 SESSION_COOKIE_AGE = 28800  # 8 horas
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+# Falha de CSRF (página de login antiga/aba expirada): redireciona de forma amigável
+CSRF_FAILURE_VIEW = 'ceja_gestao.views_csrf.csrf_falhou'
+CSRF_TRUSTED_ORIGINS = ['https://cejarosasoares.pythonanywhere.com']
+
 # ============================================================
 # GOOGLE GEMINI API (Cérebro do CEJA / Beth)
 # ============================================================
