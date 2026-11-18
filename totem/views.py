@@ -239,7 +239,7 @@ def view_atendimentos_totem(request):
     proximos_qs = AgendaAtendimentoProfessor.objects.filter(
         data__gte=hoje,
         visivel_totem=True
-    ).order_by('data', 'hora_inicio')[:20]
+    ).order_by('data', 'hora_inicio')[:30]
 
     proximos_lista = []
     for ev in proximos_qs:

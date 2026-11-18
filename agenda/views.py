@@ -8,7 +8,10 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.urls import reverse
 from datetime import date, timedelta, time
-from usuarios.views import diretor_required, coordenador_ou_diretor_required, verificar_primeiro_acesso
+from usuarios.views import (
+    diretor_required, coordenador_ou_diretor_required,
+    quadro_horarios_required, verificar_primeiro_acesso
+)
 from .models import RegistroPresenca, ReservaAuditorio, AgendaAtendimentoProfessor
 from .forms import (
     RegistroPresencaForm, ReservaAuditorioForm,
@@ -506,12 +509,12 @@ def garantir_seed_atendimentos_iniciais():
         pass
 
 
-@login_required
+@quadro_horarios_required
 @verificar_primeiro_acesso
 def view_agenda_atendimentos(request):
     """
     Calendário visual de Ausências e Reposições de Aulas dos Professores.
-    Alimentará a aba pública correspondente no Totem.
+    Acesso exclusivo para Direção, Coordenação Pedagógica e Orientação Educacional.
     """
     garantir_seed_atendimentos_iniciais()
 
@@ -537,7 +540,7 @@ def view_agenda_atendimentos(request):
     proximos = AgendaAtendimentoProfessor.objects.filter(
         data__gte=hoje,
         visivel_totem=True,
-    ).order_by('data', 'hora_inicio')[:15]
+    ).order_by('data', 'hora_inicio')[:24]
 
     if mes == 1:
         mes_ant, ano_ant = 12, ano - 1
@@ -573,7 +576,7 @@ def view_agenda_atendimentos(request):
     total_reposicoes = eventos_qs.filter(tipo='reposicao').count()
 
     can_edit = (
-        request.user.perfil in ['diretor', 'coordenador_pedagogico', 'orientador_educacional', 'administrativo']
+        request.user.perfil in ['diretor', 'coordenador_pedagogico', 'orientador_educacional']
         or request.user.is_superuser
     )
 
@@ -596,7 +599,7 @@ def view_agenda_atendimentos(request):
     })
 
 
-@login_required
+@quadro_horarios_required
 @verificar_primeiro_acesso
 def view_novo_atendimento_professor(request):
     """Cadastra uma ausência ou reposição de atendimento de professor (com opção de repetição semanal)."""
@@ -670,7 +673,7 @@ def view_novo_atendimento_professor(request):
     })
 
 
-@login_required
+@quadro_horarios_required
 @verificar_primeiro_acesso
 def view_editar_atendimento_professor(request, pk):
     aviso = get_object_or_404(AgendaAtendimentoProfessor, pk=pk)
@@ -704,7 +707,7 @@ def view_editar_atendimento_professor(request, pk):
     })
 
 
-@login_required
+@quadro_horarios_required
 @verificar_primeiro_acesso
 def view_excluir_atendimento_professor(request, pk):
     aviso = get_object_or_404(AgendaAtendimentoProfessor, pk=pk)
