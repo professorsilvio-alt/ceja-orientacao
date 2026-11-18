@@ -1812,47 +1812,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const diasSemanaCurto = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-    const mesesCurto = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    // Agrupa os avisos por data para garantir que TODOS os eventos de cada dia apareçam juntos
+    const gruposPorDia = [];
+    const mapaDias = {};
+    lista.forEach(ev => {
+      if (!mapaDias[ev.data]) {
+        mapaDias[ev.data] = [];
+        gruposPorDia.push({ data: ev.data, eventos: mapaDias[ev.data] });
+      }
+      mapaDias[ev.data].push(ev);
+    });
 
     let html = '';
-    lista.forEach(ev => {
-      const p = ev.data.split('-');
+    gruposPorDia.forEach(grupo => {
+      const p = grupo.data.split('-');
       const dObj = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
       const diaSemanaNome = diasSemanaCurto[dObj.getDay()];
-      const dataFmt = `${p[2]}/${p[1]} (${diaSemanaNome})`;
-      const isHoje = (ev.data === hojeStr);
+      const dataFmt = `${diaSemanaNome}, ${p[2]}/${p[1]}/${p[0]}`;
+      const isHoje = (grupo.data === hojeStr);
+      const qtd = grupo.eventos.length;
 
-      const badgeTxt = ev.tipo === 'reposicao'
-        ? '🟢 REPOSIÇÃO DE ATENDIMENTO'
-        : (ev.tipo === 'alteracao' ? '🟡 ALTERAÇÃO DE HORÁRIO' : '🔴 NÃO HAVERÁ ATENDIMENTO');
+      let cardsHtml = '';
+      grupo.eventos.forEach(ev => {
+        const badgeTxt = ev.tipo === 'reposicao'
+          ? '🟢 REPOSIÇÃO DE AULA'
+          : (ev.tipo === 'alteracao' ? '🟡 ALTERAÇÃO DE HORÁRIO' : '🔴 SEM ATENDIMENTO');
+        const horarioFmt = ev.hora_fim ? `${ev.hora_inicio} às ${ev.hora_fim}` : ev.hora_inicio;
 
-      const horarioFmt = ev.hora_fim ? `${ev.hora_inicio} às ${ev.hora_fim}` : ev.hora_inicio;
+        cardsHtml += `
+          <div class="tv-aviso-card tipo-${ev.tipo}">
+            <div class="tv-aviso-top">
+              <span class="tv-aviso-hora">⏰ ${horarioFmt}</span>
+              <span class="badge-tipo badge-tipo-${ev.tipo}" style="font-size: 10.5px; padding: 3px 9px; border-radius: 6px; font-weight: 900;">
+                ${badgeTxt}
+              </span>
+            </div>
+            <div class="tv-aviso-titulo">${ev.titulo}</div>
+            ${ev.observacoes ? `<div class="totem-event-desc" style="font-size:12px !important; margin-top:2px !important;">📝 ${ev.observacoes}</div>` : ''}
+          </div>
+        `;
+      });
 
       html += `
-        <div class="tv-aviso-card tipo-${ev.tipo} ${isHoje ? 'is-hoje' : ''}">
-          <div class="tv-aviso-top">
-            <div class="tv-aviso-data">
+        <div class="tv-day-section ${isHoje ? 'is-hoje' : ''}">
+          <div class="tv-day-header">
+            <h4 class="tv-day-title">
               ${isHoje ? '<span class="tv-badge-hoje">📍 HOJE</span>' : ''}
               <span>📅 ${dataFmt}</span>
-            </div>
-            <span class="tv-aviso-hora">⏰ ${horarioFmt}</span>
+            </h4>
+            <span class="tv-day-count">${qtd} ${qtd === 1 ? 'aviso neste dia' : 'avisos neste dia'}</span>
           </div>
-
-          <div class="tv-aviso-titulo">${ev.titulo}</div>
-
-          <div class="tv-aviso-footer">
-            <div class="tv-aviso-prof">
-              👩‍🏫 <strong>${ev.nome_professor || 'Professor(a)'}</strong>
-              ${ev.disciplina ? ` • 📚 <strong>${ev.disciplina}</strong>` : ''}
-            </div>
-            <span class="badge-tipo badge-tipo-${ev.tipo}" style="font-size: 11.5px; padding: 4px 10px; border-radius: 8px; font-weight: 900;">
-              ${badgeTxt}
-            </span>
+          <div class="tv-day-cards-grid">
+            ${cardsHtml}
           </div>
-          ${ev.observacoes ? `<div class="totem-event-desc" style="font-size:13px !important;">📝 ${ev.observacoes}</div>` : ''}
         </div>
       `;
     });
+
     listEl.innerHTML = html;
   }
 

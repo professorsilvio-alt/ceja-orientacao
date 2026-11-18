@@ -353,7 +353,7 @@
     .badge-tipo-reuniao { background: #ede9fe !important; color: #7c3aed !important; border: 1px solid rgba(124, 58, 237, 0.25) !important; }
     .badge-tipo-outro   { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid rgba(71, 85, 105, 0.25) !important; }
 
-    /* Ausências e Reposições no Totem (Mural para TV) */
+    /* Ausências e Reposições no Totem (Mural para TV Agrupado por Dia) */
     #btn-menu-atendimentos { border-top: 3px solid #ef4444 !important; }
     .badge-tipo-ausencia  { background: #fee2e2 !important; color: #dc2626 !important; border: 1px solid rgba(220, 38, 38, 0.3) !important; }
     .badge-tipo-reposicao { background: #dcfce7 !important; color: #15803d !important; border: 1px solid rgba(21, 128, 61, 0.3) !important; }
@@ -361,105 +361,124 @@
     .filter-pill.pill-ausencia.active  { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
     .filter-pill.pill-reposicao.active { background: #16a34a !important; border-color: #16a34a !important; color: #fff !important; }
 
-    .tv-mural-grid {
-      display: grid !important;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 16px !important;
-      width: 100% !important;
-    }
-    @media (max-width: 900px) {
-      .tv-mural-grid {
-        grid-template-columns: minmax(0, 1fr) !important;
-      }
-    }
-    .tv-aviso-card {
-      background: #ffffff !important;
-      border-radius: 16px !important;
-      padding: 18px 22px !important;
-      box-shadow: 0 6px 20px rgba(12, 31, 110, 0.07) !important;
-      border: 1px solid #dce3f5 !important;
-      border-left: 7px solid #dc2626 !important;
+    .tv-mural-days-container {
       display: flex !important;
       flex-direction: column !important;
-      justify-content: space-between !important;
-      gap: 10px !important;
+      gap: 12px !important;
+      width: 100% !important;
     }
-    .tv-aviso-card.tipo-reposicao {
-      border-left-color: #16a34a !important;
-      background: #f8fff9 !important;
+
+    .tv-day-section {
+      background: #ffffff !important;
+      border-radius: 14px !important;
+      padding: 12px 16px !important;
+      box-shadow: 0 4px 14px rgba(12, 31, 110, 0.06) !important;
+      border: 1px solid #dce3f5 !important;
     }
-    .tv-aviso-card.tipo-alteracao {
-      border-left-color: #d97706 !important;
-      background: #fffdf7 !important;
+
+    .tv-day-section.is-hoje {
+      border: 2px solid #0c1f6e !important;
+      box-shadow: 0 6px 20px rgba(12, 31, 110, 0.14) !important;
+      background: #f8faff !important;
     }
-    .tv-aviso-card.is-hoje {
-      box-shadow: 0 8px 26px rgba(220, 38, 38, 0.16) !important;
-      border-top: 2px solid rgba(220, 38, 38, 0.35) !important;
-      border-right: 2px solid rgba(220, 38, 38, 0.35) !important;
-      border-bottom: 2px solid rgba(220, 38, 38, 0.35) !important;
-    }
-    .tv-aviso-card.tipo-reposicao.is-hoje {
-      box-shadow: 0 8px 26px rgba(22, 163, 74, 0.16) !important;
-      border-top-color: rgba(22, 163, 74, 0.35) !important;
-      border-right-color: rgba(22, 163, 74, 0.35) !important;
-      border-bottom-color: rgba(22, 163, 74, 0.35) !important;
-    }
-    .tv-aviso-top {
+
+    .tv-day-header {
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
       flex-wrap: wrap !important;
       gap: 8px !important;
+      padding-bottom: 8px !important;
+      margin-bottom: 10px !important;
+      border-bottom: 1px solid #e2e8f6 !important;
     }
-    .tv-aviso-data {
+
+    .tv-day-title {
       font-family: 'Montserrat', sans-serif !important;
-      font-size: 15px !important;
+      font-size: 15.5px !important;
       font-weight: 900 !important;
       color: #0c1f6e !important;
       display: inline-flex !important;
       align-items: center !important;
       gap: 8px !important;
+      margin: 0 !important;
     }
+
+    .tv-day-count {
+      font-size: 11.5px !important;
+      font-weight: 800 !important;
+      color: #5e668c !important;
+      background: #eef3fc !important;
+      padding: 3px 10px !important;
+      border-radius: 20px !important;
+    }
+
+    .tv-day-cards-grid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+      gap: 10px !important;
+      width: 100% !important;
+    }
+
+    .tv-aviso-card {
+      background: #fff8f8 !important;
+      border-radius: 10px !important;
+      padding: 10px 14px !important;
+      border: 1px solid #f5d0d0 !important;
+      border-left: 5px solid #dc2626 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 5px !important;
+    }
+
+    .tv-aviso-card.tipo-reposicao {
+      border-color: #bbf7d0 !important;
+      border-left-color: #16a34a !important;
+      background: #f2fdf5 !important;
+    }
+
+    .tv-aviso-card.tipo-alteracao {
+      border-color: #fde68a !important;
+      border-left-color: #d97706 !important;
+      background: #fffdf2 !important;
+    }
+
+    .tv-aviso-top {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+    }
+
     .tv-badge-hoje {
       background: #dc2626 !important;
       color: #ffffff !important;
       font-size: 11px !important;
       font-weight: 900 !important;
-      padding: 3px 8px !important;
-      border-radius: 6px !important;
-      letter-spacing: 0.5px !important;
+      padding: 2px 8px !important;
+      border-radius: 5px !important;
+      letter-spacing: 0.4px !important;
     }
+
     .tv-aviso-hora {
       font-family: 'Montserrat', sans-serif !important;
-      font-size: 16px !important;
+      font-size: 13.5px !important;
       font-weight: 900 !important;
       color: #0c1f6e !important;
-      background: #eef3fc !important;
-      padding: 4px 12px !important;
-      border-radius: 8px !important;
+      background: #ffffff !important;
+      padding: 2px 9px !important;
+      border-radius: 6px !important;
       border: 1px solid #cdd9f0 !important;
     }
+
     .tv-aviso-titulo {
       font-family: 'Montserrat', sans-serif !important;
-      font-size: 18px !important;
+      font-size: 14.5px !important;
       font-weight: 800 !important;
       color: #1a2255 !important;
-      line-height: 1.35 !important;
-      margin: 2px 0 !important;
-    }
-    .tv-aviso-footer {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      flex-wrap: wrap !important;
-      gap: 8px !important;
-      padding-top: 8px !important;
-      border-top: 1px solid #edf1fa !important;
-    }
-    .tv-aviso-prof {
-      font-size: 14px !important;
-      font-weight: 700 !important;
-      color: #475569 !important;
+      line-height: 1.3 !important;
+      margin: 0 !important;
     }
 
     .totem-more-badge {
@@ -1290,9 +1309,9 @@
             </div>
           </div>
 
-          <!-- Lista Limpa de Próximos Avisos para TV -->
-          <div id="totem-atend-proximos-lista" class="tv-mural-grid">
-            <!-- Cards gerados via JS -->
+          <!-- Lista Limpa de Próximos Avisos Agrupados por Dia para TV -->
+          <div id="totem-atend-proximos-lista" class="tv-mural-days-container">
+            <!-- Blocos de dias e cards gerados via JS -->
           </div>
 
         </div>
@@ -1618,9 +1637,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="dados_escola.js?v=20261118_v2"></script>
-  <script src="sync_client.js?v=20261118_v2"></script>
-  <script src="script.js?v=20261118_v2"></script>
+  <script src="dados_escola.js?v=20261118_v3"></script>
+  <script src="sync_client.js?v=20261118_v3"></script>
+  <script src="script.js?v=20261118_v3"></script>
   <script>
     // Inicialização direta e imediata do auditório e ausências/reposições ao tocar no card
     document.addEventListener('click', function(e) {
